@@ -20,6 +20,12 @@ function log(s){
     console.log(s);
 }
 
+function assert(b){
+    if( !b ){
+        undefined();
+    }
+}
+
 
 
 function CP(name){
@@ -55,11 +61,11 @@ CP.prototype = {
     },
 
     isFalse: function(){
-        return this.isDefined() && this.canBeFalse();
+        return this.defined() && this.canBeFalse();
     },
 
     isTrue: function(){
-        return this.isDefined() && this.canBeTrue();
+        return this.defined() && this.canBeTrue();
     },
 
     propagate: function(){
@@ -117,21 +123,18 @@ InheritAndExtend(CP,CPNot, {
 
 function CPAnd(cps){
     assert(cps.length > 0);
+    var names = "";
+    for( var i = 0 ; i < cps.length ; i++ ){
+        names += " " + cps[i].name();
+    }
+    CP.call(this,"And(" + names + ")" );
     this._cps = cps;
     this._canBeTrue = true;
     this._canBeFalse = true;
 }
 
 
-
 InheritAndExtend(CP,CPAnd, {
-    name: function(){
-        var ret = "Or("
-        for( var i = 0 ; i < this._cps.length ; i++ ){
-            ret += this._cps[i].name() + ",";
-        }
-        return ret + ")";
-    },
     
     
     remove: function(value){
@@ -166,13 +169,25 @@ InheritAndExtend(CP,CPAnd, {
 
 
 var a = new CPBoolean("a");
-var b = new CPNot(a);
+var b = new CPBoolean("b");
+var notA = new CPNot(a);
+var andNAB = new CPAnd([notA,b]);
 
 
 log(a.toString());
 log(b.toString());
+log(notA.toString());
+log(andNAB.toString());
 
 a.remove(false);
+log( "removed false from a");
 
 log(a.toString());
 log(b.toString());
+log(notA.toString());
+log(andNAB.toString());
+
+log( "Propagate");
+andNAB.propagate();
+log(andNAB.toString());
+
