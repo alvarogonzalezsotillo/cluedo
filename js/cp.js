@@ -32,6 +32,8 @@ function CP(name){
     this._name=name;
 }
 
+
+
 CP.prototype = {
 
     toString: function(){
@@ -127,25 +129,15 @@ function CPAnd(cps){
     for( var i = 0 ; i < cps.length ; i++ ){
         names += " " + cps[i].name();
     }
-    CP.call(this,"And(" + names + ")" );
+    CPBoolean.call(this,"And(" + names + ")" );
     this._cps = cps;
     this._canBeTrue = true;
     this._canBeFalse = true;
 }
 
 
-InheritAndExtend(CP,CPAnd, {
+InheritAndExtend(CPBoolean,CPAnd, {
     
-    
-    remove: function(value){
-        if( value ){
-            this._canBeTrue = false;
-        }
-        else{
-            this._canBeFalse = false;
-        }
-    }, 
-
     propagate: function(){
         var anyFalse = false;
         var allTrue = true;
@@ -168,10 +160,53 @@ InheritAndExtend(CP,CPAnd, {
 });
 
 
-var a = new CPBoolean("a");
-var b = new CPBoolean("b");
-var notA = new CPNot(a);
-var andNAB = new CPAnd([notA,b]);
+function CPOr(cps){
+    assert(cps.length > 0);
+    var names = "";
+    for( var i = 0 ; i < cps.length ; i++ ){
+        names += " " + cps[i].name();
+    }
+    CPBoolean.call(this,"Or(" + names + ")" );
+    this._cps = cps;
+    this._canBeTrue = true;
+    this._canBeFalse = true;
+}
+
+InheritAndExtend(CPBoolean,CPOr, {
+    
+    propagate: function(){
+        var anyTrue = false;
+        var allFalse = true;
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            if( this._cps[i].isTrue() ){
+                anyTrue = true;
+                allFalse = false;
+            }
+            if( !this._cps[i].defined() ){
+                allFalse = false;
+            }
+        }
+        if( anyTrue ){
+            this.remove(false);
+        }
+        if( allFalse ){
+            this.remove(true);
+        }
+    }
+});
+
+
+
+CP.Boolean = function(name){ return new CPBoolean(name); };
+CP.And = function(cps){ return new CPAnd(cps); };
+CP.Or = function(cps){ return new CPOr(name); };
+CP.Not = function(cp){ return new CPNot(cp); };
+
+
+var a = CP.Boolean("a");
+var b = CP.Boolean("b");
+var notA = CP.Not(a);
+var andNAB = CP.And([notA,b]);
 
 
 log(a.toString());
@@ -180,14 +215,14 @@ log(notA.toString());
 log(andNAB.toString());
 
 a.remove(false);
-log( "removed false from a");
+log( "-------Removed false from a");
 
 log(a.toString());
 log(b.toString());
 log(notA.toString());
 log(andNAB.toString());
 
-log( "Propagate");
+log( "-------Propagate");
 andNAB.propagate();
 log(andNAB.toString());
 
