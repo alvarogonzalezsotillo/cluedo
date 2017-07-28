@@ -1,3 +1,27 @@
+function InheritAndExtend(src,dst,ext){
+    for( p in src.prototype){
+        dst.prototype[p] = src.prototype[p];
+    }
+    if( ext ){
+        for( p in ext){
+            dst.prototype[p] = ext[p];
+        }
+    }
+}
+
+function describe(o){
+    console.log( "describe:" + o );
+    for( i in o ){
+        console.log( "  " + i + ":" + o[i] );
+    }
+}
+
+function log(s){
+    console.log(s);
+}
+
+
+
 function CP(name){
     this._name=name;
 }
@@ -5,7 +29,7 @@ function CP(name){
 CP.prototype = {
 
     toString: function(){
-        return this.name + "(" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_");
+        return this.name() + ":[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]";
     },
 
     defined: function(){
@@ -44,14 +68,13 @@ CP.prototype = {
 };
 
 function CPBoolean(name){
-    CP.cal
+    CP.call(this,name);
     this._canBeTrue = true;
     this._canBeFalse = true;
 }
 
 
-
-CPBoolean.prototype = {
+InheritAndExtend(CP,CPBoolean, {
     
     remove: function(value){
         if( value ){
@@ -62,19 +85,15 @@ CPBoolean.prototype = {
         }
     },
 
-    prototype : CP.prototype
-
-};
+});
 
 
 function CPNot(cp){
+    CP.call(this,"Not(" + cp.name() + ")" ); 
     this._cp = cp;
 }
 
-CPNot.prototype = {
-    name: function(){
-        return "Not " + this._cp.name();
-    },
+InheritAndExtend(CP,CPNot, {
     
     defined: function(){
         return this._cp.defined();
@@ -91,12 +110,9 @@ CPNot.prototype = {
 
     remove: function(value){
         this._cp.remove(!value);
-    },
+    }
 
-    prototype : CP
-
-
-};
+});
 
 
 function CPAnd(cps){
@@ -108,7 +124,7 @@ function CPAnd(cps){
 
 
 
-CPAnd.prototype = {
+InheritAndExtend(CP,CPAnd, {
     name: function(){
         var ret = "Or("
         for( var i = 0 ; i < this._cps.length ; i++ ){
@@ -145,31 +161,18 @@ CPAnd.prototype = {
         if( allTrue ){
             this.remove(false);
         }
-    },
-
-    prototype : CP
-};
+    }
+});
 
 
 var a = new CPBoolean("a");
-var b = new CP()
-
-function describe(o){
-    console.log( "describe:" + o );
-    for( i in o ){
-        console.log( "  " + i + ":" + o[i] );
-    }
-}
-
-describe(a);
-describe(b);
+var b = new CPNot(a);
 
 
+log(a.toString());
+log(b.toString());
 
-console.log("a:" + a);
-console.log("a.remove:" + a.remove);
-console.log("a.remove():" + a.remove(true));
-console.log("a:" + a);
-console.log("a.canBeTrue:" + a.canBeTrue);
-console.log("a.canBeTrue():" + a.canBeTrue());
-console.log(a.toString());
+a.remove(false);
+
+log(a.toString());
+log(b.toString());
