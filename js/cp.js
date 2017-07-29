@@ -30,12 +30,23 @@ function assert(b){
 
 function CP(name){
     this._name=name;
+    this._dependants = [];
 }
 
 
 
 CP.prototype = {
 
+    addDependant : function(d){
+        this._dependants.push(d);
+    },
+
+    notifyDependants : function(){
+        for( var i = 0 ; i < this._dependants.length ; i++ ){
+            this._dependants[i].reduceOwnDomain();
+        }
+    },
+    
     toString: function(){
         return this.name() + ":[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]";
     },
@@ -43,12 +54,10 @@ CP.prototype = {
     defined: function(){
         return this.canBeTrue() ^ this.canBeFalse();
     },
-
     
     name: function(){
         return this._name;
     },
-
 
     impossible: function(){
         return !this.canBeTrue() && !this.canBeFalse();
@@ -70,8 +79,12 @@ CP.prototype = {
         return this.defined() && this.canBeTrue();
     },
 
-    propagate: function(){
+    reduceOwnDomain: function(){
+    },
+
+    reduceOthersDomain: function(){
     }
+
 
 };
 
@@ -83,22 +96,30 @@ function CPBoolean(name){
 
 
 InheritAndExtend(CP,CPBoolean, {
-    
     remove: function(value){
-        if( value ){
+        if( value && this._canBeTrue ){
             this._canBeTrue = false;
+            this.reduceOthersDomain();
+            this.notifyDependants();
+            return true;
         }
-        else{
+        
+        if( !value && this._canBeFalse ){
             this._canBeFalse = false;
+            this.reduceOthersDomain();
+            this.notifyDependants();
+            return true;
         }
+        
+        return false;
     },
-
 });
 
 
 function CPNot(cp){
     CP.call(this,"Not(" + cp.name() + ")" ); 
     this._cp = cp;
+    this._cp.addDependant(this);
 }
 
 InheritAndExtend(CP,CPNot, {
@@ -115,9 +136,16 @@ InheritAndExtend(CP,CPNot, {
         return this._cp.canBeTrue();
     },
 
-
     remove: function(value){
-        this._cp.remove(!value);
+        var changed = this._cp.remove(!value);
+        if( changed ){
+            this.notifyDependants();
+        }
+        return changed;
+    },
+
+    reduceOwnDomain: function(){
+        this._cp.reduceOwnDomain();  
     }
 
 });
@@ -133,12 +161,19 @@ function CPAnd(cps){
     this._cps = cps;
     this._canBeTrue = true;
     this._canBeFalse = true;
+    for( var i = 0 ; i < this._cps.length ; i++ ){
+        this._cps[i].addDependant(this);
+    }
 }
 
 
 InheritAndExtend(CPBoolean,CPAnd, {
     
-    propagate: function(){
+    reduceOwnDomain: function(){
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            this._cps[i].reduceOwnDomain();
+        }
+
         var anyFalse = false;
         var allTrue = true;
         for( var i = 0 ; i < this._cps.length ; i++ ){
@@ -156,6 +191,32 @@ InheritAndExtend(CPBoolean,CPAnd, {
         if( allTrue ){
             this.remove(false);
         }
+    },
+
+    reduceOthersDomain: function(){
+        if( this.isTrue() ){
+            for( var i = 0 ; i < this._cps.length ; i++ ){
+                this._cps[i].remove(false);
+            }
+        }
+
+        if( this.isFalse() ){
+            // if only one cp can be false, it should be false
+            var undefinedCP = undefined;
+            var numberOfTrue = 0;
+            for( var i = 0 ; i < this._cps.length ; i++ ){
+                var cp = this._cps[i];
+                if( cp.isTrue() ){
+                    numberOfTrue += 1;
+                }
+                if( !cp.defined() ){
+                    undefinedCP = cp;
+                }
+            }
+            if( numberOfTrue == this._cps.length - 1 ){
+                cp.remove(true);
+            }
+        }
     }
 });
 
@@ -170,11 +231,19 @@ function CPOr(cps){
     this._cps = cps;
     this._canBeTrue = true;
     this._canBeFalse = true;
+    for( var i = 0 ; i < this._cps.length ; i++ ){
+        this._cps[i].addDependant(this);
+    }
 }
 
 InheritAndExtend(CPBoolean,CPOr, {
     
-    propagate: function(){
+    reduceOwnDomain: function(){
+
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            this._cps[i].reduceOwnDomain();
+        }
+        
         var anyTrue = false;
         var allFalse = true;
         for( var i = 0 ; i < this._cps.length ; i++ ){
@@ -192,37 +261,94 @@ InheritAndExtend(CPBoolean,CPOr, {
         if( allFalse ){
             this.remove(true);
         }
+    },
+
+    reduceOthersDomain: function(){
+        if( this.isFalse() ){
+            for( var i = 0 ; i < this._cps.length ; i++ ){
+                this._cps[i].remove(true);
+            }
+        }
+
+        if( this.isTrue() ){
+            // if only one cp can be true, it should be true
+            var undefinedCP = undefined;
+            var numberOfFalse = 0;
+            for( var i = 0 ; i < this._cps.length ; i++ ){
+                var cp = this._cps[i];
+                if( cp.isFalse() ){
+                    numberOfFalse += 1;
+                }
+                if( !cp.defined() ){
+                    undefinedCP = cp;
+                }
+            }
+            if( numberOfFalse == this._cps.length - 1 ){
+                cp.remove(false);
+            }
+        }
     }
+
 });
 
 
 
 CP.Boolean = function(name){ return new CPBoolean(name); };
 CP.And = function(cps){ return new CPAnd(cps); };
-CP.Or = function(cps){ return new CPOr(name); };
+CP.Or = function(cps){ return new CPOr(cps); };
 CP.Not = function(cp){ return new CPNot(cp); };
 
 
-var a = CP.Boolean("a");
-var b = CP.Boolean("b");
-var notA = CP.Not(a);
-var andNAB = CP.And([notA,b]);
+function test(){
 
+    var tests = [
+        function(){
+            var a = CP.Boolean("a");
+            var notA = CP.Not(a);
 
-log(a.toString());
-log(b.toString());
-log(notA.toString());
-log(andNAB.toString());
+            assert(!notA.defined());
 
-a.remove(false);
-log( "-------Removed false from a");
+            notA.remove(true);
 
-log(a.toString());
-log(b.toString());
-log(notA.toString());
-log(andNAB.toString());
+            assert(a.isTrue() );
+        },
 
-log( "-------Propagate");
-andNAB.propagate();
-log(andNAB.toString());
+        function(){
+            var a = CP.Boolean("a");
+            var notA = CP.Not(a);
 
+            a.remove(false);
+
+            assert(notA.isFalse() );
+        },
+
+        function(){
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var andAB = CP.And([a,b]);
+
+            a.remove(true);
+
+            assert(andAB.isFalse());
+        },
+
+        function(){
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var andAB = CP.And([a,b]);
+
+            andAB.remove(false);
+
+            assert(a.isTrue());
+            assert(b.isTrue());
+        },
+
+    ];
+
+    for( var i = 0 ; i < tests.length ; i++ ){
+        log( "----- Test " + i );
+        tests[i]();
+    }
+}
+
+test();

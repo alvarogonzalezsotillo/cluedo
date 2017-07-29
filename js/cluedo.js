@@ -6,73 +6,98 @@ function Fact(player, hasSome, cards ){
     // cards es una array de las cartas de las que hablamos
 }
 
-function Cluedo(players){
-    this._players = players;
+/**
+ numberOfCards: Array of number of cards of each player
+ */
+function Cluedo(numberOfCards){
     this._characterNames = ["","",""];
     this._toolNames = ["","",""];
     this._placesNames = ["","",""];
+    this.init(players);
 }
 
-Cluedo.__prototype__ = {
+Cluedo.prototype = {
     characterNames : function(){
         return this._characterNames;
-    };
+    },
 
     toolNames : function(){
         return this._toolNames;
-    };
+    },
     
     placesNames : function(){
         return this._placesNames;
-    };
+    },
 
-    addFact : function( fact ){
-    };
+    pushFact : function( fact ){
+    },
+
+    setFacts : function( facts ){
+    },
 
     facts : function(){
         // lista de hechos
-    };
+    },
 
-    inferredCards : function(){
-        // array con las cartas inferidas
-        // [jugador].tools
-        //          .places
-        //          .characters[index]
-        // posicion 0: cartas del sobre
-    };
 
-    var toolFound : function(){
-        var envelope = this.inferredCards()[0];
+    toolFound : function(){
+        var envelope = this.envelopeCards();
         var tools = envelope.tools;
         var found = true;
         for( var i = 0 ; i < this.toolNames && found ; i++ ){
             found = found && tools[i].isDefined();
         }
         return found;
-    };
+    },
 
-    var characterFound : function(){
-        var envelope = this.inferredCards()[0];
+    characterFound : function(){
+        var envelope = this.envelopeCards();
         var characters = envelope.characters;
         var found = true;
         for( var i = 0 ; i < this.characterNames && found ; i++ ){
             found = found && characters[i].isDefined();
         }
         return found;
-    };
+    },
 
-    var placeFound : function(){
-        var envelope = this.inferredCards()[0];
+    placeFound : function(){
+        var envelope = this.envelopeCards();
         var places = envelope.places;
         var found = true;
         for( var i = 0 ; i < this.placeNames && found ; i++ ){
             found = found && places[i].isDefined();
         }
         return found;
-    };
+    },
     
     solutionFound : function(){
         return this.placeFound() && this.characterFound() && this.toolFound();
+    },
+
+    playerCards : function(){
+        // array con las cartas inferidas
+        // [jugador].tools
+        //          .places
+        //          .characters[index]
+    },
+
+    envelopeCards: function(){
+        // .tools
+        // .places
+        // .characters[index]
+    }
+
+
+    init: function(players){
+        this._players = players;
+
+        this._cards = [];
+
+        for( var i = 0 ; i <= players ; i++ ){
+            this._cards.push({
+                
+            });
+        }
     }
     
 };
