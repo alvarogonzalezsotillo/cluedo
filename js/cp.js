@@ -556,6 +556,23 @@ function test(){
             assert(st.isFalse());
         },
 
+
+        function(){
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+            var d = CP.Boolean("d");
+            var st = CP.SomeTrue([a,b,c,d],2);
+        
+            a.remove(true);
+            b.remove(true);
+            c.remove(false);
+            assert(!st.defined());
+
+            d.remove(false);
+            assert(st.isTrue());
+        },
+
         function(){
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
