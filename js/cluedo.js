@@ -74,7 +74,7 @@ var CluedoFlavors = {
     test: {
         characterNames : ["Orquídea","Pepa","Juan"],
         toolNames : ["Herramienta","Cuerda","Pistola"],
-        placeNames : ["Sala de billar","Invernadero","Cocina"];
+        placeNames : ["Sala de billar","Invernadero","Cocina"]
     },
 
     indexOf : function(s,array){
@@ -86,7 +86,6 @@ var CluedoFlavors = {
         return -1;
 
     },
-
 
     toolNumber : function(flavor,t){
         return this.indexOf(t,flavor.toolNames);
@@ -122,7 +121,7 @@ function Cluedo(flavor,facts){
     this._flavor = flavor;
     this._characterNames = copyArray(flavor.characterNames);
     this._toolNames = copyArray(flavor.toolNames);
-    this._placesNames = copyArray(flavor.placesNames);
+    this._placesNames = copyArray(flavor.placeNames);
     this._facts = facts;
     this.deduce();
 }
@@ -190,12 +189,14 @@ Cluedo.prototype = {
         // .tools
         // .places
         // .characters[index]
-    }
+    },
 
     playersFact : function(){
         var fs = this.facts();
         for( var i = 0 ; i < fs.length ; i++ ){
-            if( fs[i].factType() == PlayersFact.thisType ){
+            console.log(fs[i]);
+            console.log(PlayersFact.prototype);
+            if( fs[i].factType() == PlayersFact.prototype.thisType ){
                 return fs[i];
             }
         }
@@ -203,9 +204,19 @@ Cluedo.prototype = {
     },
 
     deduce: function(){
+        
         var playersF = this.playersFact();
         assert(playersF);
+        var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
         var flavor = this._flavor;
+        var allCards = flavor.toolNames.concat(flavor.placeNames).concat(flavor.characterNames);
+
+        var totalCardsInGame = 3;
+        for( var i = 0 ; i < playersF.numberOfCardsOrEachPlayer.length ; i++ ){
+            totalCardsInGame += playersF.numberOfCardsOrEachPlayer[i];
+        }
+        console.log("totalCardsingame:" + totalCardsInGame);
+        assert(allCards.length == totalCardsInGame)
 
         var createArrayOfBooleans = function( prefix, nameArray ){
             var ret = [];
@@ -217,24 +228,53 @@ Cluedo.prototype = {
         }
 
         var createPlayerCards = function( prefix ){
+            var t = createArrayOfBooleans(prefix,flavor.toolNames);
+            var p = createArrayOfBooleans(prefix,flavor.placeNames);
+            var c = createArrayOfBooleans(prefix,flavor.characterNames);
             return {
-                tools : createArrayOfBooleans(prefix,flavor.toolNames);
-                places : createArrayOfBooleans(prefix,flavor.placeNames);
-                characters: createArrayOfBooleans(prefix,flavor.characterNames);
+                tools : t,
+                places : p,
+                characters: c,
+                allCards : t.concat(p).concat(c)
             };
         }
-        
-        this._playerCardsCP = [];
 
-        for( var i = 0 ; i < playersF.length ; i++ ){
+        // CARDS FOR PLAYERS AND ENVELOPE
+        this._playerCardsCP = [];
+        for( var i = 0 ; i < numberOfPlayers ; i++ ){
             var prefix = "Player" + i + "-";
             this._playerCardsCP.push(createPlayerCards(prefix));
         }
-
         this._envelopeCardsCP = createPlayerCards("envelope-");
 
         // EACH CARD CAN BE ONLY IN ONE PLACE
-        
+        var restrictions = [];
+        for( var i = 0 ; i < allCards.length ; i++ ){
+            var cpsOfCard = [];
+            for( var p = 0 ; p < numberOfPlayers ; p++ ){
+                cpsOfCard.push(this._playerCardsCP[i].allCards[i]);
+            }
+            cpsOfCard.push(this._envelopeCardsCP.allCards[i]);
+            var thisCardInOnePlace = CP.SomeTrue(cpsOfCard,1);
+            restrictions.push(thisCardInOnePlace);
+        }
+
+        console.log(restrictions);
     }
     
 };
+
+
+
+if( typeof module == "undefined" ){
+    module = {};
+}
+
+module.exports = {
+    Cluedo : Cluedo,
+    PlayersFact : PlayersFact,
+    PlayerHasSomeFact : PlayerHasSomeFact,
+    PlayerDoesntHaveAnyFact : PlayerDoesntHaveAnyFact,
+    CluedoFlavors : CluedoFlavors
+};
+
