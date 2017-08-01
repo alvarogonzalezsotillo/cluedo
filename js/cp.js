@@ -320,7 +320,7 @@ var CP = {
         var ret =  CP.Not( CP.And(negatedCPS) );
         ret.name = function(){ return "Or(" + names + ")"; };
         return ret;
-    }
+    },
 };
 
 
