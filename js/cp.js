@@ -17,7 +17,7 @@ function describe(o){
 }
 
 function log(s){
-    //console.log(s);
+    console.log(s);
 }
 
 function assert(b){
@@ -166,35 +166,62 @@ function CPNumberTrue(cps,number){
     for( var i = 0 ; i < cps.length ; i++ ){
         names += " " + cps[i].name();
     }
-    CP.call(this,"AreTrue(" + number + ")(" + names + ")", cps );
+    CPBoolean.call(this,"AreTrue(" + number + ")(" + names + ")", cps );
 }
 
 InheritAndExtend(CPBoolean,CPNumberTrue, {
+
+    number : function(){
+        return this._number;
+    },
+
+    status : function(){
+        var cps = this.observed();
+
+        var ret = {
+            falses : [],
+            trues : [],
+            undefineds : []
+        }
+
+        for( var i = 0 ; i < cps.length ; i++ ){
+            if( cps[i].isFalse() ){
+                ret.falses.push(cps[i]);
+            }
+            if( cps[i].isTrue() ){
+                ret.trues.push(cps[i]);
+            }
+            if( !cps[i].defined() ){
+                ret.undefineds.push(cps[i]);
+            }
+        }
+        
+        return ret;
+    },
     
     reduceOwnDomain: function(){
         var cps = this.observed();
 
-        var log = function(){};
+        var log = function(s){ console.log(s); };
+
         
-        var falseNumber = 0;
-        var trueNumber = 0;
-        for( var i = 0 ; i < cps.length ; i++ ){
-            if( cps[i].isFalse() ){
-                falseNumber += 1;
-            }
-            if( cps[i].isTrue() ){
-                trueNumbe += 1;
-            }
-        }
+        var s = this.status();
+        
+        log( this.name() + ": reduceOwndomain" );
+        console.log(s);
 
         var ret = false;
         
-        if( anyFalse ){
-            log( this.name() + ": anyFalse:" + anyFalse + ": since some are false, I can not be true");
+        if( s.trues.length > this.number() ){
+            log( "  " + this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
             ret |= this.remove(true);
         }
-        if( allTrue ){
-            log( this.name() + ": allTrue:" + allTrue + ": since all are true, I can not be false" );
+        else if( s.falses.length > cps.length - this.number() ){
+            log( "  " + this.name() + ": falses.length:" + s.falses.length + ": more false than expected" );
+            ret |= this.remove(true);
+        }
+        else if( s.falses.length  + s.trues.length == cps.length ){
+            log( "  " + this.name() + ": all defined and number correct" );
             ret |= this.remove(false);
         }
         return ret;
@@ -203,41 +230,34 @@ InheritAndExtend(CPBoolean,CPNumberTrue, {
     reduceObservedDomain: function(){
         var cps = this.observed();
         var log = function(){};
+
+        var s = this.status();
+        var remainingTrues = this.number() - s.trues.length;
+        var possibleTrues = s.undefineds.length;
         
         if( this.isTrue() ){
-            log( this.name() + ": since I am true, all my observed can not be false");
-            var ret = false;
-            for( var i = 0 ; i < cps.length ; i++ ){
-                ret |= cps[i].remove(false);
+            assert( s.trues.length <= this.number() );
+            if( remainingTrues == possibleTrues ){
+                log( this.name() + ": needed some more trues, the same as undefined");
+                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                    s.undefineds[i].remove(false);
+                }
+                return true;
             }
-            return ret;
         }
 
         if( this.isFalse() ){
-            log( this.name() + ": since I am false, at least one of my observed can not be true");
 
-            // if only one cp can be false, it should be false
-            var undefinedCP = undefined;
-            var numberOfTrue = 0;
-            for( var i = 0 ; i < cps.length ; i++ ){
-                var cp = cps[i];
-                log( "  " + cp.toString() );
-                if( cp.isTrue() ){
-                    log( "  " + cp.toString() + " is true");
-                    numberOfTrue += 1;
+            if( s.trues.length == this.number()-1 && possibleTrues == 1 ){
+                log( this.name() + ": since I am false, at least one of my possible trues can not be true");
+                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                    s.undefineds[i].remove(true);
                 }
-                if( !cp.defined() ){
-                    log( "  " + cp.toString() + " is not defined");
-                    undefinedCP = cp;
-                }
+                return true;
             }
-            var ret = false;
-            if( numberOfTrue == cps.length - 1 && undefinedCP ){
-                log( "  " + this.name() + ": only " + undefinedCP.name() + "(defined:" + undefinedCP.defined() + ") can be false, so removed true from it" );
-                ret = undefinedCP.remove(true);
-            }
-            return ret;
         }
+
+        return false;
     }
 });
 
@@ -372,8 +392,10 @@ InheritAndExtend(CPBoolean,CPAnd, {
 
 
 CP.Boolean = function(name){ return new CPBoolean(name); };
-CP.And = function(cps){ return new CPAnd(cps); };
+//CP.And = function(cps){ return new CPAnd(cps); };
+CP.And = function(cps){ return new CPNumberTrue(cps,cps.length)};
 CP.Not = function(cp){ return new CPNot(cp); };
+CP.SomeTrue = function(cps,number){ return new CPNumberTrue(cps,number); };
 CP.Or = function(cps){
     var negatedCPS = [];
     var names = "";
@@ -510,13 +532,56 @@ function test(){
             assert(a.isFalse());
             assert(b.isFalse());
             assert(c.isTrue());
+        },
+
+        function(){
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+            var d = CP.Boolean("d");
+            var st = CP.SomeTrue([a,b,c,d],2);
+
+            st.describe();
+
+            a.remove(true);
+            st.describe();
+
+            b.remove(true);
+            st.describe();
+
+            c.remove(true);
+
+            st.describe();
+            
+            assert(st.isFalse());
+        },
+
+        function(){
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+            var d = CP.Boolean("d");
+            var st = CP.SomeTrue([a,b,c,d],2);
+
+            a.remove(true);
+            b.remove(true);
+            st.remove(false);
+
+            st.describe();
+            
+            assert(c.isTrue());
+            assert(d.isTrue());
         }
+
+
+        
         
     ];
 
+
     
     for( var i = 0 ; i < tests.length ; i++ ){
-        log( "----- Test " + i );
+        console.log( "----- Test " + i );
         tests[i]();
     }
     
