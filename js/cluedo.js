@@ -1,22 +1,31 @@
 
-function PlayersFact(numberOfCardsOrEachPlayer){
-    
+function Fact(){
 }
 
-function Fact(player, hasSome, cards ){
+
+
+function PlayersFact(numberOfCardsOrEachPlayer){
+    this.numberOfCardsOrEachPlayer = numberOfCardsOrEachPlayer;
+}
+
+function PlayerHasSomeFact(player, cards ){
     // player es el número de jugador
-    // hasSome es true si tiene alguna carta, o false si no tiene ninguna carta
+    // cards es una array de las cartas de las que hablamos
+}
+
+function PlayerDoesntHaveAnyFact(player, cards){
+    // player es el número de jugador
     // cards es una array de las cartas de las que hablamos
 }
 
 /**
  numberOfCards: Array of number of cards of each player
  */
-function Cluedo(numberOfCards){
+function Cluedo(facts){
     this._characterNames = ["","",""];
     this._toolNames = ["","",""];
     this._placesNames = ["","",""];
-    this.init(players);
+    this._facts = facts;
 }
 
 Cluedo.prototype = {
@@ -32,14 +41,9 @@ Cluedo.prototype = {
         return this._placesNames;
     },
 
-    pushFact : function( fact ){
-    },
-
-    setFacts : function( facts ){
-    },
-
     facts : function(){
         // lista de hechos
+        return this.facts();
     },
 
 

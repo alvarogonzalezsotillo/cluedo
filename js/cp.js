@@ -1,18 +1,7 @@
-function MixIn(dst,src){
-    for( p in src){
-        dst[p] = src[p];
-    }
-}
-
-function assert(b){
-    if( !b ){
-        undefined();
-    }
-}
-
-
-function log(s){
-    //console.log(s);
+if( require ){
+    var common = require("./common");
+    MixIn = common.MixIn;
+    log = common.log;
 }
 
 
@@ -341,6 +330,5 @@ if( typeof module == "undefined" ){
 
 module.exports = {
     CP: CP,
-    assert : assert
 };
 

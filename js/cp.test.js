@@ -1,16 +1,10 @@
-function describe(o){
-    console.log( "describe:" + o );
-    for( i in o ){
-        console.log( "  " + i + ":" + o[i] );
-    }
-}
-
 
 
 if( require ){
     var cp = require("./cp");
+    var common = require("./common");
     CP = cp.CP;
-    assert = cp.assert;
+    assert = common.assert;
 }
     
 
