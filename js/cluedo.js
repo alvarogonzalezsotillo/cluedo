@@ -1,4 +1,7 @@
 
+function PlayersFact(numberOfCardsOrEachPlayer){
+    
+}
 
 function Fact(player, hasSome, cards ){
     // player es el número de jugador

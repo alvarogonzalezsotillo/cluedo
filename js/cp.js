@@ -1,29 +1,18 @@
-function InheritAndExtend(src,dst,ext){
-    for( p in src.prototype){
-        dst.prototype[p] = src.prototype[p];
+function MixIn(dst,src){
+    for( p in src){
+        dst[p] = src[p];
     }
-    if( ext ){
-        for( p in ext){
-            dst.prototype[p] = ext[p];
-        }
-    }
-}
-
-function describe(o){
-    console.log( "describe:" + o );
-    for( i in o ){
-        console.log( "  " + i + ":" + o[i] );
-    }
-}
-
-function log(s){
-    //console.log(s);
 }
 
 function assert(b){
     if( !b ){
         undefined();
     }
+}
+
+
+function log(s){
+    //console.log(s);
 }
 
 
@@ -62,6 +51,14 @@ CPBase.prototype = {
     notified: function(){
         this.reduceOwnDomain();
         this.reduceObservedDomain();
+    },
+
+    notifyIfEmptyDomain : function(){
+        if( this.impossible() ){
+            var error = new Error(this.name() + " has empty domain");
+            error.cp = this;
+            throw error;
+        }
     },
 
     describe : function(level){
@@ -137,7 +134,8 @@ function CPBoolean(name,observed){
 }
 
 
-InheritAndExtend(CPBase,CPBoolean, {
+MixIn(CPBoolean.prototype,CPBase.prototype);
+MixIn(CPBoolean.prototype,{
     remove: function(value){
         log( this.name() + ": remove:" + value );
         if( value && this._canBeTrue ){
@@ -145,6 +143,7 @@ InheritAndExtend(CPBase,CPBoolean, {
             this._canBeTrue = false;
             this.reduceObservedDomain();
             this.notifyContainers();
+            this.notifyIfEmptyDomain();
             return true;
         }
         
@@ -153,6 +152,7 @@ InheritAndExtend(CPBase,CPBoolean, {
             this._canBeFalse = false;
             this.reduceObservedDomain();
             this.notifyContainers();
+            this.notifyIfEmptyDomain();
             return true;
         }
         
@@ -169,7 +169,8 @@ function CPNumberTrue(cps,number){
     CPBoolean.call(this,"AreTrue(" + number + ")(" + names + ")", cps );
 }
 
-InheritAndExtend(CPBoolean,CPNumberTrue, {
+MixIn(CPNumberTrue.prototype,CPBoolean.prototype);
+MixIn(CPNumberTrue.prototype, {
 
     number : function(){
         return this._number;
@@ -266,7 +267,8 @@ function CPNot(cp){
     this._cp = cp;
 }
 
-InheritAndExtend(CPBase,CPNot, {
+MixIn(CPNot.prototype,CPBase.prototype);
+MixIn(CPNot.prototype, {
     
     defined: function(){
         return this._cp.defined();
@@ -333,188 +335,12 @@ var CP = {
 };
 
 
-
-function test(){
-
-    var tests = [
-        function(){
-            var a = CP.Boolean("a");
-            var notA = CP.Not(a);
-
-            assert(!notA.defined());
-
-            notA.remove(true);
-
-            assert(a.isTrue() );
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var notA = CP.Not(a);
-
-            a.remove(false);
-
-            assert(notA.isFalse() );
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var andAB = CP.And([a,b]);
-
-            a.remove(true);
-
-            assert(andAB.isFalse());
-        },
-
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var andAB = CP.And([a,b]);
-
-            andAB.remove(false);
-
-            assert(a.isTrue());
-            assert(b.isTrue());
-        },
-
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-
-            var orAB = CP.Or([a,b]);
-
-            a.remove(false);
-
-            assert(orAB.isTrue());
-        },
-
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-
-            var orAB = CP.Or([a,b]);
-
-            orAB.remove(true);
-
-            assert(a.isFalse());
-            assert(b.isFalse());
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-
-            var orAB = CP.Or([a,b]);
-
-            orAB.remove(false);
-            b.remove(true);
-
-            assert(a.isTrue());
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var c = CP.Boolean("c");
-            var and = CP.And([a,b,c]);
-            and.remove(false);
-            assert(a.isTrue());
-            assert(b.isTrue());
-            assert(c.isTrue());
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var c = CP.Boolean("c");
-            var or = CP.Or([a,b,c]);
-            or.remove(true);
-            assert(a.isFalse());
-            assert(b.isFalse());
-            assert(c.isFalse());
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var c = CP.Boolean("c");
-            var or = CP.Or([a,b,c]);
-            or.remove(false);
-            a.remove(true);
-            b.remove(true);
-
-            
-            assert(a.isFalse());
-            assert(b.isFalse());
-            assert(c.isTrue());
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var c = CP.Boolean("c");
-            var d = CP.Boolean("d");
-            var st = CP.SomeTrue([a,b,c,d],2);
-
-            a.remove(true);
-
-            b.remove(true);
-
-            c.remove(true);
-
-            
-            assert(st.isFalse());
-        },
-
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var c = CP.Boolean("c");
-            var d = CP.Boolean("d");
-            var st = CP.SomeTrue([a,b,c,d],2);
-        
-            a.remove(true);
-            b.remove(true);
-            c.remove(false);
-            assert(!st.defined());
-
-            d.remove(false);
-            assert(st.isTrue());
-        },
-
-        function(){
-            var a = CP.Boolean("a");
-            var b = CP.Boolean("b");
-            var c = CP.Boolean("c");
-            var d = CP.Boolean("d");
-            var st = CP.SomeTrue([a,b,c,d],2);
-
-            a.remove(true);
-            b.remove(true);
-            st.remove(false);
-
-            assert(c.isTrue());
-            assert(d.isTrue());
-        }
-
-
-        
-        
-    ];
-
-
-    
-    for( var i = 0 ; i < tests.length ; i++ ){
-        console.log( "----- Test " + i );
-        tests[i]();
-    }
-    
-    
+if( typeof module == "undefined" ){
+    module = {};
 }
 
-test();
+module.exports = {
+    CP: CP,
+    assert : assert
+};
+
