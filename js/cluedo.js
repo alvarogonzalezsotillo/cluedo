@@ -179,23 +179,64 @@ Cluedo.prototype = {
     },
 
     playerCards : function(){
-        // array con las cartas inferidas
-        // [jugador].tools
-        //          .places
-        //          .characters[index]
+        var playersCP = this._playerCardsCP;
+        var ret = [];
+        for( var p = 0 ; p <  playersCP.length ; p++ ){
+            ret.push(this.cardsOf(playersCP[p]));
+        }
+        return ret;
     },
 
-    envelopeCards: function(){
-        // .tools
-        // .places
-        // .characters[index]
+    valuesOfCards : ["V","X","?"],
+
+    cardsOf : function(playerOrEnvelopeCP){
+        var flavor = this._flavor;
+        var ifTrue = this.valuesOfCards[0];
+        var ifFalse = this.valuesOfCards[1];
+        var ifNone = this.valuesOfCards[2];
+
+        var t = [];
+        for( var i = 0 ; i < playerOrEnvelopeCP.tools.length ; i ++){
+            t.push({
+                name : flavor.toolNames[i],
+                value: playerOrEnvelopeCP.tools[i].valueAsString(ifTrue,ifFalse,ifNone)
+            });
+        }
+
+        var p = [];
+        for( var i = 0 ; i < playerOrEnvelopeCP.places.length ; i ++){
+            p.push({
+                name : flavor.placeNames[i],
+                value: playerOrEnvelopeCP.places[i].valueAsString(ifTrue,ifFalse,ifNone)
+            });
+        }
+
+        var c = [];
+        for( var i = 0 ; i < playerOrEnvelopeCP.characters.length ; i ++){
+            c.push({
+                name : flavor.characterNames[i],
+                value: playerOrEnvelopeCP.characters[i].valueAsString(ifTrue,ifFalse,ifNone)
+            });
+        }
+
+        
+        return {
+            tools: t,
+            places: p,
+            characters: c,
+            allCards : t.concat(p).concat(c)
+        };
+    },
+    
+    envelopeCards : function(){
+
+        var envelopeCP = this._envelopeCardsCP;
+        return this.cardsOf(envelopeCP);
     },
 
     playersFact : function(){
         var fs = this.facts();
         for( var i = 0 ; i < fs.length ; i++ ){
-            console.log(fs[i]);
-            console.log(PlayersFact.prototype);
             if( fs[i].factType() == PlayersFact.prototype.thisType ){
                 return fs[i];
             }
@@ -241,8 +282,8 @@ Cluedo.prototype = {
 
         // CARDS FOR PLAYERS AND ENVELOPE
         this._playerCardsCP = [];
-        for( var i = 0 ; i < numberOfPlayers ; i++ ){
-            var prefix = "Player" + i + "-";
+        for( var p = 0 ; p < numberOfPlayers ; p++ ){
+            var prefix = "p" + p + "-";
             this._playerCardsCP.push(createPlayerCards(prefix));
         }
         this._envelopeCardsCP = createPlayerCards("envelope-");
@@ -252,14 +293,15 @@ Cluedo.prototype = {
         for( var i = 0 ; i < allCards.length ; i++ ){
             var cpsOfCard = [];
             for( var p = 0 ; p < numberOfPlayers ; p++ ){
-                cpsOfCard.push(this._playerCardsCP[i].allCards[i]);
+                cpsOfCard.push(this._playerCardsCP[p].allCards[i]);
             }
             cpsOfCard.push(this._envelopeCardsCP.allCards[i]);
             var thisCardInOnePlace = CP.SomeTrue(cpsOfCard,1);
+            thisCardInOnePlace.remove(false);
             restrictions.push(thisCardInOnePlace);
         }
 
-        console.log(restrictions);
+
     }
     
 };

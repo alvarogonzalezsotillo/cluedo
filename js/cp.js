@@ -77,6 +77,18 @@ CPBase.prototype = {
         return this.name() + ":[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]";
     },
 
+    valueAsString : function(ifTrue,ifFalse,ifNone){
+        if( this.isTrue() ){
+            return ifTrue;
+        }
+        else if( this.isFalse() ){
+            return ifFalse;
+        }
+        else{
+            return ifNone;
+        }
+    },
+
     defined: function(){
         return (this.canBeTrue() && !this.canBeFalse()) || (!this.canBeTrue() && this.canBeFalse());
     },
