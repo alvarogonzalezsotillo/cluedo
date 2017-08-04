@@ -116,6 +116,21 @@ function test(){
 
         function(){
             var a = CP.Boolean("a");
+            var or = CP.Or([a]);
+            or.remove(false);
+            assert(a.isTrue());
+        },
+
+        function(){
+            var a = CP.Boolean("a");
+            var or = CP.Or([a]);
+            or.remove(true);
+            assert(a.isFalse());
+        },
+
+
+        function(){
+            var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
             var or = CP.Or([a,b,c]);
@@ -178,6 +193,34 @@ function test(){
             assert(d.isTrue());
         },
 
+
+        function(){
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var st = CP.SomeTrue([a,b],1);
+
+            st.remove(false);
+            a.remove(false);
+
+            assert(b.isFalse());
+        },
+
+        
+        function(){
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+            var d = CP.Boolean("d");
+            var st = CP.SomeTrue([a,b,c,d],1);
+
+            st.remove(false);
+            a.remove(false);
+
+            assert(b.isFalse());
+            assert(c.isFalse());
+            assert(d.isFalse());
+        },
+
         function(){
             var a = CP.Boolean("a");
             a.remove(true);
@@ -192,6 +235,7 @@ function test(){
         }
     ];
 
+    tests[15]();
 
     
     for( var i = 0 ; i < tests.length ; i++ ){

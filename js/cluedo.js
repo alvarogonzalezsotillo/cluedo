@@ -45,6 +45,14 @@ function CardsFact(factType,player,cards){
 }
 
 MixIn(CardsFact.prototype,Fact.prototype);
+MixIn(CardsFact.prototype,{
+    cards : function(){
+        return this._cards;
+    },
+    player: function(){
+        return this._player;
+    }
+});
 
 
 function PlayerHasSomeFact(player, cards ){
@@ -85,6 +93,15 @@ var CluedoFlavors = {
         }
         return -1;
 
+    },
+
+    allCards : function(flavor){
+        var allCards = flavor.toolNames.concat(flavor.placeNames).concat(flavor.characterNames);
+        return allCards;
+    },
+
+    allCardNumber : function(flavor,a){
+        return this.indexOf(a,this.allCards(flavor));
     },
 
     toolNumber : function(flavor,t){
@@ -187,7 +204,7 @@ Cluedo.prototype = {
         return ret;
     },
 
-    valuesOfCards : ["V","X","?"],
+    valuesOfCards : ["V","x","."],
 
     cardsOf : function(playerOrEnvelopeCP){
         var flavor = this._flavor;
@@ -250,13 +267,13 @@ Cluedo.prototype = {
         assert(playersF);
         var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
         var flavor = this._flavor;
-        var allCards = flavor.toolNames.concat(flavor.placeNames).concat(flavor.characterNames);
+        var allCards = CluedoFlavors.allCards(flavor);
 
         var totalCardsInGame = 3;
         for( var i = 0 ; i < playersF.numberOfCardsOrEachPlayer.length ; i++ ){
             totalCardsInGame += playersF.numberOfCardsOrEachPlayer[i];
         }
-        console.log("totalCardsingame:" + totalCardsInGame);
+
         assert(allCards.length == totalCardsInGame)
 
         var createArrayOfBooleans = function( prefix, nameArray ){
@@ -301,7 +318,52 @@ Cluedo.prototype = {
             restrictions.push(thisCardInOnePlace);
         }
 
+        // ENVELOPE HAS ONE CHARACTER, ONE TOOL AND ONE PLACE
+        var that = this;
+        (function(){
+            var cp = CP.SomeTrue(that._envelopeCardsCP.tools,1);
+            cp.remove(false);
+            restrictions.push(cp);
+            cp = CP.SomeTrue(that._envelopeCardsCP.characters,1);
+            cp.remove(false);
+            restrictions.push(cp);
+            cp = CP.SomeTrue(that._envelopeCardsCP.places,1);
+            cp.remove(false);
+            restrictions.push(cp);
+        })();
 
+        // HAS SOME
+        for( var i = 0 ; i < this.facts().length ; i++ ){
+            var f = this.facts()[i];
+            if( f.factType() == PlayerHasSomeFact.prototype.thisType ){
+                var cps = this.cpArrayFor(f.player(),f.cards());
+                var cp = CP.Or(cps);
+                cp.remove(false);
+                restrictions.push(cp);
+
+            }
+            if( f.factType() == PlayerDoesntHaveAnyFact.prototype.thisType ){
+                var cps = this.cpArrayFor(f.player(),f.cards());
+                var cp = CP.Not(CP.Or(cps));
+                cp.remove(false);
+                restrictions.push(cp);
+            }
+        }
+
+    },
+
+    cpFor : function(player,cardName){
+        var flavor = this._flavor;
+        var i = CluedoFlavors.allCardNumber(flavor,cardName);
+        return this._playerCardsCP[player].allCards[i];
+    },
+
+    cpArrayFor : function(player,cardNames){
+        var ret = [];
+        for( var i = 0 ; i < cardNames.length ; i++ ){
+            ret.push(this.cpFor(player,cardNames[i]));
+        }
+        return ret;
     }
     
 };

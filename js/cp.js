@@ -229,19 +229,32 @@ MixIn(CPNumberTrue.prototype, {
     },
 
     reduceObservedDomain: function(){
-        var cps = this.observed();
-        var log = function(){};
+        var log = function(s){/*console.log(s);*/};
 
         var s = this.status();
         var remainingTrues = this.number() - s.trues.length;
-        var possibleTrues = s.undefineds.length;
+        var possibleTruesOrFalses = s.undefineds.length;
+
+        log(this.name());
+        log(s)
+        log( "  remainigTrues:" + remainingTrues + "  possibleTruesorfalses:" + possibleTruesOrFalses );
         
         if( this.isTrue() ){
             assert( s.trues.length <= this.number() );
-            if( remainingTrues == possibleTrues ){
+            if( remainingTrues == possibleTruesOrFalses ){
                 log( this.name() + ": needed some more trues, the same as undefined");
                 for( var i = 0 ; i < s.undefineds.length ; i++ ){
                     s.undefineds[i].remove(false);
+                }
+                return true;
+            }
+
+            var cps = this.observed();
+            
+            if( s.trues.length == this.number()  ){
+                log( this.name() + ": all needed trues defined, the rest are falses" );
+                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                    s.undefineds[i].remove(true);
                 }
                 return true;
             }
@@ -249,7 +262,7 @@ MixIn(CPNumberTrue.prototype, {
 
         if( this.isFalse() ){
 
-            if( s.trues.length == this.number()-1 && possibleTrues == 1 ){
+            if( s.trues.length == this.number()-1 && possibleTruesOrFalses == 1 ){
                 log( this.name() + ": since I am false, at least one of my possible trues can not be true");
                 for( var i = 0 ; i < s.undefineds.length ; i++ ){
                     s.undefineds[i].remove(true);
@@ -313,8 +326,14 @@ var CP = {
     Boolean : function(name){
         return new CPBoolean(name);
     },
-    And : function(cps){
-        return new CPNumberTrue(cps,cps.length)
+    And : function(cps,number){
+        var ret =  new CPNumberTrue(cps,cps.length)
+        var names = "";
+        for( var i = 0 ; i < cps.length ; i++ ){
+            names += cps[i].name() + " ";
+        }
+        ret.name = function(){ return "And(" + names + ")"; };
+        return ret;
     },
     Not : function(cp){
         return new CPNot(cp);

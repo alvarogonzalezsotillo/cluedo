@@ -53,10 +53,26 @@ function printCards(playerCards,envelopeCards){
 }
 
 
+var flavor = CluedoFlavors.test;
+var characterNames = flavor.characterNames;
+var toolNames = flavor.toolNames;
+var placeNames = flavor.placeNames;
 
-var pf = new PlayersFact([2,2,2]);
+var facts = [
+    new PlayersFact([2,2,2]),
+    
+    new PlayerHasSomeFact(0,[characterNames[0]]),
+    new PlayerHasSomeFact(1,[characterNames[0],characterNames[1],characterNames[2]]),
+    new PlayerDoesntHaveAnyFact(1,[characterNames[1]]),
 
-var c = new Cluedo(CluedoFlavors.test,[pf]);
+    new PlayerDoesntHaveAnyFact(0,[toolNames[1],placeNames[1],characterNames[1]]),
+    new PlayerDoesntHaveAnyFact(1,[toolNames[1],placeNames[1],characterNames[1]]),
+    //new PlayerDoesntHaveAnyFact(2,[toolNames[1],placeNames[1],characterNames[1]]),
+    
+];
+
+
+var c = new Cluedo(flavor,facts);
 
 var playerCards = c.playerCards();
 var envelopeCards = c.envelopeCards();
