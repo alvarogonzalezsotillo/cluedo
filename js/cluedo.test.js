@@ -1,5 +1,5 @@
 
-
+// NECESARIO PARA NODE.JS, INNECESARIO EN UN NAVEGADOR
 if( require ){
     var cp = require("./cp");
     var common = require("./common");
@@ -13,7 +13,10 @@ if( require ){
     CluedoFlavors = cluedo.CluedoFlavors;
 }
 
-function pad(s,n){
+
+function printCards(playerCards,envelopeCards){
+
+    function pad(s,n){
     if( !n ){
         n = 20;
     }
@@ -23,13 +26,12 @@ function pad(s,n){
         s = s + " ";
     }
     return s;
-}
+    }
 
-function println(s){
-    console.log(s);
-}
+    function println(s){
+        console.log(s);
+    }
 
-function printCards(playerCards,envelopeCards){
     var nPlayers = playerCards.length;
     var nCards = playerCards[0].allCards.length;
 
@@ -61,14 +63,15 @@ var placeNames = flavor.placeNames;
 var facts = [
     new PlayersFact([2,2,2]),
     
-    new PlayerHasSomeFact(0,[characterNames[0]]),
-    new PlayerHasSomeFact(1,[characterNames[0],characterNames[1],characterNames[2]]),
-    new PlayerDoesntHaveAnyFact(1,[characterNames[1]]),
+    // new PlayerHasSomeFact(0,[characterNames[0]]),
+    // new PlayerHasSomeFact(1,[characterNames[0],characterNames[1],characterNames[2]]),
+    // new PlayerDoesntHaveAnyFact(1,[characterNames[1]]),
 
-    new PlayerDoesntHaveAnyFact(0,[toolNames[1],placeNames[1],characterNames[1]]),
-    new PlayerDoesntHaveAnyFact(1,[toolNames[1],placeNames[1],characterNames[1]]),
-    //new PlayerDoesntHaveAnyFact(2,[toolNames[1],placeNames[1],characterNames[1]]),
-    
+    // new PlayerDoesntHaveAnyFact(0,[toolNames[1],placeNames[1],characterNames[1]]),
+
+
+    new PlayerHasSomeFact(1,[characterNames[2]]),
+    new PlayerDoesntHaveAnyFact(1,[characterNames[2]]),
 ];
 
 
@@ -77,6 +80,18 @@ var c = new Cluedo(flavor,facts);
 var playerCards = c.playerCards();
 var envelopeCards = c.envelopeCards();
 
-console.log(envelopeCards);
+for( var i = 0 ; i < c._cps.length ; i++ ){
+    c._cps[i].describe();
+}
+
+
+
+printCards(playerCards,envelopeCards);
+
+for( var i = 0 ; i < c._cps.length ; i++ ){
+    c._cps[i].notified();
+}
+
+
 
 printCards(playerCards,envelopeCards);

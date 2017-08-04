@@ -332,12 +332,13 @@ Cluedo.prototype = {
             restrictions.push(cp);
         })();
 
-        // HAS SOME
+        // HAS SOME OR DOESNT HAVE ANY
         for( var i = 0 ; i < this.facts().length ; i++ ){
             var f = this.facts()[i];
             if( f.factType() == PlayerHasSomeFact.prototype.thisType ){
                 var cps = this.cpArrayFor(f.player(),f.cards());
                 var cp = CP.Or(cps);
+                cp.describe();
                 cp.remove(false);
                 restrictions.push(cp);
 
@@ -345,10 +346,13 @@ Cluedo.prototype = {
             if( f.factType() == PlayerDoesntHaveAnyFact.prototype.thisType ){
                 var cps = this.cpArrayFor(f.player(),f.cards());
                 var cp = CP.Not(CP.Or(cps));
+                cp.describe();
                 cp.remove(false);
                 restrictions.push(cp);
             }
         }
+
+        this._cps = restrictions;
 
     },
 

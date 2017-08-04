@@ -232,10 +232,40 @@ function test(){
                 return;
             }
             assert(false);
-        }
-    ];
+        },
 
-    tests[15]();
+        function(){
+            var a = CP.Boolean("a");
+            var st = CP.SomeTrue([a],1);
+            var nst = CP.Not(CP.SomeTrue([a],1));
+
+            st.remove(false);
+            try{
+                nst.remove(false);
+            }
+            catch(e){
+                return;
+            }
+            assert(false);
+        },
+
+        function(){
+            var a = CP.Boolean("a");
+            var st = CP.Or([a]);
+            var nst = CP.Not(CP.Or([a]));
+
+            st.remove(false);
+            try{
+                nst.remove(false);
+            }
+            catch(e){
+                return;
+            }
+            assert(false);
+        },
+
+        
+    ];
 
     
     for( var i = 0 ; i < tests.length ; i++ ){

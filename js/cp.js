@@ -40,6 +40,7 @@ CPBase.prototype = {
     notified: function(){
         this.reduceOwnDomain();
         this.reduceObservedDomain();
+        this.notifyContainers();
     },
 
     notifyIfEmptyDomain : function(){
@@ -132,6 +133,7 @@ function CPBoolean(name,observed){
     CPBase.call(this,name,observed);
     this._canBeTrue = true;
     this._canBeFalse = true;
+    this.notified();
 }
 
 
@@ -168,6 +170,8 @@ function CPNumberTrue(cps,number){
         names += " " + cps[i].name();
     }
     CPBoolean.call(this,"AreTrue(" + number + ")(" + names + ")", cps );
+    this.reduceOwnDomain();
+    this.reduceObservedDomain();
 }
 
 MixIn(CPNumberTrue.prototype,CPBoolean.prototype);
@@ -279,6 +283,8 @@ MixIn(CPNumberTrue.prototype, {
 function CPNot(cp){
     CPBase.call(this,"Not(" + cp.name() + ")", [cp] ); 
     this._cp = cp;
+    this.reduceOwnDomain();
+    this.reduceObservedDomain();
 }
 
 MixIn(CPNot.prototype,CPBase.prototype);
