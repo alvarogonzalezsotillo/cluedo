@@ -38,6 +38,19 @@ MixIn(PlayersFact.prototype,{
     }
 });
 
+function EnvelopeDoesntHaveFact(cards){
+    Fact.call(this,this.thisType);
+    this._cards = cards;
+}
+
+MixIn(EnvelopeDoesntHaveFact.prototype,Fact.prototype);
+MixIn(EnvelopeDoesntHaveFact.prototype,{
+    thisType : "EnvelopeDoesntHaveFact",
+    cards : function(){
+        return this._cards;
+    }
+});
+
 function CardsFact(factType,player,cards){
     Fact.call(this,factType);
     this._player = player;
@@ -80,10 +93,13 @@ function copyArray(a){
 var CluedoFlavors = {
 
     test: {
+        flavorName : "Para probar",
         characterNames : ["Orquídea","Pepa","Juan"],
         toolNames : ["Herramienta","Cuerda","Pistola"],
         placeNames : ["Sala de billar","Invernadero","Cocina"]
     },
+
+    flavors: [this.test],
 
     indexOf : function(s,array){
         for( var i = 0 ; i < array.length ; i++ ){
@@ -338,7 +354,6 @@ Cluedo.prototype = {
             if( f.factType() == PlayerHasSomeFact.prototype.thisType ){
                 var cps = this.cpArrayFor(f.player(),f.cards());
                 var cp = CP.Or(cps);
-                cp.describe();
                 cp.remove(false);
                 restrictions.push(cp);
 
@@ -346,7 +361,12 @@ Cluedo.prototype = {
             if( f.factType() == PlayerDoesntHaveAnyFact.prototype.thisType ){
                 var cps = this.cpArrayFor(f.player(),f.cards());
                 var cp = CP.Not(CP.Or(cps));
-                cp.describe();
+                cp.remove(false);
+                restrictions.push(cp);
+            }
+            if( f.factType() == EnvelopeDoesntHaveFact.prototype.thisType ){
+                var cps = this.cpArrayForEnvelope(f.cards());
+                var cp = CP.Not(CP.And(cps));
                 cp.remove(false);
                 restrictions.push(cp);
             }
@@ -362,14 +382,28 @@ Cluedo.prototype = {
         return this._playerCardsCP[player].allCards[i];
     },
 
+    cpForEnvelope : function(cardName){
+        var flavor = this._flavor;
+        var i = CluedoFlavors.allCardNumber(flavor,cardName);
+        return this._envelopeCardsCP.allCards[i];
+    },
+
     cpArrayFor : function(player,cardNames){
         var ret = [];
         for( var i = 0 ; i < cardNames.length ; i++ ){
             ret.push(this.cpFor(player,cardNames[i]));
         }
         return ret;
+    },
+
+    cpArrayForEnvelope : function(cardNames){
+        var ret = [];
+        for( var i = 0 ; i < cardNames.length ; i++ ){
+            ret.push(this.cpForEnvelope(cardNames[i]));
+        }
+        return ret;
     }
-    
+
 };
 
 
@@ -383,6 +417,7 @@ module.exports = {
     PlayersFact : PlayersFact,
     PlayerHasSomeFact : PlayerHasSomeFact,
     PlayerDoesntHaveAnyFact : PlayerDoesntHaveAnyFact,
+    EnvelopeDoesntHaveFact : EnvelopeDoesntHaveFact,
     CluedoFlavors : CluedoFlavors
 };
 

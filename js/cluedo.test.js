@@ -10,6 +10,7 @@ if( require ){
     PlayersFact = cluedo.PlayersFact;
     PlayerHasSomeFact = cluedo.PlayerHasSomeFact;
     PlayerDoesntHaveAnyFact = cluedo.PlayerDoesntHaveAnyFact;
+    EnvelopeDoesntHaveFact = cluedo.EnvelopeDoesntHaveFact;
     CluedoFlavors = cluedo.CluedoFlavors;
 }
 
@@ -17,15 +18,15 @@ if( require ){
 function printCards(playerCards,envelopeCards){
 
     function pad(s,n){
-    if( !n ){
-        n = 20;
-    }
-    s = "" + s;
-    
-    while(s.length < n){
-        s = s + " ";
-    }
-    return s;
+        if( !n ){
+            n = 20;
+        }
+        s = "" + s;
+        
+        while(s.length < n){
+            s = s + " ";
+        }
+        return s;
     }
 
     function println(s){
@@ -63,15 +64,18 @@ var placeNames = flavor.placeNames;
 var facts = [
     new PlayersFact([2,2,2]),
     
-    // new PlayerHasSomeFact(0,[characterNames[0]]),
-    // new PlayerHasSomeFact(1,[characterNames[0],characterNames[1],characterNames[2]]),
-    // new PlayerDoesntHaveAnyFact(1,[characterNames[1]]),
-
-    // new PlayerDoesntHaveAnyFact(0,[toolNames[1],placeNames[1],characterNames[1]]),
+    new PlayerHasSomeFact(0,[characterNames[0]]),
+    new PlayerHasSomeFact(1,[characterNames[0],characterNames[1],characterNames[2]]),
+    new PlayerDoesntHaveAnyFact(1,[characterNames[1]]),
 
 
-    new PlayerHasSomeFact(1,[characterNames[2]]),
-    new PlayerDoesntHaveAnyFact(1,[characterNames[2]]),
+    new PlayerHasSomeFact(1,[toolNames[0]]),
+
+    new PlayerDoesntHaveAnyFact(0,[placeNames[0]]),
+    new PlayerDoesntHaveAnyFact(1,[placeNames[0]]),
+    new PlayerDoesntHaveAnyFact(2,[placeNames[0]]),
+
+    new EnvelopeDoesntHaveFact([characterNames[1],toolNames[1],placeNames[0]])
 ];
 
 
@@ -79,19 +83,5 @@ var c = new Cluedo(flavor,facts);
 
 var playerCards = c.playerCards();
 var envelopeCards = c.envelopeCards();
-
-for( var i = 0 ; i < c._cps.length ; i++ ){
-    c._cps[i].describe();
-}
-
-
-
-printCards(playerCards,envelopeCards);
-
-for( var i = 0 ; i < c._cps.length ; i++ ){
-    c._cps[i].notified();
-}
-
-
 
 printCards(playerCards,envelopeCards);
