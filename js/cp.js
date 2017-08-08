@@ -8,48 +8,55 @@ if( require ){
 function CPManager(){
     this._cps = [];
     var self = this;
+    this._stackIndex = 0;
 
-    function concatenateNames(cps){
+}
+
+MixIn(CPManager.prototype, {
+
+    stackIndex : function(){
+        return this._stackIndex;
+    },
+    
+    concatenateNames : function(cps){
         var names = "";
         for( var i = 0 ; i < cps.length ; i++ ){
             names += cps[i].name() + " ";
         }
         return names;
-    }
+    },
 
-    MixIn(this, {
+    addCP : function(cp){
+        this._cps.push(cp);
+    },
+    
+    Boolean : function(name){
+        return new CPBoolean(this,name);
+    },
+    And : function(cps){
+        var ret =  this.SomeTrue(cps,cps.length);
+        var names = this.concatenateNames(cps);
+        ret.name = function(){ return "And(" + names + ")"; };
+        return ret;
+    },
+    Not : function(cp){
+        return new CPNot(this,cp);
+    },
+    SomeTrue : function(cps,number){
+        return new CPNumberTrue(this,cps,number);
+    },
+    Or : function(cps){
+        var negatedCPS = [];
+        var names = this.concatenateNames(cps);
+        for( var i = 0 ; i < cps.length ; i++ ){
+            negatedCPS.push( this.Not(cps[i]) );
+        }
+        var ret =  this.Not( this.And(negatedCPS) );
+        ret.name = function(){ return "Or(" + names + ")"; };
+        return ret;
+    },
+});
 
-        addCP : function(cp){
-            this._cps.push(cp);
-        },
-        
-        Boolean : function(name){
-            return new CPBoolean(self,name);
-        },
-        And : function(cps){
-            var ret =  self.SomeTrue(cps,cps.length);
-            var names = concatenateNames(cps);
-            ret.name = function(){ return "And(" + names + ")"; };
-            return ret;
-        },
-        Not : function(cp){
-            return new CPNot(self,cp);
-        },
-        SomeTrue : function(cps,number){
-            return new CPNumberTrue(self,cps,number);
-        },
-        Or : function(cps){
-            var negatedCPS = [];
-            var names = concatenateNames(cps);
-            for( var i = 0 ; i < cps.length ; i++ ){
-                negatedCPS.push( self.Not(cps[i]) );
-            }
-            var ret =  self.Not( self.And(negatedCPS) );
-            ret.name = function(){ return "Or(" + names + ")"; };
-            return ret;
-        },
-    });
-}
 
 
 function CPBase(manager,name, observed ){
@@ -73,7 +80,7 @@ function CPBase(manager,name, observed ){
 CPBase.prototype = {
 
     manager : function(){
-        return _manager;
+        return this._manager;
     },
     
     addContainer : function(d){
@@ -155,11 +162,11 @@ CPBase.prototype = {
     },
 
     canBeTrue: function(){
-        return this._canBeTrue;
+        assert(false);
     },
 
     canBeFalse: function(){
-        return this._canBeFalse;
+        assert(false);
     },
 
     isFalse: function(){
@@ -183,19 +190,28 @@ CPBase.prototype = {
 
 function CPBoolean(manager,name,observed){
     CPBase.call(this,manager,name,observed);
-    this._canBeTrue = true;
-    this._canBeFalse = true;
+    this._canBeTrue = [true];
+    this._canBeFalse = [true];
     this.notified();
 }
 
 
 MixIn(CPBoolean.prototype,CPBase.prototype);
 MixIn(CPBoolean.prototype,{
+
+    canBeTrue: function(){
+        return this._canBeTrue[this.manager().stackIndex()];
+    },
+
+    canBeFalse: function(){
+        return this._canBeFalse[this.manager().stackIndex()];
+    },
+
     remove: function(value){
         log( this.name() + ": remove:" + value );
         if( value && this._canBeTrue ){
             log( "  " + this.name() + ": remove: removed true");
-            this._canBeTrue = false;
+            this._canBeTrue[this.manager().stackIndex()] = false;
             this.reduceObservedDomain();
             this.notifyContainers();
             this.notifyIfEmptyDomain();
@@ -204,7 +220,7 @@ MixIn(CPBoolean.prototype,{
         
         if( !value && this._canBeFalse ){
             log( "  " + this.name() + ":  remove: removed false");
-            this._canBeFalse = false;
+            this._canBeFalse[this.manager().stackIndex()] = false;
             this.reduceObservedDomain();
             this.notifyContainers();
             this.notifyIfEmptyDomain();
