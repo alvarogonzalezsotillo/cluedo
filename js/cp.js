@@ -5,9 +5,55 @@ if( require ){
 }
 
 
+function CPManager(){
+    this._cps = [];
+    var self = this;
 
-function CPBase(name, observed ){
+    function concatenateNames(cps){
+        var names = "";
+        for( var i = 0 ; i < cps.length ; i++ ){
+            names += cps[i].name() + " ";
+        }
+        return names;
+    }
 
+    MixIn(this, {
+
+        addCP : function(cp){
+            this._cps.push(cp);
+        },
+        
+        Boolean : function(name){
+            return new CPBoolean(self,name);
+        },
+        And : function(cps){
+            var ret =  self.SomeTrue(cps,cps.length);
+            var names = concatenateNames(cps);
+            ret.name = function(){ return "And(" + names + ")"; };
+            return ret;
+        },
+        Not : function(cp){
+            return new CPNot(self,cp);
+        },
+        SomeTrue : function(cps,number){
+            return new CPNumberTrue(self,cps,number);
+        },
+        Or : function(cps){
+            var negatedCPS = [];
+            var names = concatenateNames(cps);
+            for( var i = 0 ; i < cps.length ; i++ ){
+                negatedCPS.push( self.Not(cps[i]) );
+            }
+            var ret =  self.Not( self.And(negatedCPS) );
+            ret.name = function(){ return "Or(" + names + ")"; };
+            return ret;
+        },
+    });
+}
+
+
+function CPBase(manager,name, observed ){
+    this._manager = manager;
     this._name =name;
     this._containers = [];
     this._observed = [];
@@ -18,12 +64,18 @@ function CPBase(name, observed ){
     for( var  i = 0 ; i < this._observed.length ; i++ ){
         this._observed[i].addContainer(this);
     }
+
+    manager.addCP(this);
 }
 
 
 
 CPBase.prototype = {
 
+    manager : function(){
+        return _manager;
+    },
+    
     addContainer : function(d){
         this._containers.push(d);
     },
@@ -129,8 +181,8 @@ CPBase.prototype = {
 
 };
 
-function CPBoolean(name,observed){
-    CPBase.call(this,name,observed);
+function CPBoolean(manager,name,observed){
+    CPBase.call(this,manager,name,observed);
     this._canBeTrue = true;
     this._canBeFalse = true;
     this.notified();
@@ -163,13 +215,13 @@ MixIn(CPBoolean.prototype,{
     },
 });
 
-function CPNumberTrue(cps,number){
+function CPNumberTrue(manager,cps,number){
     this._number = number;
     var names = "";
     for( var i = 0 ; i < cps.length ; i++ ){
         names += " " + cps[i].name();
     }
-    CPBoolean.call(this,"AreTrue(" + number + ")(" + names + ")", cps );
+    CPBoolean.call(this,manager,"AreTrue(" + number + ")(" + names + ")", cps );
     this.reduceOwnDomain();
     this.reduceObservedDomain();
 }
@@ -280,8 +332,8 @@ MixIn(CPNumberTrue.prototype, {
 });
 
 
-function CPNot(cp){
-    CPBase.call(this,"Not(" + cp.name() + ")", [cp] ); 
+function CPNot(manager,cp){
+    CPBase.call(this,manager,"Not(" + cp.name() + ")", [cp] ); 
     this._cp = cp;
     this.reduceOwnDomain();
     this.reduceObservedDomain();
@@ -328,37 +380,6 @@ MixIn(CPNot.prototype, {
 });
 
 
-var CP = {
-    Boolean : function(name){
-        return new CPBoolean(name);
-    },
-    And : function(cps,number){
-        var ret =  new CPNumberTrue(cps,cps.length)
-        var names = "";
-        for( var i = 0 ; i < cps.length ; i++ ){
-            names += cps[i].name() + " ";
-        }
-        ret.name = function(){ return "And(" + names + ")"; };
-        return ret;
-    },
-    Not : function(cp){
-        return new CPNot(cp);
-    },
-    SomeTrue : function(cps,number){
-        return new CPNumberTrue(cps,number);
-    },
-    Or : function(cps){
-        var negatedCPS = [];
-        var names = "";
-        for( var i = 0 ; i < cps.length ; i++ ){
-            negatedCPS.push( CP.Not(cps[i]) );
-            names += cps[i].name() + " ";
-        }
-        var ret =  CP.Not( CP.And(negatedCPS) );
-        ret.name = function(){ return "Or(" + names + ")"; };
-        return ret;
-    },
-};
 
 
 if( typeof module == "undefined" ){
@@ -366,6 +387,6 @@ if( typeof module == "undefined" ){
 }
 
 module.exports = {
-    CP: CP,
+    CPManager: CPManager,
 };
 

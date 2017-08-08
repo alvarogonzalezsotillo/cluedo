@@ -3,10 +3,11 @@
 if( require ){
     var cp = require("./cp");
     var common = require("./common");
-    CP = cp.CP;
+    CPManager = cp.CPManager;
     assert = common.assert;
 }
-    
+
+var CP = new CPManager();
 
 
 

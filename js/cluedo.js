@@ -4,7 +4,7 @@ if( require ){
     MixIn = common.MixIn;
     assert = common.assert;
     log = common.log;
-    CP = cp.CP;
+    CPManager = cp.CPManager;
 }
 
 
@@ -317,7 +317,7 @@ Cluedo.prototype = {
     },
 
     deduce: function(){
-        
+        var CP = new CPManager();
         var playersF = this.playersFact();
         assert(playersF);
         var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
@@ -331,7 +331,7 @@ Cluedo.prototype = {
 
         assert(allCards.length == totalCardsInGame)
 
-        var createArrayOfBooleans = function( prefix, nameArray ){
+        function createArrayOfBooleans( prefix, nameArray ){
             var ret = [];
             for( var i = 0 ; i < nameArray.length ; i++ ){
                 var cp = CP.Boolean(prefix + nameArray[i]);
@@ -340,7 +340,7 @@ Cluedo.prototype = {
             return ret;
         }
 
-        var createPlayerCards = function( prefix ){
+        function createPlayerCards( prefix ){
             var t = createArrayOfBooleans(prefix,flavor.toolNames);
             var p = createArrayOfBooleans(prefix,flavor.placeNames);
             var c = createArrayOfBooleans(prefix,flavor.characterNames);
