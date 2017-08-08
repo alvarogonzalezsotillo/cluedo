@@ -14,6 +14,22 @@ function CPManager(){
 
 MixIn(CPManager.prototype, {
 
+
+    pushScenario : function(){
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            this._cps[i].pushDomain();
+        }
+        this._stackIndex += 1;
+    },
+
+    popScenario : function(){
+        assert(this._stackIndex>1);
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            this._cps[i].popDomain();
+        }
+        this._stackIndex -= 1;
+    },
+
     stackIndex : function(){
         return this._stackIndex;
     },
@@ -78,7 +94,7 @@ function CPBase(manager,name, observed ){
 
 
 CPBase.prototype = {
-
+    
     manager : function(){
         return this._manager;
     },
@@ -198,6 +214,17 @@ function CPBoolean(manager,name,observed){
 
 MixIn(CPBoolean.prototype,CPBase.prototype);
 MixIn(CPBoolean.prototype,{
+
+    pushDomain : function(){
+        this._canBeTrue.push(this.canBeTrue());
+        this._canBeFalse.push(this.canBeFalse());
+    },
+
+    popDomain : function(){
+        assert(this._canBeTrue.length > 1);
+        this._canBeTrue.pop();
+        this._canBeFalse.pop();
+    },
 
     canBeTrue: function(){
         return this._canBeTrue[this.manager().stackIndex()];

@@ -1,4 +1,4 @@
 if( require ){
-    require("./cp.test");
+    require("./cp.simple.test");
     require("./cluedo.test");
 }
