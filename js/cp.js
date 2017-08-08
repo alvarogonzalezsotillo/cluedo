@@ -23,7 +23,7 @@ MixIn(CPManager.prototype, {
     },
 
     popScenario : function(){
-        assert(this._stackIndex>1);
+        assert(this._stackIndex>0);
         for( var i = 0 ; i < this._cps.length ; i++ ){
             this._cps[i].popDomain();
         }
@@ -95,6 +95,14 @@ function CPBase(manager,name, observed ){
 
 CPBase.prototype = {
     
+
+
+    pushDomain : function(){
+    },
+
+    popDomain : function(){
+    },
+
     manager : function(){
         return this._manager;
     },
