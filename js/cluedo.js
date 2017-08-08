@@ -15,6 +15,10 @@ function Fact(factType){
 MixIn(Fact.prototype,{
     factType : function(){
         return this._factType;
+    },
+
+    toString : function(){
+        return "Falta hacer el toString";
     }
 });
 
@@ -30,10 +34,7 @@ MixIn(PlayersFact.prototype,{
     thisType : "PlayersFact",
     
     toString : function(){
-        var ret =  this.numberOfCardsOrEachPlayer.length + " players (cards:";
-        for( var i = 0 ; i < this.numberOfCardsOrEachPlayer.length ; i++ ){
-            ret += this.numberOfCardsOrEachPlayer[i] + " ";
-        }
+        var ret =  "Hay " + this.numberOfCardsOrEachPlayer.length + " jugadores. Su número de cartas es:" + JSON.stringify(this.numberOfCardsOrEachPlayer);
         return ret;
     }
 });
@@ -48,7 +49,13 @@ MixIn(EnvelopeDoesntHaveFact.prototype,{
     thisType : "EnvelopeDoesntHaveFact",
     cards : function(){
         return this._cards;
+    },
+    toString : function(){
+        var ret =  "El sobre no tiene estas cartas: " + JSON.stringify(this.cards());
+        return ret;
     }
+
+    
 });
 
 function CardsFact(factType,player,cards){
@@ -74,6 +81,11 @@ function PlayerHasSomeFact(player, cards ){
 MixIn(PlayerHasSomeFact.prototype,CardsFact.prototype);
 MixIn(PlayerHasSomeFact.prototype,{
     thisType : "PlayerHasSomeFact",
+
+    toString : function(){
+        var ret =  "El jugador " + this.player() + " tiene alguna de estas cartas: " + JSON.stringify(this.cards());
+        return ret;
+    }
 });
 
 
@@ -83,6 +95,10 @@ function PlayerDoesntHaveAnyFact(player, cards ){
 MixIn(PlayerDoesntHaveAnyFact.prototype,CardsFact.prototype);
 MixIn(PlayerDoesntHaveAnyFact.prototype,{
     thisType : "PlayerDoesntHaveAnyFact",
+    toString : function(){
+        var ret =  "El jugador " + this.player() + " no tiene ninguna de estas cartas: " + JSON.stringify(this.cards());
+        return ret;
+    }
 });
 
 
@@ -99,8 +115,31 @@ var CluedoFlavors = {
         placeNames : ["Sala de billar","Invernadero","Cocina"]
     },
 
-    flavors: [this.test],
+    cluedoConOrquidea : {
+        flavorName : "El gran juego de detectives (con Orquídea)",
+        characterNames : ["Amapola", "Celeste", "Orquídea", "Prado", "Mora", "Rubio"],
+        toolNames : ["Candelabro", "Tubería", "Cuerda", "Puñal", "Pistola", "Herramienta"],
+        placeNames : ["Sala de billar", "Salón", "Estudio", "Comedor", "Sala de baile", "Cocina", "Biblioteca", "Invernadero", "Vestíbulo"]
+    },
 
+    flavors: [this.test, this.cluedoConOrquidea],
+
+    defaultPlayerCardsForFlavor : function(players,flavor){
+        var cards = this.allCards(flavor).length;
+        var pc = cards - 3;
+        var c = pc / players;
+        var ret = [];
+        for( var i = 0 ; i < players ; i++ ){
+            ret.push(c);
+        }
+
+        for( var i = 0 ; i < pc - c*players ; i++ ){
+            ret[i] += 1;
+        }
+
+        return ret;
+    },
+    
     indexOf : function(s,array){
         for( var i = 0 ; i < array.length ; i++ ){
             if( array[i] == s ){
@@ -315,14 +354,21 @@ Cluedo.prototype = {
 
         // CARDS FOR PLAYERS AND ENVELOPE
         this._playerCardsCP = [];
+        var restrictions = [];
         for( var p = 0 ; p < numberOfPlayers ; p++ ){
             var prefix = "p" + p + "-";
             this._playerCardsCP.push(createPlayerCards(prefix));
         }
         this._envelopeCardsCP = createPlayerCards("envelope-");
 
+        // EACH PLAYER HAS HIS NUMBER OF CARDS
+        for( var p = 0 ; p < numberOfPlayers ; p++ ){
+            var cp = CP.SomeTrue(this._playerCardsCP[p].allCards,playersF.numberOfCardsOrEachPlayer[p]);
+            cp.remove(false);
+            restrictions.push(cp);
+        }
+
         // EACH CARD CAN BE ONLY IN ONE PLACE
-        var restrictions = [];
         for( var i = 0 ; i < allCards.length ; i++ ){
             var cpsOfCard = [];
             for( var p = 0 ; p < numberOfPlayers ; p++ ){
