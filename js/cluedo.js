@@ -1,4 +1,4 @@
-if( require ){
+if( typeof require != "undefined" ){
     var common = require("./common");
     var cp = require("./cp");
     MixIn = common.MixIn;
@@ -122,7 +122,9 @@ var CluedoFlavors = {
         placeNames : ["Sala de billar", "Salón", "Estudio", "Comedor", "Sala de baile", "Cocina", "Biblioteca", "Invernadero", "Vestíbulo"]
     },
 
-    flavors: [this.test, this.cluedoConOrquidea],
+    flavors: function(){
+        return [this.test, this.cluedoConOrquidea];
+    }
 
     defaultPlayerCardsForFlavor : function(players,flavor){
         var cards = this.allCards(flavor).length;
@@ -270,7 +272,7 @@ Cluedo.prototype = {
         var t = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.tools.length ; i ++){
             t.push({
-                name : flavor.toolNames[i],
+                name : ""+flavor.toolNames[i],
                 value: playerOrEnvelopeCP.tools[i].valueAsString(ifTrue,ifFalse,ifNone)
             });
         }
@@ -278,7 +280,7 @@ Cluedo.prototype = {
         var p = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.places.length ; i ++){
             p.push({
-                name : flavor.placeNames[i],
+                name : ""+flavor.placeNames[i],
                 value: playerOrEnvelopeCP.places[i].valueAsString(ifTrue,ifFalse,ifNone)
             });
         }
@@ -286,7 +288,7 @@ Cluedo.prototype = {
         var c = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.characters.length ; i ++){
             c.push({
-                name : flavor.characterNames[i],
+                name : ""+flavor.characterNames[i],
                 value: playerOrEnvelopeCP.characters[i].valueAsString(ifTrue,ifFalse,ifNone)
             });
         }
@@ -419,6 +421,25 @@ Cluedo.prototype = {
         }
 
         this._cps = restrictions;
+
+    },
+
+    improveWithTrial : function(){
+/*
+   0 1 2 e
+a  x . . x  
+b  x . . x
+c  . . . x
+d  v x x x
+e  x v x x
+f  x x v x
+   . . . .
+
+wether a1 or a2, c0 is true
+
+*/
+
+
 
     },
 

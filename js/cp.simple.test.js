@@ -1,6 +1,6 @@
 
 
-if( require ){
+if( typeof require != "undefined"){
     var cp = require("./cp");
     var common = require("./common");
     CPManager = cp.CPManager;

@@ -1,6 +1,6 @@
 
 // NECESARIO PARA NODE.JS, INNECESARIO EN UN NAVEGADOR
-if( require ){
+if( typeof require != "undefined"){
     var cp = require("./cp");
     var common = require("./common");
     var cluedo = require("./cluedo");

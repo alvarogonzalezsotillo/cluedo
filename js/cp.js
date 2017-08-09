@@ -1,4 +1,4 @@
-if( require ){
+if( typeof require != "undefined" ){
     var common = require("./common");
     MixIn = common.MixIn;
     log = common.log;
