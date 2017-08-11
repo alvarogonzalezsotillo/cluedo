@@ -1,13 +1,14 @@
 
 
-if( typeof require != "undefined"){
+if( typeof require != "undefined32"){
     var cp = require("./cp");
     var common = require("./common");
     CPManager = cp.CPManager;
     assert = common.assert;
+    describe = common.describe;
+
 }
 
-var CP = new CPManager();
 
 
 
@@ -15,6 +16,7 @@ function test(){
 
     var tests = [
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var notA = CP.Not(a);
 
@@ -26,6 +28,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var notA = CP.Not(a);
 
@@ -35,6 +38,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var andAB = CP.And([a,b]);
@@ -46,6 +50,7 @@ function test(){
 
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var andAB = CP.And([a,b]);
@@ -58,6 +63,7 @@ function test(){
 
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
 
@@ -70,6 +76,7 @@ function test(){
 
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
 
@@ -82,6 +89,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
 
@@ -94,6 +102,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
@@ -105,6 +114,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
@@ -116,6 +126,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var or = CP.Or([a]);
             or.remove(false);
@@ -123,6 +134,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var or = CP.Or([a]);
             or.remove(true);
@@ -131,6 +143,7 @@ function test(){
 
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
@@ -146,6 +159,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
@@ -164,12 +178,13 @@ function test(){
 
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
             var d = CP.Boolean("d");
             var st = CP.SomeTrue([a,b,c,d],2);
-        
+            
             a.remove(true);
             b.remove(true);
             c.remove(false);
@@ -180,6 +195,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
@@ -196,6 +212,7 @@ function test(){
 
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var st = CP.SomeTrue([a,b],1);
@@ -208,6 +225,7 @@ function test(){
 
         
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
@@ -223,6 +241,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             a.remove(true);
             try{
@@ -236,6 +255,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var st = CP.SomeTrue([a],1);
             var nst = CP.Not(CP.SomeTrue([a],1));
@@ -251,6 +271,7 @@ function test(){
         },
 
         function(){
+            var CP = new CPManager();
             var a = CP.Boolean("a");
             var st = CP.Or([a]);
             var nst = CP.Not(CP.Or([a]));
@@ -271,7 +292,12 @@ function test(){
     
     for( var i = 0 ; i < tests.length ; i++ ){
         console.log( "----- Test " + i );
-        tests[i]();
+        try{
+            tests[i]();
+        }
+        catch(e){
+            console.log(e.stack);
+        }
     }
     
     

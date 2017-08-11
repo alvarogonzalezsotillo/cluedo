@@ -58,6 +58,27 @@ MixIn(EnvelopeDoesntHaveFact.prototype,{
     
 });
 
+
+function EnvelopeHasFact(cards){
+    Fact.call(this,this.thisType);
+    this._cards = cards;
+}
+
+MixIn(EnvelopeHasFact.prototype,Fact.prototype);
+MixIn(EnvelopeHasFact.prototype,{
+    thisType : "EnvelopeHasFact",
+    cards : function(){
+        return this._cards;
+    },
+    toString : function(){
+        var ret =  "El sobre tiene estas cartas: " + JSON.stringify(this.cards());
+        return ret;
+    }
+
+    
+});
+
+
 function CardsFact(factType,player,cards){
     Fact.call(this,factType);
     this._player = player;
@@ -124,7 +145,7 @@ var CluedoFlavors = {
 
     flavors: function(){
         return [this.test, this.cluedoConOrquidea];
-    }
+    },
 
     defaultPlayerCardsForFlavor : function(players,flavor){
         var cards = this.allCards(flavor).length;
@@ -308,6 +329,13 @@ Cluedo.prototype = {
         return this.cardsOf(envelopeCP);
     },
 
+    cards : function(){
+        return {
+            playerCards : this.playerCards(),
+            envelopeCards : this.envelopeCards()
+        };
+    },
+
     playersFact : function(){
         var fs = this.facts();
         for( var i = 0 ; i < fs.length ; i++ ){
@@ -418,9 +446,16 @@ Cluedo.prototype = {
                 cp.remove(false);
                 restrictions.push(cp);
             }
+            if( f.factType() == EnvelopeHasFact.prototype.thisType ){
+                var cps = this.cpArrayForEnvelope(f.cards());
+                var cp = CP.And(cps);
+                cp.remove(false);
+                restrictions.push(cp);
+            }
         }
 
         this._cps = restrictions;
+        this._cpManager = CP;
 
     },
 
@@ -439,10 +474,219 @@ wether a1 or a2, c0 is true
 
 */
 
+        var self = this;
+        var ifTrue = this.valuesOfCards[0];
+        var ifFalse = this.valuesOfCards[1];
+        var ifNone = this.valuesOfCards[2];
+        var allCards = CluedoFlavors.allCards(this._flavor);
+        var println = function(){};
+        
+        
+        function createBooleansArray(){
+            var playersF = self.playersFact();
+            assert(playersF);
+            var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
 
+            var ret = [];
+            for( var c = 0 ; c < allCards.length ; c++ ){
+                var booleansOfThisCard = [];
+                for( var p = 0 ; p < numberOfPlayers ; p++ ){
+                    booleansOfThisCard.push(self._playerCardsCP[p].allCards[c]);
+                }
+                booleansOfThisCard.push(self._envelopeCardsCP.allCards[c]);
+                ret.push(booleansOfThisCard);
+            }
+            return ret;
+        }
+
+
+
+        function removeDefinedCardsOfState(s){
+            for( var p = 0 ; p < s.playerCards.length ; p++ ){
+                for( var c = 0 ; c < s.playerCards[p].allCards.length ; c++ ){
+                    if( s.playerCards[p].allCards[c].value != ifNone ){
+                        s.playerCards[p].allCards[c].value = undefined;
+                    }
+                }
+            }
+            for( var c = 0 ; c < s.envelopeCards.allCards.length ; c++ ){
+                if( s.envelopeCards.allCards[c].value != ifNone ){
+                    s.envelopeCards.allCards[c].value = undefined;
+                }
+            }
+        }
+
+        function removeDiferrentOfState(src,dst){
+            for( var p = 0 ; p < src.playerCards.length ; p++ ){
+                for( var c = 0 ; c < src.playerCards[p].allCards.length ; c++ ){
+                    if( src.playerCards[p].allCards[c].value != dst.playerCards[p].allCards[c].value ){
+                        dst.playerCards[p].allCards[c].value = undefined;
+                    }
+                }
+            }
+            for( var c = 0 ; c < src.envelopeCards.allCards.length ; c++ ){
+                if( src.envelopeCards.allCards[c].value != dst.envelopeCards.allCards[c].value ){
+                    dst.envelopeCards.allCards[c].value = undefined;
+                }
+            }
+        }
+
+        function fixBooleansInEveryScenario(state){
+            var ret = [];
+            for( var p = 0 ; p < state.playerCards.length ; p++ ){
+                for( var c = 0 ; c < state.playerCards[p].allCards.length ; c++ ){
+                    var value = state.playerCards[p].allCards[c].value; 
+                    if( value == ifTrue || value == ifFalse ){
+                        console.log("Found boolean in every state:" + state.playerCards[p].allCards[c].name + " :" + value );
+                        if( value == ifTrue ){
+                            this._playerCardsCP[p].allCards[c].remove(false);
+                            ret.push( new PlayerDoesntHaveAnyFact(p,allCards[c]));
+                        }
+                        if( value == ifFalse ){
+                            this._playerCardsCP[p].allCards[c].remove(true);
+                            ret.push( new PlayerHasSomeFact(p,allCards[c]));
+                        }
+                    }
+                }
+            }
+            for( var c = 0 ; c < state.envelopeCards.allCards.length ; c++ ){
+                var value = state.envelopeCards.allCards[c].value; 
+
+                if( value == ifTrue || value == ifFalse ){
+                    console.log("Found boolean in every state:" + state.envelopeCards.allCards[c].name + " :" + value );
+                        if( value == ifTrue ){
+                            this._envelopeCardsCP.allCards[c].remove(false);
+                            ret.push( new EnvelopeDoesntHaveFact(p,allCards[c]));
+                        }
+                        if( value == ifFalse ){
+                            this._envelopeCardsCP.allCards[c].remove(true);
+                            ret.push( new EnvelopeHasFact(p,allCards[c]));
+                        }
+                }
+            }
+            return ret;
+            
+        }
+
+        var booleansOfCards = createBooleansArray();
+
+        println( "ORIGINAL STATE");
+        this.printCards(this.cards(),println);
+
+        var CP = this._cpManager;
+        var failed = false;
+
+        var impossibleHandler = function(cp){
+            println("************* IMPOSSIBLE: " + cp.name() );
+            failed = true;
+        };
+
+        var ret = [];
+        
+        CP.setEmptyDomainHandler(impossibleHandler);
+        
+        for( var c = 0 ; c < booleansOfCards.length ; c++ ){
+            var state = undefined;
+
+
+            var boolsOfCard = booleansOfCards[c];
+            for( b = 0 ; b < boolsOfCard.length ; b++ ){
+
+                failed = false;
+                
+                if( !boolsOfCard[b].defined() ){
+
+
+                    if( typeof state == "undefined" ){
+                        // STATE IS LAZY
+                        state = this.cards();
+                        removeDefinedCardsOfState(state);
+
+                        println( "ORIGINAL STATE WITHOUT DEFINED FOR CARD:" + state.envelopeCards.allCards[c].name);
+                        this.printCards(state,println);
+                    }
+                    
+                    CP.pushScenario();
+                    boolsOfCard[b].remove(false);
+                    var newState = this.cards();
+                    CP.popScenario();
+
+                    if( failed ){
+                        println( "DETECTED IMPOSSIBILITY:" + boolsOfCard[b].name() );
+                        var newCP = new PlayerDoesntHaveAnyFact(b,[allCards[c]]);
+                        println( newCP );
+                        boolsOfCard[b].remove(true);
+                        ret.push( newCP );
+                        this.printCards(this.cards(), function(s){ println("    " + s ); });
+                    }
+
+                    
+
+                    println( "NEW STATE");
+                    this.printCards(newState,println);
+                    
+                    removeDiferrentOfState(state,newState);
+                    state = newState;
+
+                    println( "NEW STATE WITH DIFFERRENTS REMOVED");
+                    this.printCards(state,println);
+                }
+            }
+
+            if( typeof state != "undefined" ){
+                ret.concat( fixBooleansInEveryScenario(state) );
+            }
+        }
+
+        return ret;
+        
+    },
+
+    printCards : function (cards,println){
+
+        function pad(s,n){
+            if( !n ){
+                n = 20;
+            }
+            s = "" + s;
+            
+            while(s.length < n){
+                s = s + " ";
+            }
+            return s;
+        }
+
+        if( !println ){
+            println = function(s){
+                console.log(s);
+            };
+        }
+
+        var playerCards = cards.playerCards;
+        var envelopeCards = cards.envelopeCards;
+        var nPlayers = playerCards.length;
+        var nCards = playerCards[0].allCards.length;
+
+        var s = pad("");
+        for( var p = 0 ; p < nPlayers ; p++ ){
+            s += pad("Player " + p);
+        }
+        s += pad("Envelope");
+        println(s);
+
+        
+        for( var c = 0 ; c < nCards ; c++ ){
+            var s = pad(playerCards[0].allCards[c].name);
+            for( var p = 0 ; p < nPlayers ; p++ ){
+                s += pad(playerCards[p].allCards[c].value);
+            }
+            s += pad(envelopeCards.allCards[c].value);
+            println(s);
+        }
 
     },
 
+    
     cpFor : function(player,cardName){
         var flavor = this._flavor;
         var i = CluedoFlavors.allCardNumber(flavor,cardName);

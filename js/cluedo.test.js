@@ -15,54 +15,15 @@ if( typeof require != "undefined"){
 }
 
 
-function printCards(playerCards,envelopeCards){
-
-    function pad(s,n){
-        if( !n ){
-            n = 20;
-        }
-        s = "" + s;
-        
-        while(s.length < n){
-            s = s + " ";
-        }
-        return s;
-    }
-
-    function println(s){
-        console.log(s);
-    }
-
-    var nPlayers = playerCards.length;
-    var nCards = playerCards[0].allCards.length;
-
-    var s = pad("");
-    for( var p = 0 ; p < nPlayers ; p++ ){
-        s += pad("Player " + p);
-    }
-    s += pad("Envelope");
-    println(s);
-
-    
-    for( var c = 0 ; c < nCards ; c++ ){
-        var s = pad(playerCards[0].allCards[c].name);
-        for( var p = 0 ; p < nPlayers ; p++ ){
-            s += pad(playerCards[p].allCards[c].value);
-        }
-        s += pad(envelopeCards.allCards[c].value);
-        println(s);
-    }
-
-}
 
 
-var flavor = CluedoFlavors.cluedoConOrquidea;
+var flavor = CluedoFlavors.test;
 var characterNames = flavor.characterNames;
 var toolNames = flavor.toolNames;
 var placeNames = flavor.placeNames;
 
 
-var factsT = [
+var facts = [
     new PlayersFact( CluedoFlavors.defaultPlayerCardsForFlavor(3,flavor)),
     
     new PlayerHasSomeFact(0,[characterNames[0]]),
@@ -79,7 +40,7 @@ var factsT = [
     new EnvelopeDoesntHaveFact([characterNames[1],toolNames[1],placeNames[0]])
 ];
 
-var facts = [
+var factsA = [
     new PlayersFact( [6,6,6] ),
     new PlayerHasSomeFact(0,["Herramienta"]),
     new PlayerHasSomeFact(0,["Sala de billar"]),
@@ -141,10 +102,15 @@ for( var i = 1 ; i <= facts.length ; i++ ){
 
     var c = new Cluedo(flavor,fs);
 
-    var playerCards = c.playerCards();
-    var envelopeCards = c.envelopeCards();
+    c.printCards(c.cards());
+    
+    var improved = c.improveWithTrial();
+    if( improved.length ){
+        console.log( "Hechos deducidos:" + JSON.stringify(improved));
+        c.printCards(c.cards());
 
-    printCards(playerCards,envelopeCards);
+    }
+    
 
 }
 

@@ -9,11 +9,25 @@ function CPManager(){
     this._cps = [];
     var self = this;
     this._stackIndex = 0;
-
+    this.setEmptyDomainHandler( this.defaultEmptyDomainHandler );
 }
 
 MixIn(CPManager.prototype, {
 
+
+    defaultEmptyDomainHandler : function(cp){
+        var error = new Error(cp.name() + " has empty domain");
+        error.cp = cp;
+        throw error;
+    },
+
+    setEmptyDomainHandler : function(h){
+        this._emptyDomainHandler = h;
+    },
+
+    notifyEmptyDomain : function(cp){
+        this._emptyDomainHandler(cp);
+    },
 
     pushScenario : function(){
         for( var i = 0 ; i < this._cps.length ; i++ ){
@@ -128,9 +142,7 @@ CPBase.prototype = {
 
     notifyIfEmptyDomain : function(){
         if( this.impossible() ){
-            var error = new Error(this.name() + " has empty domain");
-            error.cp = this;
-            throw error;
+            this.manager().notifyEmptyDomain(this);
         }
     },
 

@@ -16,7 +16,10 @@ function log(s){
 }
 
 function describe(o){
-    console.log( "describe:" + o );
+    if( typeof o == "undefined" ){
+        console.log( "describe:" + undefined );
+    }
+    console.log( "describe:" );
     for( i in o ){
         console.log( "  " + i + ":" + o[i] );
     }
@@ -30,5 +33,5 @@ module.exports = {
     MixIn: MixIn,
     assert : assert,
     log : log,
-    describe : describe
+    describe : describe,
 };
