@@ -556,7 +556,7 @@ wether a1 or a2, c0 is true
                     console.log("Found boolean in every state:" + state.envelopeCards.allCards[c].name + " :" + value );
                         if( value == ifTrue ){
                             this._envelopeCardsCP.allCards[c].remove(false);
-                            ret.push( new EnvelopeDoesntHaveFact(p,allCards[c]));
+                            ret.push( new EnvelopeDoesntHaveFact(allCards[c]));
                         }
                         if( value == ifFalse ){
                             this._envelopeCardsCP.allCards[c].remove(true);
@@ -613,7 +613,13 @@ wether a1 or a2, c0 is true
 
                     if( failed ){
                         println( "DETECTED IMPOSSIBILITY:" + boolsOfCard[b].name() );
-                        var newCP = new PlayerDoesntHaveAnyFact(b,[allCards[c]]);
+                        var newCP;
+                        if( b < boolsOfCard.length-1 ){
+                            newCP = new PlayerDoesntHaveAnyFact(b,[allCards[c]]);
+                        }
+                        else{
+                            newCP =  new EnvelopeDoesntHaveFact([allCards[c]]);
+                        }
                         println( newCP );
                         boolsOfCard[b].remove(true);
                         ret.push( newCP );

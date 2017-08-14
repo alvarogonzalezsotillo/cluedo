@@ -17,13 +17,13 @@ if( typeof require != "undefined"){
 
 
 
-var flavor = CluedoFlavors.test;
+var flavor = CluedoFlavors.cluedoConOrquidea;
 var characterNames = flavor.characterNames;
 var toolNames = flavor.toolNames;
 var placeNames = flavor.placeNames;
 
 
-var facts = [
+var factsT = [
     new PlayersFact( CluedoFlavors.defaultPlayerCardsForFlavor(3,flavor)),
     
     new PlayerHasSomeFact(0,[characterNames[0]]),
@@ -38,6 +38,66 @@ var facts = [
     new PlayerDoesntHaveAnyFact(2,[placeNames[0]]),
 
     new EnvelopeDoesntHaveFact([characterNames[1],toolNames[1],placeNames[0]])
+];
+
+
+var facts = [
+    new PlayersFact( [4,4,4,3,3] ),
+    new PlayerHasSomeFact(0,["Herramienta"]),
+    new PlayerHasSomeFact(0,["Candelabro"]),
+    new PlayerHasSomeFact(0,["Amapola"]),
+    new PlayerHasSomeFact(0,["Biblioteca"]),
+    
+
+    new PlayerDoesntHaveAnyFact(3,["Sala de billar","Puñal","Rubio"]),
+    
+
+    new PlayerHasSomeFact(2,["Sala de billar","Puñal","Rubio"]),
+
+    
+    new PlayerHasSomeFact(2,["Puñal"]),
+
+    new PlayerHasSomeFact( 1, ["Rubio"] ),
+
+    
+    new PlayerDoesntHaveAnyFact( 1, ["Amapola", "Biblioteca", "Pistola" ] ),
+
+
+    new PlayerDoesntHaveAnyFact(3, ["Pistola", "Mora", "Sala de billar" ] ),
+
+    new PlayerHasSomeFact(2, ["Pistola", "Mora", "Sala de billar" ] ), 
+
+
+    new PlayerDoesntHaveAnyFact( 3, ["Sala de baile", "Cuerda", "Mora" ]),
+    new PlayerHasSomeFact( 2, ["Sala de baile", "Cuerda", "Mora" ] ),
+
+    new PlayerDoesntHaveAnyFact(  4 ,  ["Sala de baile", "Mora", "Candelabro" ] ),
+    new PlayerDoesntHaveAnyFact(  3 ,  ["Sala de baile", "Mora", "Candelabro" ] ),
+    new PlayerHasSomeFact( 2, ["Sala de baile"] ),
+
+        new PlayerHasSomeFact( 4, ["Prado", "Pistola", "Invernadero" ] ),
+
+
+    new PlayerDoesntHaveAnyFact(  1 ,  ["Vestíbulo", "Cuerda", "Prado" ] ),
+    new PlayerDoesntHaveAnyFact(  3 ,  ["Vestíbulo", "Cuerda", "Prado" ] ),
+    new PlayerDoesntHaveAnyFact(  4 ,  ["Vestíbulo", "Cuerda", "Prado" ] ),
+
+
+    new PlayerDoesntHaveAnyFact(  2 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+    new PlayerDoesntHaveAnyFact(  1 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+    new PlayerDoesntHaveAnyFact(  0 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+    new PlayerDoesntHaveAnyFact(  4 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+
+    new PlayerDoesntHaveAnyFact(  3 ,  ["Tubería", "Cocina", "Celeste" ] ),
+
+    new PlayerHasSomeFact(  2 ,  ["Tubería", "Cocina", "Celeste" ] ),
+
+    
+    new PlayerHasSomeFact(  4 ,  ["Pistola" ] ),
+
+
+
+    new PlayerHasSomeFact(  2, ["Salón", "Prado", "Tubería" ] ),
 ];
 
 var factsA = [
@@ -93,7 +153,7 @@ var factsA = [
 
 ];
 
-for( var i = 1 ; i <= facts.length ; i++ ){
+for( var i = facts.length ; i <= facts.length ; i++ ){
 
     var f = facts[i-1];
     console.log("\n-----------------------------------------------------------------");
