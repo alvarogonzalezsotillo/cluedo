@@ -459,6 +459,109 @@ Cluedo.prototype = {
 
     },
 
+    createBooleansArray :    function(){
+        var playersF = this.playersFact();
+        assert(playersF);
+        var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
+        var allCards = CluedoFlavors.allCards(this._flavor);
+
+        var ret = [];
+        for( var c = 0 ; c < allCards.length ; c++ ){
+            var booleansOfThisCard = [];
+            for( var p = 0 ; p < numberOfPlayers ; p++ ){
+                booleansOfThisCard.push(this._playerCardsCP[p].allCards[c]);
+            }
+            booleansOfThisCard.push(this._envelopeCardsCP.allCards[c]);
+            ret.push(booleansOfThisCard);
+        }
+        return ret;
+    },
+
+    
+    improveByGuessing : function(){
+        var self = this;
+        var allCards = CluedoFlavors.allCards(this._flavor);
+        var println = function(){};
+
+
+        var booleansOfCards = this.createBooleansArray();
+
+        println( "ORIGINAL STATE");
+        this.printCards(this.cards(),println);
+
+        var CP = this._cpManager;
+        var failed = false;
+
+        var impossibleHandler = function(cp){
+            println("************* IMPOSSIBLE: " + cp.toString() );
+            var failedState = self.cards();
+            self.printCards(failedState,function(s){println("   *** IMPOSIBLE ***" + s)});
+            failed = true;
+        };
+
+        var ret = [];
+        
+        CP.setEmptyDomainHandler(impossibleHandler);
+        
+        for( var c = 0 ; c < booleansOfCards.length ; c++ ){
+
+            var boolsOfCard = booleansOfCards[c];
+            for( b = 0 ; b < boolsOfCard.length ; b++ ){
+
+                
+                if( !boolsOfCard[b].defined() ){
+
+
+                    // REMOVE FALSE
+                    failed = false;
+                    CP.pushScenario();
+                    boolsOfCard[b].remove(false);
+                    CP.popScenario();
+
+                    if( failed ){
+                        println( "DETECTED IMPOSSIBILITY REMOVING FALSE:" + boolsOfCard[b].name() );
+                        var newCP;
+                        if( b < boolsOfCard.length-1 ){
+                            newCP = new PlayerDoesntHaveAnyFact(b,[allCards[c]]);
+                        }
+                        else{
+                            newCP =  new EnvelopeDoesntHaveFact([allCards[c]]);
+                        }
+                        println( newCP );
+                        boolsOfCard[b].remove(true);
+                        ret.push( newCP );
+                        this.printCards(this.cards(), function(s){ println("    " + s ); });
+                    }
+
+                    // REMOVE TRUE
+                    failed = false;
+                    CP.pushScenario();
+                    boolsOfCard[b].remove(true);
+                    CP.popScenario();
+
+                    if( failed ){
+                        println( "DETECTED IMPOSSIBILITY REMOVING TRUE:" + boolsOfCard[b].name() );
+                        var newCP;
+                        if( b < boolsOfCard.length-1 ){
+                            newCP = new PlayerHasSomeFact(b,[allCards[c]]);
+                        }
+                        else{
+                            newCP =  new EnvelopeHasFact([allCards[c]]);
+                        }
+                        println( newCP );
+                        boolsOfCard[b].remove(false);
+                        ret.push( newCP );
+                        this.printCards(this.cards(), function(s){ println("    " + s ); });
+                    }
+
+                }
+            }
+        }
+
+        return ret;
+
+    },
+    
     improveWithTrial : function(){
 /*
    0 1 2 e
@@ -482,22 +585,6 @@ wether a1 or a2, c0 is true
         var println = function(){};
         
         
-        function createBooleansArray(){
-            var playersF = self.playersFact();
-            assert(playersF);
-            var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
-
-            var ret = [];
-            for( var c = 0 ; c < allCards.length ; c++ ){
-                var booleansOfThisCard = [];
-                for( var p = 0 ; p < numberOfPlayers ; p++ ){
-                    booleansOfThisCard.push(self._playerCardsCP[p].allCards[c]);
-                }
-                booleansOfThisCard.push(self._envelopeCardsCP.allCards[c]);
-                ret.push(booleansOfThisCard);
-            }
-            return ret;
-        }
 
 
 
@@ -568,7 +655,7 @@ wether a1 or a2, c0 is true
             
         }
 
-        var booleansOfCards = createBooleansArray();
+        var booleansOfCards = this.createBooleansArray();
 
         println( "ORIGINAL STATE");
         this.printCards(this.cards(),println);
@@ -577,7 +664,12 @@ wether a1 or a2, c0 is true
         var failed = false;
 
         var impossibleHandler = function(cp){
-            println("************* IMPOSSIBLE: " + cp.name() );
+            println("************* IMPOSSIBLE: " + cp.toString() );
+
+            var failedState = self.cards();
+            self.printCards(failedState,function(s){println("   *** IMPOSIBLE ***" + s)});
+            
+
             failed = true;
         };
 
@@ -675,18 +767,18 @@ wether a1 or a2, c0 is true
 
         var s = pad("");
         for( var p = 0 ; p < nPlayers ; p++ ){
-            s += pad("Player " + p);
+            s += pad("Player " + p,10);
         }
-        s += pad("Envelope");
+        s += pad("Envelope",10);
         println(s);
 
         
         for( var c = 0 ; c < nCards ; c++ ){
             var s = pad(playerCards[0].allCards[c].name);
             for( var p = 0 ; p < nPlayers ; p++ ){
-                s += pad(playerCards[p].allCards[c].value);
+                s += pad(playerCards[p].allCards[c].value,10);
             }
-            s += pad(envelopeCards.allCards[c].value);
+            s += pad(envelopeCards.allCards[c].value,10);
             println(s);
         }
 

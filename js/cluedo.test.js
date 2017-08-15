@@ -153,10 +153,15 @@ var factsA = [
 
 ];
 
-for( var i = facts.length ; i <= facts.length ; i++ ){
+for( var i = 1 ; i <= facts.length ; i++ ){
 
-    var f = facts[i-1];
     console.log("\n-----------------------------------------------------------------");
+
+    for( var j = 0 ; j < i-1 ; j++ ){
+        console.log( facts[j].toString() );
+    }
+    
+    var f = facts[i-1];
     console.log( "Nueva pista:" + f.toString() );
     var fs = facts.slice(0,i);
 
@@ -164,7 +169,7 @@ for( var i = facts.length ; i <= facts.length ; i++ ){
 
     c.printCards(c.cards());
     
-    var improved = c.improveWithTrial();
+    var improved = c.improveByGuessing();
     if( improved.length ){
         console.log( "Hechos deducidos:" + JSON.stringify(improved));
         c.printCards(c.cards());
