@@ -41,7 +41,7 @@ var factsT = [
 ];
 
 
-var facts = [
+var factsA = [
     new PlayersFact( [4,4,4,3,3] ),
     new PlayerHasSomeFact(0,["Herramienta"]),
     new PlayerHasSomeFact(0,["Candelabro"]),
@@ -100,7 +100,7 @@ var facts = [
     new PlayerHasSomeFact(  2, ["Salón", "Prado", "Tubería" ] ),
 ];
 
-var factsA = [
+var factsB = [
     new PlayersFact( [6,6,6] ),
     new PlayerHasSomeFact(0,["Herramienta"]),
     new PlayerHasSomeFact(0,["Sala de billar"]),
@@ -152,6 +152,9 @@ var factsA = [
     new PlayerHasSomeFact(2,["Invernadero","Tubería","Celeste"]),
 
 ];
+
+
+var facts = factsB;
 
 for( var i = 1 ; i <= facts.length ; i++ ){
 
