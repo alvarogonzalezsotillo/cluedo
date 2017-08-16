@@ -8,30 +8,58 @@ if( typeof require != "undefined" ){
 }
 
 
-function CPBacktrack(cps,foundCallback){
+function CPBacktrack(cps,foundCallback,fromIndex){
     var CP = cps[0].manager();
 
-    function firstUndefined(){
-        for( var i = 0 ; i < cps.length ; i++ ){
-            if( !cps[i].defined() ){
-                return cps[i];
+    if( !fromIndex ){
+        index = -1;
+    }
+    
+    function firstUndefinedIndexFrom(j){
+        if( !j ){
+            j = 0;
+        }
+        for(  ; j < cps.length ; j++ ){
+            if( !cps[j].defined() ){
+                return j;
             }
         }
-        return undefined;
+        return -1;
     }
 
-    function tryRemoving(cp,b){
+    function tryRemoving(i,b){
+        var cp = cps[i];
+        console.log( "Probando a quitar:" + b + " de:" + cp.toString() );
         CP.pushScenario();
         cp.remove(b);
-        if( !firstUndefined() ){
+        if( firstUndefinedIndexFrom() == -1 ){
+            console.log("callback");
             foundCallback(cps);
         }
-        cp.popScenario();
+        CPBacktrack(cps, foundCallback, i);
+        CP.popScenario();
     }
 
-    for( var cp = firstUndefined() ; cp ; cp = firstUndefined() ){
-        tryRemoving(cp,true);
-        tryRemoving(cp,false);
+    for( var i = firstUndefinedIndexFrom(fromIndex) ; i != -1 ; i = firstUndefinedIndexFrom(i+1) ){
+        tryRemoving(i,true);
+        tryRemoving(i,false);
     }
     
 }
+
+var CP = new CPManager();
+var a = CP.Boolean("a");
+var b = CP.Boolean("b");
+var c = CP.Boolean("c");
+
+function describeAll(cps){
+    for( var i = 0 ;  i < cps.length ; i++ ){
+        cps[i].describe();
+    }
+}
+
+CPBacktrack( [a,b,c], function(cps){
+    console.log("********** STATE FOUND")
+    describeAll(cps);
+});
+

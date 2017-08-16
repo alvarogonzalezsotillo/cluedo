@@ -5,6 +5,10 @@ if( typeof require != "undefined"){
     var common = require("./common");
     CPManager = cp.CPManager;
     assert = common.assert;
+
+    var cpb = require("./cp.backtrack");
+    CPBacktrack = cpb.CPBacktrack;
+
 }
 
 
@@ -53,6 +57,7 @@ function test(){
             assert(!b.defined());
             assert(c.isFalse());
         },
+
 
         
     ];

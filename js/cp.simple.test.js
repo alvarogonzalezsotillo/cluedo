@@ -2,6 +2,7 @@
 
 if( typeof require != "undefined32"){
     var cp = require("./cp");
+
     var common = require("./common");
     CPManager = cp.CPManager;
     assert = common.assert;
