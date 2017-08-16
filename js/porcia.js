@@ -14,12 +14,13 @@ var retratoEnPlomo = CP.Boolean("enPlomo");
 var inscripcionOro = CP.Boolean("El retrato está en el cofre oro");
 var inscripcionPlata = CP.Boolean("El retrato no está en el cofre plata");
 var inscripcionPlomo = CP.Boolean("El retrato no está en el cofre oro");
-var inscripciones = [inscripcionOro,inscripcionPlata,inscripcionPlomo];
 
 
-CP.IfThen( inscripcionOro, retratoEnOro ).remove(false);
-CP.IfThen( inscripcionPlata, CP.Not(retratoEnPlata) ).remove(false);
-CP.IfThen( inscripcionPlomo, CP.Not(retratoEnOro ) ).remove(false);
+var inscripciones = [
+    CP.IfThen( inscripcionOro, retratoEnOro ),
+    CP.IfThen( inscripcionPlata, CP.Not(retratoEnPlata) ),
+    CP.IfThen( inscripcionPlomo, CP.Not(retratoEnOro ) )
+];
 
 var soloUnRetrato = CP.SomeTrue([retratoEnOro,retratoEnPlata,retratoEnPlomo],1);
 soloUnRetrato.remove(false);
@@ -34,8 +35,9 @@ var println = function(s){console.log("** " + s )};
 retratoEnOro.describe(println);
 retratoEnPlata.describe(println);
 retratoEnPlomo.describe(println);
-comoMuchoUnaInscripcionVerdad.describe(println);
-
+inscripcionOro.describe(println);
+inscripcionPlata.describe(println);
+inscripcionPlomo.describe(println);
 
 
 
