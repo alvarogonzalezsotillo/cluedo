@@ -286,7 +286,55 @@ function test(){
             assert(false);
         },
 
-        
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+
+            var ifthen = CP.IfThen(a,b);
+            ifthen.remove(false);
+            a.remove(false);
+
+            assert(b.isTrue());
+        },
+
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+
+            var ifthen = CP.IfThen(a,b);
+            ifthen.remove(false);
+            b.remove(true);
+
+            assert(a.isFalse());
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+
+            var ifthen = CP.IfThen(a,b);
+            ifthen.remove(false);
+            b.remove(false);
+
+            assert(!a.defined());
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+
+            var ifthen = CP.IfThen(a,b);
+            ifthen.remove(false);
+            a.remove(true);
+
+            assert(!b.defined());
+        },
+
     ];
 
     

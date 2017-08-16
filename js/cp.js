@@ -1,6 +1,7 @@
 if( typeof require != "undefined" ){
     var common = require("./common");
     MixIn = common.MixIn;
+    assert = common.assert;
     log = common.log;
 }
 
@@ -85,6 +86,24 @@ MixIn(CPManager.prototype, {
         ret.name = function(){ return "Or(" + names + ")"; };
         return ret;
     },
+    IfThen : function(cpIf, cpThen){
+        // f f t
+        // f t t
+        // t f f
+        // t t t
+
+        var ret = this.Not( this.And( [cpIf, this.Not(cpThen)] ) );
+        ret.name = function(){ return "If(" + cpIf.name() + ")Then(" + cpThen.name() + ")"; };
+        return ret;
+    },
+
+    describe : function(println){
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            var cp = this._cps[i];
+            cp.describe(println);
+        }
+
+    }
 });
 
 
@@ -146,22 +165,25 @@ CPBase.prototype = {
         }
     },
 
-    describe : function(level){
+    describe : function(println,level){
 
-        var log = console.log;
+        if( !println ){
+            println = console.log;
+        }
+        
         if( !level ){
             level = 0;
-            log( "DESCRIBE: " + this.name() );
+            println( "DESCRIBE: " + this.name() );
         }
         
         var s = "";
         for( var i = 0 ; i < level ; i++ ){
             s += "  ";
         }
-        log( s + this.toString() );
+        println( s + this.toString() );
 
         for( var i = 0; i < this.observed().length ; i++ ){
-            this.observed()[i].describe(level+1);
+            this.observed()[i].describe(println,level+1);
         }
     },
 
