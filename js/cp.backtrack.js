@@ -10,7 +10,13 @@ if( typeof require != "undefined" ){
 
 function CPBacktrack(cps,foundCallback,fromIndex){
     var CP = cps[0].manager();
-
+    CP.setEmptyDomainHandler(failedCallback);
+    var failed = false;
+    
+    function failedCallback(){
+        failed = true;
+    }
+    
     if( !fromIndex ){
         index = -1;
     }
@@ -29,14 +35,15 @@ function CPBacktrack(cps,foundCallback,fromIndex){
 
     function tryRemoving(i,b){
         var cp = cps[i];
-        console.log( "Probando a quitar:" + b + " de:" + cp.toString() );
         CP.pushScenario();
+        failed = false;
         cp.remove(b);
         if( firstUndefinedIndexFrom() == -1 ){
-            console.log("callback");
             foundCallback(cps);
         }
-        CPBacktrack(cps, foundCallback, i);
+        if( !failed ){
+            CPBacktrack(cps, foundCallback, i);
+        }
         CP.popScenario();
     }
 
@@ -51,6 +58,7 @@ var CP = new CPManager();
 var a = CP.Boolean("a");
 var b = CP.Boolean("b");
 var c = CP.Boolean("c");
+CP.And([a,b]).remove(false);
 
 function describeAll(cps){
     for( var i = 0 ;  i < cps.length ; i++ ){
