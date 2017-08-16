@@ -8,7 +8,7 @@ if( typeof require != "undefined" ){
 }
 
 
-function backtrack(cps,foundCallback){
+function CPBacktrack(cps,foundCallback){
     var CP = cps[0].manager();
 
     function firstUndefined(){
@@ -27,7 +27,6 @@ function backtrack(cps,foundCallback){
             foundCallback(cps);
         }
         cp.popScenario();
-        
     }
 
     for( var cp = firstUndefined() ; cp ; cp = firstUndefined() ){
