@@ -11,10 +11,19 @@ if( typeof require != "undefined" ){
 function CPBacktrack(cps,foundCallback,fromIndex){
     var CP = cps[0].manager();
     CP.setEmptyDomainHandler(failedCallback);
-    var failed = false;
+    var self = this;
+    self._failed = false;
+
+
+    function setFailed(b){
+        log("setFailed:" + b );
+        self._failed = b;
+    };
     
-    function failedCallback(){
-        failed = true;
+    function failedCallback(cp){
+        log("----------- failed:" + cp.name() );
+        setFailed(true);
+        log("-----------   así que failed:" + self._failed );
     }
     
     if( !fromIndex ){
@@ -34,40 +43,44 @@ function CPBacktrack(cps,foundCallback,fromIndex){
     }
 
     function tryRemoving(i,b){
+
+        log( "tryRemoving:" + i + "  " + b );
+        for( var j = 0 ; j < cps.length ; j++ ){
+            log( cps[j].toString() );
+        }
+        
         var cp = cps[i];
         CP.pushScenario();
-        failed = false;
+        setFailed(false);
         cp.remove(b);
-        if( firstUndefinedIndexFrom() == -1 ){
-            foundCallback(cps);
-        }
-        if( !failed ){
-            CPBacktrack(cps, foundCallback, i);
+        if( !self._failed ){
+            if( firstUndefinedIndexFrom() == -1 ){
+                foundCallback(cps);
+            }
+            else{
+                CPBacktrack(cps, foundCallback, i);
+            }
         }
         CP.popScenario();
     }
 
-    for( var i = firstUndefinedIndexFrom(fromIndex) ; i != -1 ; i = firstUndefinedIndexFrom(i+1) ){
+    var i = firstUndefinedIndexFrom(fromIndex);
+    if( i != -1 ){
         tryRemoving(i,true);
         tryRemoving(i,false);
     }
-    
 }
 
-var CP = new CPManager();
-var a = CP.Boolean("a");
-var b = CP.Boolean("b");
-var c = CP.Boolean("c");
-CP.And([a,b]).remove(false);
-
-function describeAll(cps){
-    for( var i = 0 ;  i < cps.length ; i++ ){
-        cps[i].describe();
-    }
+if( typeof module == "undefined" ){
+    module = {};
 }
 
-CPBacktrack( [a,b,c], function(cps){
-    console.log("********** STATE FOUND")
-    describeAll(cps);
-});
+module.exports = {
+    CPBacktrack: CPBacktrack,
+};
+
+
+
+
+
 

@@ -15,6 +15,18 @@ function CPManager(){
 
 MixIn(CPManager.prototype, {
 
+    checkIfFailed : function(){
+        for( var i = 0 ; i < this.cps().length ; i++ ){
+            if( this.cps()[i].impossible() ){
+                return true;
+            }
+        }
+        return false;
+    },
+    
+    cps: function(){
+        return this._cps;
+    },
 
     defaultEmptyDomainHandler : function(cp){
         var error = new Error(cp.name() + " has empty domain");
@@ -27,6 +39,7 @@ MixIn(CPManager.prototype, {
     },
 
     notifyEmptyDomain : function(cp){
+        log( "------ emptyDomain:" + cp.toString() );
         this._emptyDomainHandler(cp);
     },
 
@@ -135,7 +148,15 @@ function CPBase(manager,name, observed ){
 
 
 CPBase.prototype = {
+
+    asTrue : function(){
+        this.remove(false);
+        return this;
+    },
     
+    rename : function(name){
+        return this.manager().Rename(this,name);
+    },
 
 
     pushDomain : function(){
@@ -162,9 +183,12 @@ CPBase.prototype = {
     },
 
     notified: function(){
-        this.reduceOwnDomain();
-        this.reduceObservedDomain();
-        this.notifyContainers();
+        var own = this.reduceOwnDomain();
+        var obs = this.reduceObservedDomain();
+        log( "obs:" + obs +  "  own:" + own + "  --- " + this.name() );
+        if( own ){
+            this.notifyContainers();
+        }
     },
 
     notifyIfEmptyDomain : function(){
@@ -181,7 +205,6 @@ CPBase.prototype = {
         
         if( !level ){
             level = 0;
-            println( "DESCRIBE: " + this.name() );
         }
         
         var s = "";
@@ -200,7 +223,7 @@ CPBase.prototype = {
     },
     
     toString: function(){
-        return this.name() + ":[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]";
+        return "[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]:" + this.name();
     },
 
     valueAsString : function(ifTrue,ifFalse,ifNone){
@@ -286,24 +309,24 @@ MixIn(CPBoolean.prototype,{
 
     remove: function(value){
         log( this.name() + ": remove:" + value );
-        if( value && this._canBeTrue ){
+        if( value && this.canBeTrue() ){
             log( "  " + this.name() + ": remove: removed true");
             this._canBeTrue[this.manager().stackIndex()] = false;
+            this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
             this.notifyContainers();
-            this.notifyIfEmptyDomain();
             return true;
         }
         
-        if( !value && this._canBeFalse ){
+        if( !value && this.canBeFalse() ){
             log( "  " + this.name() + ":  remove: removed false");
             this._canBeFalse[this.manager().stackIndex()] = false;
+            this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
             this.notifyContainers();
-            this.notifyIfEmptyDomain();
             return true;
         }
-        
+
         return false;
     },
 });
@@ -363,16 +386,18 @@ MixIn(CPNumberTrue.prototype, {
         var ret = false;
         
         if( s.trues.length > this.number() ){
-            log( "  " + this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
-            ret |= this.remove(true);
+            ret = ret || this.remove(true);
+            log( ret + "  " + this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
+
         }
         else if( s.falses.length > cps.length - this.number() ){
-            log( "  " + this.name() + ": falses.length:" + s.falses.length + ": more false than expected" );
-            ret |= this.remove(true);
+            ret = ret || this.remove(true);
+            log( ret + "  " + this.name() + ": falses.length:" + s.falses.length + ": more false than expected" );
         }
         else if( s.falses.length  + s.trues.length == cps.length ){
-            log( "  " + this.name() + ": all defined and number correct" );
-            ret |= this.remove(false);
+            ret = ret || this.remove(false);
+            log( ret + "  " + this.name() + ": all defined and number correct" );
+
         }
         return ret;
     },
@@ -426,7 +451,7 @@ MixIn(CPNumberTrue.prototype, {
 
 function CPIdentity(manager,cp,name){
     name = name || "Identity(" + cp.name() + ")";
-    CPBase.call(this,manager,"Not(" + cp.name() + ")", [cp] ); 
+    CPBase.call(this,manager,name, [cp] ); 
     this._cp = cp;
     this.reduceOwnDomain();
     this.reduceObservedDomain();
@@ -460,6 +485,7 @@ MixIn(CPIdentity.prototype, {
         if( ret ){
             this.notifyContainers();
         }
+        return ret;
     },
 
     notified: function(){
@@ -507,6 +533,7 @@ MixIn(CPNot.prototype, {
         if( ret ){
             this.notifyContainers();
         }
+        return ret;
     },
 
     notified: function(){

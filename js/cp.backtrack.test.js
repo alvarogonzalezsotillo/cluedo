@@ -59,6 +59,32 @@ function test(){
         },
 
 
+        function (){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+            var d = CP.Boolean("d");
+            CP.And([a,b]).asTrue();
+            CP.Or([c,d]).asTrue();
+            var count = 0;
+
+            function describeAll(cps){
+                for( var i = 0 ;  i < cps.length ; i++ ){
+                    cps[i].describe(log);
+                }
+            }
+
+            CPBacktrack( [a,b,c,d], function(cps){
+                log("********** STATE FOUND")
+                describeAll(cps);
+                count += 1;
+            });
+
+            assert(count==3);
+        },
+
+
         
     ];
 
