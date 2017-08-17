@@ -91,8 +91,18 @@ MixIn(CPManager.prototype, {
     Identity : function(cp,name){
         return new CPIdentity(this,cp,name);
     },
-    SomeTrue : function(cps,number){
-        return new CPNumberTrue(this,cps,number);
+    SomeTrue : function(cps,numberMin,numberMax){
+        numberMax = numberMax || numberMin;
+        if( numberMax == numberMin ){
+            return new CPNumberTrue(this,cps,numberMin);
+        }
+        else{
+            var rets = [];
+            for( var i = numberMin ; i <= numberMax ; i++ ){
+                rets.push( new CPNumberTrue(this,cps,i) );
+            }
+            return new CPNumberTrue(this,rets,1);
+        }
     },
     Or : function(cps){
         var negatedCPS = [];
