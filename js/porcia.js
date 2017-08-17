@@ -118,8 +118,6 @@ function porciaIII(){
 
     var orihundo = [inscripcionPlata2,inscripcionOro2];
     CP.SomeTrue(orihundo,0,1).asTrue().rename( "Orihundo de solo un sitio" );
-          
-
 
     CP.Iff( CP.Not(retratoEnOro), inscripcionOro1 ).asTrue().rename("La inscripcion oro1 es verdad");
     CP.Iff( CP.Not(retratoEnOro), inscripcionPlata1 ).asTrue().rename("La inscripción plata1 es verdad");
@@ -146,9 +144,75 @@ function porciaIII(){
     });
 }
 
-porciaI();
-porciaII();
-porciaIII();
+function porciaIV(){
+
+    function unaCajaDos_unaCajaUna_unaCajaNinguna(cajaOro,cajaPlata,cajaOro){
+    
+        function cero_una_dos(cp1,cp2,cp3){
+            return CP.And( [
+                CP.SomeTrue(cp1,0),
+                CP.SomeTrue(cp2,1),
+                CP.SomeTrue(cp3,2)] );
+        }
+        
+        
+        CP.Or([
+            cero_una_dos(cajaOro,cajaPlata,cajaPlomo),
+            cero_una_dos(cajaOro,cajaPlomo,cajaPlata),
+            cero_una_dos(cajaPlata,cajaOro,cajaPlomo),
+            cero_una_dos(cajaPlata,cajaPlomo,cajaOro),
+            cero_una_dos(cajaPlomo,cajaOro,cajaPlata),
+            cero_una_dos(cajaPlomo,cajaPlata,cajaOro)]).asTrue().rename("Una caja dos una caja una una caja ninguna");
+    }
+
+        var CP = new CPManager();
+
+    var retratoEnOro = CP.Boolean("enOro");
+    var retratoEnPlata = CP.Boolean("enPlata");
+    var retratoEnPlomo = CP.Boolean("enPlomo");
+    CP.SomeTrue([retratoEnOro,retratoEnPlata,retratoEnPlomo],1).
+        rename("Solo un retrato en total").
+        asTrue();
+
+    var inscripcionOro1 = CP.Boolean("No está en oro");
+    var inscripcionOro2 = CP.Boolean("Está en plata");
+    var inscripcionPlata1 = CP.Boolean("No está en oro");
+    var inscripcionPlata2 = CP.Boolean("Está en plomo");
+    var inscripcionPlomo1 = CP.Boolean("No está en plomo");
+    var inscripcionPlomo2 = CP.Boolean("Está en oro");
+
+    var cajaOro = [inscripcionOro1,inscripcionOro2];
+    var cajaPlata = [inscripcionPlata1,inscripcionPlata2];
+    var cajaPlomo = [inscripcionPlomo1,inscripcionPlomo2];
+    unaCajaDos_unaCajaUna_unaCajaNinguna(cajaOro,cajaPlata,cajaOro);
+
+
+    CP.Iff( CP.Not(retratoEnOro), inscripcionOro1 ).asTrue().rename("La inscripcion oro1 es verdad");
+    CP.Iff( CP.Not(retratoEnPlata), inscripcionOro2 ).asTrue().rename("La inscripcion oro2 es verdad");
+    CP.Iff( CP.Not(retratoEnOro), inscripcionPlata1 ).asTrue().rename("La inscripción plata1 es verdad");
+    CP.Iff( CP.Not(retratoEnPlomo), inscripcionPlata2 ).asTrue().rename("La inscripción plata2 es verdad");
+    CP.Iff( CP.Not(retratoEnPlomo), inscripcionPlomo1 ).asTrue().rename("La inscripción plomo1 es verdad");
+    CP.Iff( retratoEnOro, inscripcionPlomo2 ).asTrue().rename("La inscripción plomo2 es verdad");
+
+    var cps = [retratoEnOro,retratoEnPlata,retratoEnPlomo];
+    CPBacktrack(cps, function(cps){
+
+        
+        var println = function(s){console.log("** " + s )};
+        println( "************************************");
+
+        //cps = CP.cps();
+        for( var i = 0 ; i < cps.length ; i++ ){
+            println( cps[i].toString() );
+        }
+    });
+
+}
+
+// porciaI();
+// porciaII();
+// porciaIII();
+porciaIV();
 
 
 
