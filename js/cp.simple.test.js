@@ -336,6 +336,32 @@ function test(){
             assert(!b.defined());
         },
 
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var i = CP.Rename(a,"otro nombre");
+            i.remove(false);
+            assert(a.isTrue());
+        },
+
+        function(){
+            var CP = new CPManager();
+            var aReal = CP.Boolean("a");
+            var a = CP.Rename(aReal,"a cambiado");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+            var d = CP.Boolean("d");
+            var st = CP.SomeTrue([a,b,c,d],1);
+
+            st.remove(false);
+            a.remove(false);
+
+            assert(b.isFalse());
+            assert(c.isFalse());
+            assert(d.isFalse());
+        },
+
+
     ];
 
     

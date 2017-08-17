@@ -73,6 +73,12 @@ MixIn(CPManager.prototype, {
     Not : function(cp){
         return new CPNot(this,cp);
     },
+    Rename : function(cp,name){
+        return this.Identity(cp,name); 
+    },
+    Identity : function(cp,name){
+        return new CPIdentity(this,cp,name);
+    },
     SomeTrue : function(cps,number){
         return new CPNumberTrue(this,cps,number);
     },
@@ -416,6 +422,53 @@ MixIn(CPNumberTrue.prototype, {
     }
 });
 
+function CPIdentity(manager,cp,name){
+    name = name || "Identity(" + cp.name() + ")";
+    CPBase.call(this,manager,"Not(" + cp.name() + ")", [cp] ); 
+    this._cp = cp;
+    this.reduceOwnDomain();
+    this.reduceObservedDomain();
+}
+
+MixIn(CPIdentity.prototype,CPBase.prototype);
+MixIn(CPIdentity.prototype, {
+    
+    defined: function(){
+        return this._cp.defined();
+    },
+
+    canBeTrue: function(){
+        return this._cp.canBeTrue();
+    },
+
+    canBeFalse: function(){
+        return this._cp.canBeFalse();
+    },
+
+    remove: function(value){
+        var changed = this._cp.remove(value);
+        if( changed ){
+            this.notifyContainers();
+        }
+        return changed;
+    },
+
+    reduceOwnDomain: function(){
+        var ret = this._cp.reduceOwnDomain();
+        if( ret ){
+            this.notifyContainers();
+        }
+    },
+
+    notified: function(){
+        this.notifyContainers();
+    },
+
+    reduceObservedDomain: function(){
+        return this._cp.reduceObservedDomain();
+    },
+
+});
 
 function CPNot(manager,cp){
     CPBase.call(this,manager,"Not(" + cp.name() + ")", [cp] ); 
