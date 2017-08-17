@@ -424,7 +424,7 @@ MixIn(CPNumberTrue.prototype, {
         log( "  remainigTrues:" + remainingTrues + "  possibleTruesorfalses:" + possibleTruesOrFalses );
         
         if( this.isTrue() ){
-            assert( s.trues.length <= this.number() );
+            //assert( s.trues.length <= this.number() );
             if( remainingTrues == possibleTruesOrFalses ){
                 log( this.name() + ": needed some more trues, the same as undefined");
                 for( var i = 0 ; i < s.undefineds.length ; i++ ){

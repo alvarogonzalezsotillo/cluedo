@@ -156,13 +156,13 @@ function porciaIV(){
         }
         
         
-        CP.Or([
+        CP.SomeTrue([
             cero_una_dos(cajaOro,cajaPlata,cajaPlomo),
             cero_una_dos(cajaOro,cajaPlomo,cajaPlata),
             cero_una_dos(cajaPlata,cajaOro,cajaPlomo),
             cero_una_dos(cajaPlata,cajaPlomo,cajaOro),
             cero_una_dos(cajaPlomo,cajaOro,cajaPlata),
-            cero_una_dos(cajaPlomo,cajaPlata,cajaOro)]).asTrue().rename("Una caja dos una caja una una caja ninguna");
+            cero_una_dos(cajaPlomo,cajaPlata,cajaOro)], 1).asTrue().rename("Una caja dos una caja una una caja ninguna");
     }
 
         var CP = new CPManager();
@@ -188,16 +188,15 @@ function porciaIV(){
 
 
     CP.Iff( CP.Not(retratoEnOro), inscripcionOro1 ).asTrue().rename("La inscripcion oro1 es verdad");
-    CP.Iff( CP.Not(retratoEnPlata), inscripcionOro2 ).asTrue().rename("La inscripcion oro2 es verdad");
+    CP.Iff( retratoEnPlata, inscripcionOro2 ).asTrue().rename("La inscripcion oro2 es verdad");
     CP.Iff( CP.Not(retratoEnOro), inscripcionPlata1 ).asTrue().rename("La inscripción plata1 es verdad");
-    CP.Iff( CP.Not(retratoEnPlomo), inscripcionPlata2 ).asTrue().rename("La inscripción plata2 es verdad");
+    CP.Iff( retratoEnPlomo, inscripcionPlata2 ).asTrue().rename("La inscripción plata2 es verdad");
     CP.Iff( CP.Not(retratoEnPlomo), inscripcionPlomo1 ).asTrue().rename("La inscripción plomo1 es verdad");
     CP.Iff( retratoEnOro, inscripcionPlomo2 ).asTrue().rename("La inscripción plomo2 es verdad");
 
     var cps = [retratoEnOro,retratoEnPlata,retratoEnPlomo];
     CPBacktrack(cps, function(cps){
 
-        
         var println = function(s){console.log("** " + s )};
         println( "************************************");
 
