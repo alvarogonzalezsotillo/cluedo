@@ -67,8 +67,7 @@ MixIn(CPManager.prototype, {
     And : function(cps){
         var ret =  this.SomeTrue(cps,cps.length);
         var names = this.concatenateNames(cps);
-        ret.name = function(){ return "And(" + names + ")"; };
-        return ret;
+        return this.Rename(ret,"And(" + names + ")");
     },
     Not : function(cp){
         return new CPNot(this,cp);
@@ -89,18 +88,21 @@ MixIn(CPManager.prototype, {
             negatedCPS.push( this.Not(cps[i]) );
         }
         var ret =  this.Not( this.And(negatedCPS) );
-        ret.name = function(){ return "Or(" + names + ")"; };
-        return ret;
+        return this.Rename(ret,"Or(" + names + ")" );
     },
     IfThen : function(cpIf, cpThen){
-        // f f t
-        // f t t
-        // t f f
-        // t t t
+        // if    then
+        // f     f    t
+        // f     t    t
+        // t     f    f
+        // t     t    t
 
-        var ret = this.Not( this.And( [cpIf, this.Not(cpThen)] ) );
-        ret.name = function(){ return "If(" + cpIf.name() + ")Then(" + cpThen.name() + ")"; };
-        return ret;
+        var ret = this.Or( [this.Not(cpIf), cpThen] );
+        return this.Rename(ret,"If(" + cpIf.name() + ")Then(" + cpThen.name() + ")");
+    },
+    Iff : function(lhs,rhs){
+        var ret = this.And( [this.IfThen(lhs,rhs),this.IfThen(rhs,lhs)]);
+        return this.Rename(ret,"Iff(" + lhs.name() + ", (" + rhs.name() + ")");
     },
 
     describe : function(println){

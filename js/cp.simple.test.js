@@ -361,6 +361,36 @@ function test(){
             assert(d.isFalse());
         },
 
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var iff = CP.Iff(a,b);
+            a.remove(true);
+            iff.remove(false);
+            assert(b.isFalse());
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var iff = CP.Iff(a,b);
+            a.remove(false);
+            iff.remove(false);
+            assert(b.isTrue());
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var iff = CP.Iff(a,b);
+            a.remove(true);
+            iff.remove(true);
+            assert(b.isTrue());
+        },
+
 
     ];
 
