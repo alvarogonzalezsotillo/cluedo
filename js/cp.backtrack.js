@@ -71,12 +71,121 @@ function CPBacktrack(cps,foundCallback,fromIndex){
     }
 }
 
+function CPContinuableBacktrack( cps ){
+    this._cps = cps;
+    this._CP = this._cps[0].manager();
+    
+
+    var self = this;
+    this.State = function(cp,value,restCps){
+        this.executed = false;
+        this.cp = cp;
+        this.execute = function(){
+            assert( this.executed === false );
+            this.executed = true;
+            cp.remove(value);
+            var nextRestCps = restCps.slice(0);
+            var nextCp = nextRestCps.pop();
+            log( "nextCp: " + nextCp );
+            if( nextCp ){
+                return [new self.State(nextCp,true,nextRestCps), new self.State(nextCp,false,nextRestCps)];
+            }
+            else{
+                return [];
+            }
+        }
+    }
+
+    var nextRestCps = cps.slice(0);
+    var nextCp = nextRestCps.pop();
+    
+    
+    this._stack = [new this.State(nextCp,true,nextRestCps), new this.State(nextCp,false,nextRestCps)];
+}
+
+
+MixIn(CPContinuableBacktrack.prototype,{
+
+    currentLevel : function(){
+        return this._stack.length-1;
+    },
+
+    pushStates : function(states){
+        return this._stack = this._stack.concat(states);
+    },
+
+    popState : function(){
+        if( this.currentLevel() >= 0 ){
+            return this._stack.pop();
+        }
+        return undefined;
+    },
+
+    peekState : function(){
+        if( this.currentLevel() >= 0 ){
+            return this._stack[this._stack.length-1];
+        }
+        return undefined;
+    },
+
+    allDefined : function(){
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            if( !this._cps[i].defined() ){
+                return false;
+            }
+        }
+        return true;
+    },
+
+    stackEmpty : function(){
+        return this.currentLevel() < 0;
+    },
+
+    
+    nextSolution : function(){
+        while( !this.stackEmpty() ){
+
+            log( "Stack not empty" );
+            
+            
+            var state = this.peekState();
+
+            log( "  state:" + state.cp.name() + "  executed:" + state.executed );
+
+            if( state.executed ){
+                this.popState();
+                this._CP.popScenario();
+            }
+            else{
+                this._CP.pushScenario();
+                var newStates = state.execute();
+                log( "Executed");
+                if( this.allDefined() ){
+                    log( "  Están todos definidos");
+                    return true;
+                }
+                else{
+                    log("  newStates:" + newStates + "  level:" + this.currentLevel() );
+                    this.pushStates( newStates );
+                    log( "  level after push:" + this.currentLevel() );
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+});
+
+
+
 if( typeof module == "undefined" ){
     module = {};
 }
 
 module.exports = {
     CPBacktrack: CPBacktrack,
+    CPContinuableBacktrack : CPContinuableBacktrack,
 };
 
 

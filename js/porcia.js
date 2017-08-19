@@ -196,7 +196,7 @@ function porciaIV(){
 
     var cps = [retratoEnOro,retratoEnPlata,retratoEnPlomo];
     CPBacktrack(cps, function(cps){
-
+        assert(retratoEnPlomo.isTrue());
         var println = function(s){console.log("** " + s )};
         println( "************************************");
 
@@ -208,9 +208,9 @@ function porciaIV(){
 
 }
 
-// porciaI();
-// porciaII();
-// porciaIII();
+porciaI();
+porciaII();
+porciaIII();
 porciaIV();
 
 

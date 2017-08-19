@@ -8,6 +8,7 @@ if( typeof require != "undefined"){
 
     var cpb = require("./cp.backtrack");
     CPBacktrack = cpb.CPBacktrack;
+    CPContinuableBacktrack = cpb.CPContinuableBacktrack;
 
 }
 
@@ -84,11 +85,40 @@ function test(){
             assert(count==3);
         },
 
+        function (){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+            var d = CP.Boolean("d");
+            CP.And([a,b]).asTrue();
+            CP.Or([c,d]).asTrue();
+            var count = 0;
+
+            var log = console.log;
+            
+            function describeAll(cps){
+                for( var i = 0 ;  i < cps.length ; i++ ){
+                    cps[i].describe(log);
+                }
+            }
+
+            var cps = [a,b,c,d];
+            var cpcb = new CPContinuableBacktrack(cps);
+            while( cpcb.nextSolution() ){
+                log("********** STATE FOUND")
+                describeAll(cps);
+                count += 1;
+
+            }
+            assert(count==3);
+
+        },
 
         
     ];
 
-    
+    tests[tests.length-1](); return;
     
     for( var i = 0 ; i < tests.length ; i++ ){
         console.log( "----- Test " + i );
