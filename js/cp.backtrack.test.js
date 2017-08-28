@@ -95,7 +95,7 @@ function test(){
             CP.Or([c,d]).asTrue();
             var count = 0;
 
-            var log = console.log;
+            var log = function(){}; //console.log;
             
             function describeAll(cps){
                 for( var i = 0 ;  i < cps.length ; i++ ){
@@ -118,7 +118,7 @@ function test(){
         
     ];
 
-    tests[tests.length-1](); return;
+
     
     for( var i = 0 ; i < tests.length ; i++ ){
         console.log( "----- Test " + i );
