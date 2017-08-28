@@ -74,27 +74,9 @@ function CPBacktrack(cps,foundCallback,fromIndex){
 function CPContinuableBacktrack( cps ){
     this._cps = cps;
     this._CP = this._cps[0].manager();
-    
+    this.executed = false;
 
     var self = this;
-    this.State = function(cp,value,restCps){
-        this.executed = false;
-        this.cp = cp;
-        this.execute = function(){
-            assert( this.executed === false );
-            this.executed = true;
-            cp.remove(value);
-            var nextRestCps = restCps.slice(0);
-            var nextCp = nextRestCps.pop();
-            log( "nextCp: " + nextCp );
-            if( nextCp ){
-                return [new self.State(nextCp,true,nextRestCps), new self.State(nextCp,false,nextRestCps)];
-            }
-            else{
-                return [];
-            }
-        }
-    }
 
     var nextRestCps = cps.slice(0);
     var nextCp = nextRestCps.pop();
@@ -105,6 +87,27 @@ function CPContinuableBacktrack( cps ){
 
 
 MixIn(CPContinuableBacktrack.prototype,{
+
+    State : function(cp,value,restCps){
+        this.executed = false;
+        this.cp = cp;
+        this.execute = function(){
+            assert( this.executed === false );
+            this.executed = true;
+            cp.remove(value);
+            var nextRestCps = restCps.slice(0);
+            var nextCp = nextRestCps.pop();
+            log( "nextCp: " + nextCp );
+            var S = CPContinuableBacktrack.prototype.State;
+            if( nextCp ){
+                return [new S(nextCp,true,nextRestCps), new S(nextCp,false,nextRestCps)];
+            }
+            else{
+                return [];
+            }
+        }
+    },
+    
 
     currentLevel : function(){
         return this._stack.length-1;
