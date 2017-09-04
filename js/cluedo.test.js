@@ -132,14 +132,10 @@ var factsB = [
 
     new PlayerHasSomeFact( 1, ["Cuerda","Prado","Invernadero"] ),
 
-    // new PlayerHasSomeFact( 1, ["Amapola","Tubería"] ), // pregunté también por estudio, que fue lo que enseñó
-
     new PlayerHasSomeFact( 2, ["Salón","Pistola", "Prado"] ),
 
-    // CON ESTO NO SALE LA BIBLIOTECA, NO SÉ POR QUÉ, NO FUNCIONAN EL NÚMERO DE CARTAS
     new PlayerDoesntHaveAnyFact(1,["Biblioteca","Rubio","Herramienta"]),
     new PlayerDoesntHaveAnyFact(2,["Biblioteca","Rubio","Herramienta"]),
-    //new PlayerDoesntHaveAnyFact(0,["Tubería","Cuerda","Biblioteca","Invernadero","Amapola","Celeste"]),
 
 
     new PlayerDoesntHaveAnyFact(2, ["Invernadero","Candelabro","Celeste"] ),
@@ -148,13 +144,13 @@ var factsB = [
 
     new PlayerHasSomeFact(1,["Amapola"]),
 
-    // CON ESTO SALIÓ
+
     new PlayerHasSomeFact(2,["Invernadero","Tubería","Celeste"]),
 
 ];
 
 
-var facts = factsB;
+var facts = factsA;
 
 for( var i = 1 ; i <= facts.length ; i++ ){
 

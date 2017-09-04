@@ -453,6 +453,15 @@ MixIn(CPNumberTrue.prototype, {
                 }
                 return true;
             }
+
+            if( s.trues.length == this.number() && possibleTruesOrFalses == 1 ){
+                log( this.name() + ": since I am false, at least one of my possible trues is true");
+                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                    s.undefineds[i].remove(false);
+                }
+                return true;
+            }
+ 
         }
 
         return false;
