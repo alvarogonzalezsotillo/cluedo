@@ -1,13 +1,146 @@
-if( typeof require != "undefined"){
+if( typeof require != "undefined" ){
     var common = require("./common");
     MixIn = common.MixIn;
+    assert = common.assert;
     log = common.log;
 }
 
 
+function CPManager(){
+    this._cps = [];
+    var self = this;
+    this._stackIndex = 0;
+    this.setEmptyDomainHandler( this.defaultEmptyDomainHandler );
+}
 
-function CPBase(name, observed ){
+MixIn(CPManager.prototype, {
 
+    checkIfFailed : function(){
+        for( var i = 0 ; i < this.cps().length ; i++ ){
+            if( this.cps()[i].impossible() ){
+                return true;
+            }
+        }
+        return false;
+    },
+    
+    cps: function(){
+        return this._cps;
+    },
+
+    defaultEmptyDomainHandler : function(cp){
+        var error = new Error(cp.name() + " has empty domain");
+        error.cp = cp;
+        throw error;
+    },
+
+    setEmptyDomainHandler : function(h){
+        this._emptyDomainHandler = h;
+    },
+
+    notifyEmptyDomain : function(cp){
+        log( "------ emptyDomain:" + cp.toString() );
+        this._emptyDomainHandler(cp);
+    },
+
+    pushScenario : function(){
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            this._cps[i].pushDomain();
+        }
+        this._stackIndex += 1;
+    },
+
+    popScenario : function(){
+        assert(this._stackIndex>0);
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            this._cps[i].popDomain();
+        }
+        this._stackIndex -= 1;
+    },
+
+    stackIndex : function(){
+        return this._stackIndex;
+    },
+    
+    concatenateNames : function(cps){
+        var names = "";
+        for( var i = 0 ; i < cps.length ; i++ ){
+            names += cps[i].name() + " ";
+        }
+        return names;
+    },
+
+    addCP : function(cp){
+        this._cps.push(cp);
+    },
+    
+    Boolean : function(name){
+        return new CPBoolean(this,name);
+    },
+    And : function(cps){
+        var ret =  this.SomeTrue(cps,cps.length);
+        var names = this.concatenateNames(cps);
+        return this.Rename(ret,"And(" + names + ")");
+    },
+    Not : function(cp){
+        return new CPNot(this,cp);
+    },
+    Rename : function(cp,name){
+        return this.Identity(cp,name); 
+    },
+    Identity : function(cp,name){
+        return new CPIdentity(this,cp,name);
+    },
+    SomeTrue : function(cps,numberMin,numberMax){
+        numberMax = numberMax || numberMin;
+        if( numberMax == numberMin ){
+            return new CPNumberTrue(this,cps,numberMin);
+        }
+        else{
+            var rets = [];
+            for( var i = numberMin ; i <= numberMax ; i++ ){
+                rets.push( new CPNumberTrue(this,cps,i) );
+            }
+            return new CPNumberTrue(this,rets,1);
+        }
+    },
+    Or : function(cps){
+        var negatedCPS = [];
+        var names = this.concatenateNames(cps);
+        for( var i = 0 ; i < cps.length ; i++ ){
+            negatedCPS.push( this.Not(cps[i]) );
+        }
+        var ret =  this.Not( this.And(negatedCPS) );
+        return this.Rename(ret,"Or(" + names + ")" );
+    },
+    IfThen : function(cpIf, cpThen){
+        // if    then
+        // f     f    t
+        // f     t    t
+        // t     f    f
+        // t     t    t
+
+        var ret = this.Or( [this.Not(cpIf), cpThen] );
+        return this.Rename(ret,"If(" + cpIf.name() + ")Then(" + cpThen.name() + ")");
+    },
+    Iff : function(lhs,rhs){
+        var ret = this.And( [this.IfThen(lhs,rhs),this.IfThen(rhs,lhs)]);
+        return this.Rename(ret,"Iff(" + lhs.name() + ", (" + rhs.name() + ")");
+    },
+
+    describe : function(println){
+        for( var i = 0 ; i < this._cps.length ; i++ ){
+            var cp = this._cps[i];
+            cp.describe(println);
+        }
+
+    }
+});
+
+
+
+function CPBase(manager,name, observed ){
+    this._manager = manager;
     this._name =name;
     this._containers = [];
     this._observed = [];
@@ -18,12 +151,34 @@ function CPBase(name, observed ){
     for( var  i = 0 ; i < this._observed.length ; i++ ){
         this._observed[i].addContainer(this);
     }
+
+    manager.addCP(this);
 }
 
 
 
 CPBase.prototype = {
 
+    asTrue : function(){
+        this.remove(false);
+        return this;
+    },
+    
+    rename : function(name){
+        return this.manager().Rename(this,name);
+    },
+
+
+    pushDomain : function(){
+    },
+
+    popDomain : function(){
+    },
+
+    manager : function(){
+        return this._manager;
+    },
+    
     addContainer : function(d){
         this._containers.push(d);
     },
@@ -38,35 +193,38 @@ CPBase.prototype = {
     },
 
     notified: function(){
-        this.reduceOwnDomain();
-        this.reduceObservedDomain();
-        this.notifyContainers();
+        var own = this.reduceOwnDomain();
+        var obs = this.reduceObservedDomain();
+        log( "obs:" + obs +  "  own:" + own + "  --- " + this.name() );
+        if( own ){
+            this.notifyContainers();
+        }
     },
 
     notifyIfEmptyDomain : function(){
         if( this.impossible() ){
-            var error = new Error(this.name() + " has empty domain");
-            error.cp = this;
-            throw error;
+            this.manager().notifyEmptyDomain(this);
         }
     },
 
-    describe : function(level){
+    describe : function(println,level){
 
-        var log = console.log;
+        if( !println ){
+            println = console.log;
+        }
+        
         if( !level ){
             level = 0;
-            log( "DESCRIBE: " + this.name() );
         }
         
         var s = "";
         for( var i = 0 ; i < level ; i++ ){
             s += "  ";
         }
-        log( s + this.toString() );
+        println( s + this.toString() );
 
         for( var i = 0; i < this.observed().length ; i++ ){
-            this.observed()[i].describe(level+1);
+            this.observed()[i].describe(println,level+1);
         }
     },
 
@@ -75,7 +233,7 @@ CPBase.prototype = {
     },
     
     toString: function(){
-        return this.name() + ":[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]";
+        return "[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]:" + this.name();
     },
 
     valueAsString : function(ifTrue,ifFalse,ifNone){
@@ -103,11 +261,11 @@ CPBase.prototype = {
     },
 
     canBeTrue: function(){
-        return this._canBeTrue;
+        assert(false);
     },
 
     canBeFalse: function(){
-        return this._canBeFalse;
+        assert(false);
     },
 
     isFalse: function(){
@@ -129,47 +287,67 @@ CPBase.prototype = {
 
 };
 
-function CPBoolean(name,observed){
-    CPBase.call(this,name,observed);
-    this._canBeTrue = true;
-    this._canBeFalse = true;
+function CPBoolean(manager,name,observed){
+    CPBase.call(this,manager,name,observed);
+    this._canBeTrue = [true];
+    this._canBeFalse = [true];
     this.notified();
 }
 
 
 MixIn(CPBoolean.prototype,CPBase.prototype);
 MixIn(CPBoolean.prototype,{
+
+    pushDomain : function(){
+        this._canBeTrue.push(this.canBeTrue());
+        this._canBeFalse.push(this.canBeFalse());
+    },
+
+    popDomain : function(){
+        assert(this._canBeTrue.length > 1);
+        this._canBeTrue.pop();
+        this._canBeFalse.pop();
+    },
+
+    canBeTrue: function(){
+        return this._canBeTrue[this.manager().stackIndex()];
+    },
+
+    canBeFalse: function(){
+        return this._canBeFalse[this.manager().stackIndex()];
+    },
+
     remove: function(value){
         log( this.name() + ": remove:" + value );
-        if( value && this._canBeTrue ){
+        if( value && this.canBeTrue() ){
             log( "  " + this.name() + ": remove: removed true");
-            this._canBeTrue = false;
+            this._canBeTrue[this.manager().stackIndex()] = false;
+            this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
             this.notifyContainers();
-            this.notifyIfEmptyDomain();
             return true;
         }
         
-        if( !value && this._canBeFalse ){
+        if( !value && this.canBeFalse() ){
             log( "  " + this.name() + ":  remove: removed false");
-            this._canBeFalse = false;
+            this._canBeFalse[this.manager().stackIndex()] = false;
+            this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
             this.notifyContainers();
-            this.notifyIfEmptyDomain();
             return true;
         }
-        
+
         return false;
     },
 });
 
-function CPNumberTrue(cps,number){
+function CPNumberTrue(manager,cps,number){
     this._number = number;
     var names = "";
     for( var i = 0 ; i < cps.length ; i++ ){
         names += " " + cps[i].name();
     }
-    CPBoolean.call(this,"AreTrue(" + number + ")(" + names + ")", cps );
+    CPBoolean.call(this,manager,"AreTrue(" + number + ")(" + names + ")", cps );
     this.reduceOwnDomain();
     this.reduceObservedDomain();
 }
@@ -218,16 +396,18 @@ MixIn(CPNumberTrue.prototype, {
         var ret = false;
         
         if( s.trues.length > this.number() ){
-            log( "  " + this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
-            ret |= this.remove(true);
+            ret = ret || this.remove(true);
+            log( ret + "  " + this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
+
         }
         else if( s.falses.length > cps.length - this.number() ){
-            log( "  " + this.name() + ": falses.length:" + s.falses.length + ": more false than expected" );
-            ret |= this.remove(true);
+            ret = ret || this.remove(true);
+            log( ret + "  " + this.name() + ": falses.length:" + s.falses.length + ": more false than expected" );
         }
         else if( s.falses.length  + s.trues.length == cps.length ){
-            log( "  " + this.name() + ": all defined and number correct" );
-            ret |= this.remove(false);
+            ret = ret || this.remove(false);
+            log( ret + "  " + this.name() + ": all defined and number correct" );
+
         }
         return ret;
     },
@@ -244,7 +424,7 @@ MixIn(CPNumberTrue.prototype, {
         log( "  remainigTrues:" + remainingTrues + "  possibleTruesorfalses:" + possibleTruesOrFalses );
         
         if( this.isTrue() ){
-            assert( s.trues.length <= this.number() );
+            //assert( s.trues.length <= this.number() );
             if( remainingTrues == possibleTruesOrFalses ){
                 log( this.name() + ": needed some more trues, the same as undefined");
                 for( var i = 0 ; i < s.undefineds.length ; i++ ){
@@ -273,15 +453,72 @@ MixIn(CPNumberTrue.prototype, {
                 }
                 return true;
             }
+
+            if( s.trues.length == this.number() && possibleTruesOrFalses == 1 ){
+                log( this.name() + ": since I am false, at least one of my possible trues is true");
+                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                    s.undefineds[i].remove(false);
+                }
+                return true;
+            }
+ 
         }
 
         return false;
     }
 });
 
+function CPIdentity(manager,cp,name){
+    name = name || "Identity(" + cp.name() + ")";
+    CPBase.call(this,manager,name, [cp] ); 
+    this._cp = cp;
+    this.reduceOwnDomain();
+    this.reduceObservedDomain();
+}
 
-function CPNot(cp){
-    CPBase.call(this,"Not(" + cp.name() + ")", [cp] ); 
+MixIn(CPIdentity.prototype,CPBase.prototype);
+MixIn(CPIdentity.prototype, {
+    
+    defined: function(){
+        return this._cp.defined();
+    },
+
+    canBeTrue: function(){
+        return this._cp.canBeTrue();
+    },
+
+    canBeFalse: function(){
+        return this._cp.canBeFalse();
+    },
+
+    remove: function(value){
+        var changed = this._cp.remove(value);
+        if( changed ){
+            this.notifyContainers();
+        }
+        return changed;
+    },
+
+    reduceOwnDomain: function(){
+        var ret = this._cp.reduceOwnDomain();
+        if( ret ){
+            this.notifyContainers();
+        }
+        return ret;
+    },
+
+    notified: function(){
+        this.notifyContainers();
+    },
+
+    reduceObservedDomain: function(){
+        return this._cp.reduceObservedDomain();
+    },
+
+});
+
+function CPNot(manager,cp){
+    CPBase.call(this,manager,"Not(" + cp.name() + ")", [cp] ); 
     this._cp = cp;
     this.reduceOwnDomain();
     this.reduceObservedDomain();
@@ -315,6 +552,7 @@ MixIn(CPNot.prototype, {
         if( ret ){
             this.notifyContainers();
         }
+        return ret;
     },
 
     notified: function(){
@@ -328,37 +566,6 @@ MixIn(CPNot.prototype, {
 });
 
 
-var CP = {
-    Boolean : function(name){
-        return new CPBoolean(name);
-    },
-    And : function(cps,number){
-        var ret =  new CPNumberTrue(cps,cps.length)
-        var names = "";
-        for( var i = 0 ; i < cps.length ; i++ ){
-            names += cps[i].name() + " ";
-        }
-        ret.name = function(){ return "And(" + names + ")"; };
-        return ret;
-    },
-    Not : function(cp){
-        return new CPNot(cp);
-    },
-    SomeTrue : function(cps,number){
-        return new CPNumberTrue(cps,number);
-    },
-    Or : function(cps){
-        var negatedCPS = [];
-        var names = "";
-        for( var i = 0 ; i < cps.length ; i++ ){
-            negatedCPS.push( CP.Not(cps[i]) );
-            names += cps[i].name() + " ";
-        }
-        var ret =  CP.Not( CP.And(negatedCPS) );
-        ret.name = function(){ return "Or(" + names + ")"; };
-        return ret;
-    },
-};
 
 
 if( typeof module == "undefined" ){
@@ -366,6 +573,6 @@ if( typeof module == "undefined" ){
 }
 
 module.exports = {
-    CP: CP,
+    CPManager: CPManager,
 };
 

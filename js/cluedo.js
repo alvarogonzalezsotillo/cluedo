@@ -1,10 +1,10 @@
-if( typeof require != "undefined"){
+if( typeof require != "undefined" ){
     var common = require("./common");
     var cp = require("./cp");
     MixIn = common.MixIn;
     assert = common.assert;
     log = common.log;
-    CP = cp.CP;
+    CPManager = cp.CPManager;
 }
 
 
@@ -15,6 +15,10 @@ function Fact(factType){
 MixIn(Fact.prototype,{
     factType : function(){
         return this._factType;
+    },
+
+    toString : function(){
+        return "Falta hacer el toString";
     }
 });
 
@@ -30,10 +34,7 @@ MixIn(PlayersFact.prototype,{
     thisType : "PlayersFact",
     
     toString : function(){
-        var ret =  this.numberOfCardsOrEachPlayer.length + " players (cards:";
-        for( var i = 0 ; i < this.numberOfCardsOrEachPlayer.length ; i++ ){
-            ret += this.numberOfCardsOrEachPlayer[i] + " ";
-        }
+        var ret =  "Hay " + this.numberOfCardsOrEachPlayer.length + " jugadores. Su número de cartas es:" + JSON.stringify(this.numberOfCardsOrEachPlayer);
         return ret;
     }
 });
@@ -48,8 +49,35 @@ MixIn(EnvelopeDoesntHaveFact.prototype,{
     thisType : "EnvelopeDoesntHaveFact",
     cards : function(){
         return this._cards;
+    },
+    toString : function(){
+        var ret =  "El sobre no tiene estas cartas: " + JSON.stringify(this.cards());
+        return ret;
     }
+
+    
 });
+
+
+function EnvelopeHasFact(cards){
+    Fact.call(this,this.thisType);
+    this._cards = cards;
+}
+
+MixIn(EnvelopeHasFact.prototype,Fact.prototype);
+MixIn(EnvelopeHasFact.prototype,{
+    thisType : "EnvelopeHasFact",
+    cards : function(){
+        return this._cards;
+    },
+    toString : function(){
+        var ret =  "El sobre tiene estas cartas: " + JSON.stringify(this.cards());
+        return ret;
+    }
+
+    
+});
+
 
 function CardsFact(factType,player,cards){
     Fact.call(this,factType);
@@ -74,6 +102,11 @@ function PlayerHasSomeFact(player, cards ){
 MixIn(PlayerHasSomeFact.prototype,CardsFact.prototype);
 MixIn(PlayerHasSomeFact.prototype,{
     thisType : "PlayerHasSomeFact",
+
+    toString : function(){
+        var ret =  "El jugador " + this.player() + " tiene alguna de estas cartas: " + JSON.stringify(this.cards());
+        return ret;
+    }
 });
 
 
@@ -83,6 +116,10 @@ function PlayerDoesntHaveAnyFact(player, cards ){
 MixIn(PlayerDoesntHaveAnyFact.prototype,CardsFact.prototype);
 MixIn(PlayerDoesntHaveAnyFact.prototype,{
     thisType : "PlayerDoesntHaveAnyFact",
+    toString : function(){
+        var ret =  "El jugador " + this.player() + " no tiene ninguna de estas cartas: " + JSON.stringify(this.cards());
+        return ret;
+    }
 });
 
 
@@ -90,7 +127,7 @@ function copyArray(a){
     return a.slice(0);
 }
 
-CluedoFlavors = {
+var CluedoFlavors = {
 
     test: {
         flavorName : "Para probar",
@@ -99,10 +136,33 @@ CluedoFlavors = {
         placeNames : ["Sala de billar","Invernadero","Cocina"]
     },
 
-    flavors: function(){
-        return [this.test];
+    cluedoConOrquidea : {
+        flavorName : "El gran juego de detectives (con Orquídea)",
+        characterNames : ["Amapola", "Celeste", "Orquídea", "Prado", "Mora", "Rubio"],
+        toolNames : ["Candelabro", "Tubería", "Cuerda", "Puñal", "Pistola", "Herramienta"],
+        placeNames : ["Sala de billar", "Salón", "Estudio", "Comedor", "Sala de baile", "Cocina", "Biblioteca", "Invernadero", "Vestíbulo"]
     },
 
+    flavors: function(){
+        return [this.test, this.cluedoConOrquidea];
+    },
+
+    defaultPlayerCardsForFlavor : function(players,flavor){
+        var cards = this.allCards(flavor).length;
+        var pc = cards - 3;
+        var c = pc / players;
+        var ret = [];
+        for( var i = 0 ; i < players ; i++ ){
+            ret.push(c);
+        }
+
+        for( var i = 0 ; i < pc - c*players ; i++ ){
+            ret[i] += 1;
+        }
+
+        return ret;
+    },
+    
     indexOf : function(s,array){
         for( var i = 0 ; i < array.length ; i++ ){
             if( array[i] == s ){
@@ -233,7 +293,7 @@ Cluedo.prototype = {
         var t = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.tools.length ; i ++){
             t.push({
-                name : flavor.toolNames[i],
+                name : ""+flavor.toolNames[i],
                 value: playerOrEnvelopeCP.tools[i].valueAsString(ifTrue,ifFalse,ifNone)
             });
         }
@@ -241,7 +301,7 @@ Cluedo.prototype = {
         var p = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.places.length ; i ++){
             p.push({
-                name : flavor.placeNames[i],
+                name : ""+flavor.placeNames[i],
                 value: playerOrEnvelopeCP.places[i].valueAsString(ifTrue,ifFalse,ifNone)
             });
         }
@@ -249,7 +309,7 @@ Cluedo.prototype = {
         var c = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.characters.length ; i ++){
             c.push({
-                name : flavor.characterNames[i],
+                name : ""+flavor.characterNames[i],
                 value: playerOrEnvelopeCP.characters[i].valueAsString(ifTrue,ifFalse,ifNone)
             });
         }
@@ -269,6 +329,13 @@ Cluedo.prototype = {
         return this.cardsOf(envelopeCP);
     },
 
+    cards : function(){
+        return {
+            playerCards : this.playerCards(),
+            envelopeCards : this.envelopeCards()
+        };
+    },
+
     playersFact : function(){
         var fs = this.facts();
         for( var i = 0 ; i < fs.length ; i++ ){
@@ -280,7 +347,7 @@ Cluedo.prototype = {
     },
 
     deduce: function(){
-        
+        var CP = new CPManager();
         var playersF = this.playersFact();
         assert(playersF);
         var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
@@ -294,7 +361,7 @@ Cluedo.prototype = {
 
         assert(allCards.length == totalCardsInGame)
 
-        var createArrayOfBooleans = function( prefix, nameArray ){
+        function createArrayOfBooleans( prefix, nameArray ){
             var ret = [];
             for( var i = 0 ; i < nameArray.length ; i++ ){
                 var cp = CP.Boolean(prefix + nameArray[i]);
@@ -303,7 +370,7 @@ Cluedo.prototype = {
             return ret;
         }
 
-        var createPlayerCards = function( prefix ){
+        function createPlayerCards( prefix ){
             var t = createArrayOfBooleans(prefix,flavor.toolNames);
             var p = createArrayOfBooleans(prefix,flavor.placeNames);
             var c = createArrayOfBooleans(prefix,flavor.characterNames);
@@ -317,14 +384,21 @@ Cluedo.prototype = {
 
         // CARDS FOR PLAYERS AND ENVELOPE
         this._playerCardsCP = [];
+        var restrictions = [];
         for( var p = 0 ; p < numberOfPlayers ; p++ ){
             var prefix = "p" + p + "-";
             this._playerCardsCP.push(createPlayerCards(prefix));
         }
         this._envelopeCardsCP = createPlayerCards("envelope-");
 
+        // EACH PLAYER HAS HIS NUMBER OF CARDS
+        for( var p = 0 ; p < numberOfPlayers ; p++ ){
+            var cp = CP.SomeTrue(this._playerCardsCP[p].allCards,playersF.numberOfCardsOrEachPlayer[p]);
+            cp.remove(false);
+            restrictions.push(cp);
+        }
+
         // EACH CARD CAN BE ONLY IN ONE PLACE
-        var restrictions = [];
         for( var i = 0 ; i < allCards.length ; i++ ){
             var cpsOfCard = [];
             for( var p = 0 ; p < numberOfPlayers ; p++ ){
@@ -372,12 +446,345 @@ Cluedo.prototype = {
                 cp.remove(false);
                 restrictions.push(cp);
             }
+            if( f.factType() == EnvelopeHasFact.prototype.thisType ){
+                var cps = this.cpArrayForEnvelope(f.cards());
+                var cp = CP.And(cps);
+                cp.remove(false);
+                restrictions.push(cp);
+            }
         }
 
         this._cps = restrictions;
+        this._cpManager = CP;
 
     },
 
+    createBooleansArray :    function(){
+        var playersF = this.playersFact();
+        assert(playersF);
+        var numberOfPlayers = playersF.numberOfCardsOrEachPlayer.length;
+        var allCards = CluedoFlavors.allCards(this._flavor);
+
+        var ret = [];
+        for( var c = 0 ; c < allCards.length ; c++ ){
+            var booleansOfThisCard = [];
+            for( var p = 0 ; p < numberOfPlayers ; p++ ){
+                booleansOfThisCard.push(this._playerCardsCP[p].allCards[c]);
+            }
+            booleansOfThisCard.push(this._envelopeCardsCP.allCards[c]);
+            ret.push(booleansOfThisCard);
+        }
+        return ret;
+    },
+
+    
+    improveByGuessing : function(){
+        var self = this;
+        var allCards = CluedoFlavors.allCards(this._flavor);
+        var println = function(){};
+
+
+        var booleansOfCards = this.createBooleansArray();
+
+        println( "ORIGINAL STATE");
+        this.printCards(this.cards(),println);
+
+        var CP = this._cpManager;
+        var failed = false;
+
+        var impossibleHandler = function(cp){
+            println("************* IMPOSSIBLE: " + cp.toString() );
+            var failedState = self.cards();
+            self.printCards(failedState,function(s){println("   *** IMPOSIBLE ***" + s)});
+            failed = true;
+        };
+
+        var ret = [];
+        
+        CP.setEmptyDomainHandler(impossibleHandler);
+        
+        for( var c = 0 ; c < booleansOfCards.length ; c++ ){
+
+            var boolsOfCard = booleansOfCards[c];
+            for( b = 0 ; b < boolsOfCard.length ; b++ ){
+
+                
+                if( !boolsOfCard[b].defined() ){
+
+
+                    // REMOVE FALSE
+                    failed = false;
+                    CP.pushScenario();
+                    boolsOfCard[b].remove(false);
+                    CP.popScenario();
+
+                    if( failed ){
+                        println( "DETECTED IMPOSSIBILITY REMOVING FALSE:" + boolsOfCard[b].name() );
+                        var newCP;
+                        if( b < boolsOfCard.length-1 ){
+                            newCP = new PlayerDoesntHaveAnyFact(b,[allCards[c]]);
+                        }
+                        else{
+                            newCP =  new EnvelopeDoesntHaveFact([allCards[c]]);
+                        }
+                        println( newCP );
+                        boolsOfCard[b].remove(true);
+                        ret.push( newCP );
+                        this.printCards(this.cards(), function(s){ println("    " + s ); });
+                    }
+
+                    // REMOVE TRUE
+                    failed = false;
+                    CP.pushScenario();
+                    boolsOfCard[b].remove(true);
+                    CP.popScenario();
+
+                    if( failed ){
+                        println( "DETECTED IMPOSSIBILITY REMOVING TRUE:" + boolsOfCard[b].name() );
+                        var newCP;
+                        if( b < boolsOfCard.length-1 ){
+                            newCP = new PlayerHasSomeFact(b,[allCards[c]]);
+                        }
+                        else{
+                            newCP =  new EnvelopeHasFact([allCards[c]]);
+                        }
+                        println( newCP );
+                        boolsOfCard[b].remove(false);
+                        ret.push( newCP );
+                        this.printCards(this.cards(), function(s){ println("    " + s ); });
+                    }
+
+                }
+            }
+        }
+
+        return ret;
+
+    },
+    
+    improveWithTrial : function(){
+/*
+   0 1 2 e
+a  x . . x  
+b  x . . x
+c  . . . x
+d  v x x x
+e  x v x x
+f  x x v x
+   . . . .
+
+wether a1 or a2, c0 is true
+
+*/
+
+        var self = this;
+        var ifTrue = this.valuesOfCards[0];
+        var ifFalse = this.valuesOfCards[1];
+        var ifNone = this.valuesOfCards[2];
+        var allCards = CluedoFlavors.allCards(this._flavor);
+        var println = function(){};
+        
+        
+
+
+
+        function removeDefinedCardsOfState(s){
+            for( var p = 0 ; p < s.playerCards.length ; p++ ){
+                for( var c = 0 ; c < s.playerCards[p].allCards.length ; c++ ){
+                    if( s.playerCards[p].allCards[c].value != ifNone ){
+                        s.playerCards[p].allCards[c].value = undefined;
+                    }
+                }
+            }
+            for( var c = 0 ; c < s.envelopeCards.allCards.length ; c++ ){
+                if( s.envelopeCards.allCards[c].value != ifNone ){
+                    s.envelopeCards.allCards[c].value = undefined;
+                }
+            }
+        }
+
+        function removeDiferrentOfState(src,dst){
+            for( var p = 0 ; p < src.playerCards.length ; p++ ){
+                for( var c = 0 ; c < src.playerCards[p].allCards.length ; c++ ){
+                    if( src.playerCards[p].allCards[c].value != dst.playerCards[p].allCards[c].value ){
+                        dst.playerCards[p].allCards[c].value = undefined;
+                    }
+                }
+            }
+            for( var c = 0 ; c < src.envelopeCards.allCards.length ; c++ ){
+                if( src.envelopeCards.allCards[c].value != dst.envelopeCards.allCards[c].value ){
+                    dst.envelopeCards.allCards[c].value = undefined;
+                }
+            }
+        }
+
+        function fixBooleansInEveryScenario(state){
+            var ret = [];
+            for( var p = 0 ; p < state.playerCards.length ; p++ ){
+                for( var c = 0 ; c < state.playerCards[p].allCards.length ; c++ ){
+                    var value = state.playerCards[p].allCards[c].value; 
+                    if( value == ifTrue || value == ifFalse ){
+                        console.log("Found boolean in every state:" + state.playerCards[p].allCards[c].name + " :" + value );
+                        if( value == ifTrue ){
+                            this._playerCardsCP[p].allCards[c].remove(false);
+                            ret.push( new PlayerDoesntHaveAnyFact(p,allCards[c]));
+                        }
+                        if( value == ifFalse ){
+                            this._playerCardsCP[p].allCards[c].remove(true);
+                            ret.push( new PlayerHasSomeFact(p,allCards[c]));
+                        }
+                    }
+                }
+            }
+            for( var c = 0 ; c < state.envelopeCards.allCards.length ; c++ ){
+                var value = state.envelopeCards.allCards[c].value; 
+
+                if( value == ifTrue || value == ifFalse ){
+                    console.log("Found boolean in every state:" + state.envelopeCards.allCards[c].name + " :" + value );
+                        if( value == ifTrue ){
+                            this._envelopeCardsCP.allCards[c].remove(false);
+                            ret.push( new EnvelopeDoesntHaveFact(allCards[c]));
+                        }
+                        if( value == ifFalse ){
+                            this._envelopeCardsCP.allCards[c].remove(true);
+                            ret.push( new EnvelopeHasFact(p,allCards[c]));
+                        }
+                }
+            }
+            return ret;
+            
+        }
+
+        var booleansOfCards = this.createBooleansArray();
+
+        println( "ORIGINAL STATE");
+        this.printCards(this.cards(),println);
+
+        var CP = this._cpManager;
+        var failed = false;
+
+        var impossibleHandler = function(cp){
+            println("************* IMPOSSIBLE: " + cp.toString() );
+
+            var failedState = self.cards();
+            self.printCards(failedState,function(s){println("   *** IMPOSIBLE ***" + s)});
+            
+
+            failed = true;
+        };
+
+        var ret = [];
+        
+        CP.setEmptyDomainHandler(impossibleHandler);
+        
+        for( var c = 0 ; c < booleansOfCards.length ; c++ ){
+            var state = undefined;
+
+
+            var boolsOfCard = booleansOfCards[c];
+            for( b = 0 ; b < boolsOfCard.length ; b++ ){
+
+                failed = false;
+                
+                if( !boolsOfCard[b].defined() ){
+
+
+                    if( typeof state == "undefined" ){
+                        // STATE IS LAZY
+                        state = this.cards();
+                        removeDefinedCardsOfState(state);
+
+                        println( "ORIGINAL STATE WITHOUT DEFINED FOR CARD:" + state.envelopeCards.allCards[c].name);
+                        this.printCards(state,println);
+                    }
+                    
+                    CP.pushScenario();
+                    boolsOfCard[b].remove(false);
+                    var newState = this.cards();
+                    CP.popScenario();
+
+                    if( failed ){
+                        println( "DETECTED IMPOSSIBILITY:" + boolsOfCard[b].name() );
+                        var newCP;
+                        if( b < boolsOfCard.length-1 ){
+                            newCP = new PlayerDoesntHaveAnyFact(b,[allCards[c]]);
+                        }
+                        else{
+                            newCP =  new EnvelopeDoesntHaveFact([allCards[c]]);
+                        }
+                        println( newCP );
+                        boolsOfCard[b].remove(true);
+                        ret.push( newCP );
+                        this.printCards(this.cards(), function(s){ println("    " + s ); });
+                    }
+
+                    
+
+                    println( "NEW STATE");
+                    this.printCards(newState,println);
+                    
+                    removeDiferrentOfState(state,newState);
+                    state = newState;
+
+                    println( "NEW STATE WITH DIFFERRENTS REMOVED");
+                    this.printCards(state,println);
+                }
+            }
+
+            if( typeof state != "undefined" ){
+                ret.concat( fixBooleansInEveryScenario(state) );
+            }
+        }
+
+        return ret;
+        
+    },
+
+    printCards : function (cards,println){
+
+        function pad(s,n){
+            if( !n ){
+                n = 20;
+            }
+            s = "" + s;
+            
+            while(s.length < n){
+                s = s + " ";
+            }
+            return s;
+        }
+
+        if( !println ){
+            println = function(s){
+                console.log(s);
+            };
+        }
+
+        var playerCards = cards.playerCards;
+        var envelopeCards = cards.envelopeCards;
+        var nPlayers = playerCards.length;
+        var nCards = playerCards[0].allCards.length;
+
+        var s = pad("");
+        for( var p = 0 ; p < nPlayers ; p++ ){
+            s += pad("Player " + p,10);
+        }
+        s += pad("Envelope",10);
+        println(s);
+
+        
+        for( var c = 0 ; c < nCards ; c++ ){
+            var s = pad(playerCards[0].allCards[c].name);
+            for( var p = 0 ; p < nPlayers ; p++ ){
+                s += pad(playerCards[p].allCards[c].value,10);
+            }
+            s += pad(envelopeCards.allCards[c].value,10);
+            println(s);
+        }
+
+    },
+
+    
     cpFor : function(player,cardName){
         var flavor = this._flavor;
         var i = CluedoFlavors.allCardNumber(flavor,cardName);

@@ -1,6 +1,6 @@
 
 // NECESARIO PARA NODE.JS, INNECESARIO EN UN NAVEGADOR
-if( require ){
+if( typeof require != "undefined"){
     var cp = require("./cp");
     var common = require("./common");
     var cluedo = require("./cluedo");
@@ -15,54 +15,16 @@ if( require ){
 }
 
 
-function printCards(playerCards,envelopeCards){
-
-    function pad(s,n){
-        if( !n ){
-            n = 20;
-        }
-        s = "" + s;
-        
-        while(s.length < n){
-            s = s + " ";
-        }
-        return s;
-    }
-
-    function println(s){
-        console.log(s);
-    }
-
-    var nPlayers = playerCards.length;
-    var nCards = playerCards[0].allCards.length;
-
-    var s = pad("");
-    for( var p = 0 ; p < nPlayers ; p++ ){
-        s += pad("Player " + p);
-    }
-    s += pad("Envelope");
-    println(s);
-
-    
-    for( var c = 0 ; c < nCards ; c++ ){
-        var s = pad(playerCards[0].allCards[c].name);
-        for( var p = 0 ; p < nPlayers ; p++ ){
-            s += pad(playerCards[p].allCards[c].value);
-        }
-        s += pad(envelopeCards.allCards[c].value);
-        println(s);
-    }
-
-}
 
 
-var flavor = CluedoFlavors.test;
+var flavor = CluedoFlavors.cluedoConOrquidea;
 var characterNames = flavor.characterNames;
 var toolNames = flavor.toolNames;
 var placeNames = flavor.placeNames;
 
-var facts = [
-    new PlayersFact([2,2,2]),
+
+var factsT = [
+    new PlayersFact( CluedoFlavors.defaultPlayerCardsForFlavor(3,flavor)),
     
     new PlayerHasSomeFact(0,[characterNames[0]]),
     new PlayerHasSomeFact(1,[characterNames[0],characterNames[1],characterNames[2]]),
@@ -79,9 +41,140 @@ var facts = [
 ];
 
 
-var c = new Cluedo(flavor,facts);
+var factsA = [
+    new PlayersFact( [4,4,4,3,3] ),
+    new PlayerHasSomeFact(0,["Herramienta"]),
+    new PlayerHasSomeFact(0,["Candelabro"]),
+    new PlayerHasSomeFact(0,["Amapola"]),
+    new PlayerHasSomeFact(0,["Biblioteca"]),
+    
 
-var playerCards = c.playerCards();
-var envelopeCards = c.envelopeCards();
+    new PlayerDoesntHaveAnyFact(3,["Sala de billar","Puñal","Rubio"]),
+    
 
-printCards(playerCards,envelopeCards);
+    new PlayerHasSomeFact(2,["Sala de billar","Puñal","Rubio"]),
+
+    
+    new PlayerHasSomeFact(2,["Puñal"]),
+
+    new PlayerHasSomeFact( 1, ["Rubio"] ),
+
+    
+    new PlayerDoesntHaveAnyFact( 1, ["Amapola", "Biblioteca", "Pistola" ] ),
+
+
+    new PlayerDoesntHaveAnyFact(3, ["Pistola", "Mora", "Sala de billar" ] ),
+
+    new PlayerHasSomeFact(2, ["Pistola", "Mora", "Sala de billar" ] ), 
+
+
+    new PlayerDoesntHaveAnyFact( 3, ["Sala de baile", "Cuerda", "Mora" ]),
+    new PlayerHasSomeFact( 2, ["Sala de baile", "Cuerda", "Mora" ] ),
+
+    new PlayerDoesntHaveAnyFact(  4 ,  ["Sala de baile", "Mora", "Candelabro" ] ),
+    new PlayerDoesntHaveAnyFact(  3 ,  ["Sala de baile", "Mora", "Candelabro" ] ),
+    new PlayerHasSomeFact( 2, ["Sala de baile"] ),
+
+        new PlayerHasSomeFact( 4, ["Prado", "Pistola", "Invernadero" ] ),
+
+
+    new PlayerDoesntHaveAnyFact(  1 ,  ["Vestíbulo", "Cuerda", "Prado" ] ),
+    new PlayerDoesntHaveAnyFact(  3 ,  ["Vestíbulo", "Cuerda", "Prado" ] ),
+    new PlayerDoesntHaveAnyFact(  4 ,  ["Vestíbulo", "Cuerda", "Prado" ] ),
+
+
+    new PlayerDoesntHaveAnyFact(  2 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+    new PlayerDoesntHaveAnyFact(  1 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+    new PlayerDoesntHaveAnyFact(  0 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+    new PlayerDoesntHaveAnyFact(  4 ,  ["Prado", "Cuerda", "Invernadero" ] ),
+
+    new PlayerDoesntHaveAnyFact(  3 ,  ["Tubería", "Cocina", "Celeste" ] ),
+
+    new PlayerHasSomeFact(  2 ,  ["Tubería", "Cocina", "Celeste" ] ),
+
+    
+    new PlayerHasSomeFact(  4 ,  ["Pistola" ] ),
+
+
+
+    new PlayerHasSomeFact(  2, ["Salón", "Prado", "Tubería" ] ),
+];
+
+var factsB = [
+    new PlayersFact( [6,6,6] ),
+    new PlayerHasSomeFact(0,["Herramienta"]),
+    new PlayerHasSomeFact(0,["Sala de billar"]),
+    new PlayerHasSomeFact(0,["Rubio"]),
+    new PlayerHasSomeFact(0,["Cocina"]),
+    new PlayerHasSomeFact(0,["Vestíbulo"]),
+    new PlayerHasSomeFact(0,["Candelabro"]),
+    new PlayerHasSomeFact(1,["Rubio","Herramienta","Estudio"]),
+    new PlayerDoesntHaveAnyFact(2,["Vestíbulo","Rubio","Candelabro"]),
+
+    new PlayerHasSomeFact(0,["Amapola","Cuerda","Vestíbulo"]),
+
+    new PlayerHasSomeFact(1,["Estudio"]),
+    new PlayerHasSomeFact(1,["Pistola"]),
+    new PlayerHasSomeFact(2,["Sala de baile"]),
+    new PlayerHasSomeFact(2, ["Vestíbulo","Celeste","Puñal"] ),
+    new PlayerHasSomeFact(1,["Biblioteca","Orquídea","Pistola"]),
+    new PlayerHasSomeFact(1,["Orquídea"]),
+    new PlayerHasSomeFact(1,["Prado"]),
+    new PlayerHasSomeFact(2,["Comedor","Rubio","Candelabro"]),
+
+    new PlayerHasSomeFact(2,["Puñal"]),
+
+    new PlayerDoesntHaveAnyFact(1, ["Mora","Cocina","Cuerda"]),
+    
+    new PlayerDoesntHaveAnyFact(1, ["Mora","Cocina","Cuerda"]),
+
+    new PlayerHasSomeFact(2,["Mora"]),
+
+    new PlayerHasSomeFact( 1, ["Cuerda","Prado","Invernadero"] ),
+
+    new PlayerHasSomeFact( 2, ["Salón","Pistola", "Prado"] ),
+
+    new PlayerDoesntHaveAnyFact(1,["Biblioteca","Rubio","Herramienta"]),
+    new PlayerDoesntHaveAnyFact(2,["Biblioteca","Rubio","Herramienta"]),
+
+
+    new PlayerDoesntHaveAnyFact(2, ["Invernadero","Candelabro","Celeste"] ),
+
+    new PlayerHasSomeFact(1,["Prado","Tubería","Biblioteca"]),
+
+    new PlayerHasSomeFact(1,["Amapola"]),
+
+
+    new PlayerHasSomeFact(2,["Invernadero","Tubería","Celeste"]),
+
+];
+
+
+var facts = factsA;
+
+for( var i = 1 ; i <= facts.length ; i++ ){
+
+    console.log("\n-----------------------------------------------------------------");
+
+    for( var j = 0 ; j < i-1 ; j++ ){
+        console.log( facts[j].toString() );
+    }
+    
+    var f = facts[i-1];
+    console.log( "Nueva pista:" + f.toString() );
+    var fs = facts.slice(0,i);
+
+    var c = new Cluedo(flavor,fs);
+
+    c.printCards(c.cards());
+    
+    var improved = c.improveByGuessing();
+    if( improved.length ){
+        console.log( "Hechos deducidos:" + JSON.stringify(improved));
+        c.printCards(c.cards());
+
+    }
+    
+
+}
+
