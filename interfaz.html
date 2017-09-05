@@ -1,0 +1,255 @@
+<html>
+
+<style>
+    boton {
+        border: 1px solid black;
+        background-color: lightgray;
+        font-size: 100px;
+        margin: 30px;
+        display: inline-block;
+    }
+
+    input {
+        border: 2px solid black;
+        font-size: 100px;
+        width: 40%;
+        margin: 10px;
+    }
+
+    display {
+        margin: 10px;
+        border: 2px solid black;
+        font-size: 40px;
+        width: 33%;
+    }
+
+    .pequeño {
+        font-size: 40px
+    }
+
+    .ancho {
+        display: block;
+    }
+
+    .estrecho {
+        display: inline-block;
+    }
+
+    div {
+        font-size: 100px;
+    }
+</style>
+
+<body onload="ReadAndFillFavors()">
+
+    <script src="./js/common.js"></script>
+    <script src="./js/cp.js"></script>
+    <script src="./js/cluedo.js"></script>
+
+    <div id="setUp">
+        <div id="flavorSelect">
+
+        </div>
+        <div id="playerSelect" style="display:none">
+            <boton onclick="jugadorMenos()">-</boton>
+            <div class="estrecho" id="numero de jugadores">2</div>
+            <boton onclick="jugadorMas()">+</boton>
+            <div id="InputDeJugadores">
+
+            </div>
+            <boton onclick="StartGame()">GO</boton>
+        </div>
+
+    </div>
+    <div id="gamePlay" style="display:none">
+
+    </div>
+
+
+
+<script>
+    var gFlavor = {};
+    var numeroDeJugadores = 2;
+    var players = [];
+    function sabores() {
+        return CluedoFlavors.flavors();
+    }
+    function ReadAndFillFavors() {
+        flavors = sabores();
+        console.log("creating botons");
+        console.log(flavors);
+        for (var i = 0; i < flavors.length; i++) {
+            var element = flavors[i];
+            var wip = document.createElement("boton");
+
+            console.log("creating boton");
+
+            wip.innerHTML = element.flavorName;
+            wip.objFlavor = element;
+            wip.onclick = function () { gameFlavor(this.objFlavor); };
+            document.getElementById("flavorSelect").appendChild(wip);
+
+        }
+    }
+    function gameFlavor(flavor) {
+        console.log("flavor");
+        console.log(flavor);
+        gFlavor = flavor;
+        document.getElementById("flavorSelect").style.display = "none";
+        document.getElementById("playerSelect").style.display = "block";
+        refreshInputs();
+
+    }
+
+    function StartGame() {
+        document.getElementById("playerSelect").style.display = "none";
+        document.getElementById("gamePlay").style.display = "block";
+        var insplay = document.getElementById("gamePlay");
+
+        for (var i = 0; i < document.getElementsByClassName("PlayerName").length; i++) {
+            var element = document.getElementsByClassName("PlayerName")[i];
+            players.push(element.value);
+        }
+        console.log(players);
+
+        var wiping = document.createElement("table")
+        var repeticiones = gFlavor.characterNames.length;
+        if (repeticiones < gFlavor.toolNames.length) repeticiones = flavor.toolNames.length;
+        if (repeticiones < gFlavor.placeNames.length) repeticiones = flavor.placeNames.length;
+
+        let chdisplay = document.createElement("display");
+        let todisplay = document.createElement("display");
+        let pldisplay = document.createElement("display");
+
+        chdisplay.innerHTML = "select a character";
+        todisplay.innerHTML = "select a tool";
+        pldisplay.innerHTML = "select a place";
+
+        chdisplay.id = "selcha";
+        todisplay.id = "seltoo";
+        pldisplay.id = "selpla";
+
+        let tdch = document.createElement("td");
+        let tdto = document.createElement("td");
+        let tdpl = document.createElement("td");
+
+        tdch.appendChild(chdisplay);
+        tdto.appendChild(todisplay);
+        tdpl.appendChild(pldisplay);
+
+        const tr0 = document.createElement("tr");
+
+        tr0.appendChild(tdch);
+        tr0.appendChild(tdto);
+        tr0.appendChild(tdpl);
+
+                    wiping.appendChild(tr0);
+
+
+        for (var j = 0; j < repeticiones; j++) {
+            const tr = document.createElement("tr");
+
+            const boton0 = document.createElement("boton");
+            boton0.innerHTML = gFlavor.characterNames[j];
+            boton0.onclick = "presed(this)";
+            boton0.classList.add("pequeño");
+            let td0 = document.createElement("td");
+            td0.appendChild(boton0);
+            tr.appendChild(td0);
+
+            const boton1 = document.createElement("boton");
+            boton1.innerHTML = gFlavor.toolNames[j];
+            boton1.onclick = "presed(this)";
+            boton1.classList.add("pequeño");
+            let td1 = document.createElement("td");
+            td1.appendChild(boton1);
+            tr.appendChild(td1);
+
+            const boton2 = document.createElement("boton");
+            boton2.innerHTML = gFlavor.placeNames[j];
+            boton2.onclick = "presed(this)";
+            boton2.classList.add("pequeño");
+            let td2 = document.createElement("td");
+            td2.appendChild(boton2);
+            tr.appendChild(td2);
+
+            wiping.appendChild(tr);
+        }
+
+        document.getElementById("gamePlay").appendChild(wiping);
+
+
+
+    }
+
+
+
+    function numeroDeJugadoresElement() {
+        return document.getElementById("numero de jugadores");
+    }
+
+    function mostrarErrorEnElemento(element, errorColor, time) {
+        var oldBackground = element.style.backgroundColor;
+
+        errorColor = errorColor || "red";
+
+        if (!time) {
+            time = 50;
+        }
+
+        element.style.backgroundColor = errorColor;
+        setTimeout(function () {
+            element.style.backgroundColor = oldBackground;
+        }, time);
+    }
+
+
+    function jugadorMas() {
+        console.log("mas");
+        console.log(gFlavor.characterNames.length)
+        if (numeroDeJugadores != gFlavor.characterNames.length) {
+            numeroDeJugadores = numeroDeJugadores + 1;
+            refreshInputs();
+        } else {
+            var numero = numeroDeJugadoresElement();
+            mostrarErrorEnElemento(numero);
+        }
+    }
+
+    function jugadorMenos() {
+        console.log("menos");
+        if (numeroDeJugadores - 1 != 1) {
+            numeroDeJugadores = numeroDeJugadores - 1;
+            refreshInputs();
+        } else {
+            var numero = numeroDeJugadoresElement();
+            mostrarErrorEnElemento(numero);
+        }
+    }
+
+    function refreshInputs() {
+        box = document.getElementById("InputDeJugadores");
+        var numero = numeroDeJugadoresElement();
+        numero.innerHTML = numeroDeJugadores;
+
+        while (box.firstChild) {
+            box.removeChild(box.firstChild);
+        }
+
+        for (var i = 0; i < numeroDeJugadores; i++) {
+            var wip = document.createElement("input");
+            wip.className += "PlayerName";
+            if (i == 0) {
+                wip.value = "You";
+            } else {
+                wip.value = "Player " + i;
+            }
+            box.appendChild(wip);
+            box.appendChild(document.createElement("br"))
+        }
+
+    }
+    
+</script>
+</body>
+</html>
