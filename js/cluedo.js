@@ -150,7 +150,7 @@ var CluedoFlavors = {
     defaultPlayerCardsForFlavor : function(players,flavor){
         var cards = this.allCards(flavor).length;
         var pc = cards - 3;
-        var c = pc / players;
+        var c = Math.floor(pc / players);
         var ret = [];
         for( var i = 0 ; i < players ; i++ ){
             ret.push(c);

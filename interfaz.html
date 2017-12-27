@@ -19,6 +19,7 @@
     display {
         margin: 10px;
         border: 2px solid black;
+        padding: 5px;
         font-size: 40px;
         width: 33%;
     }
@@ -67,189 +68,359 @@
 
 
 
-<script>
-    var gFlavor = {};
-    var numeroDeJugadores = 2;
-    var players = [];
-    function sabores() {
-        return CluedoFlavors.flavors();
-    }
-    function ReadAndFillFavors() {
-        flavors = sabores();
-        console.log("creating botons");
-        console.log(flavors);
-        for (var i = 0; i < flavors.length; i++) {
-            var element = flavors[i];
-            var wip = document.createElement("boton");
-
-            console.log("creating boton");
-
-            wip.innerHTML = element.flavorName;
-            wip.objFlavor = element;
-            wip.onclick = function () { gameFlavor(this.objFlavor); };
-            document.getElementById("flavorSelect").appendChild(wip);
-
+    <script>
+        var gFlavor = {};
+        var numeroDeJugadores = 2;
+        var players = [];
+        var CartasQueTieneCadaPlayer = [];
+        function sabores() {
+            return CluedoFlavors.flavors();
         }
-    }
-    function gameFlavor(flavor) {
-        console.log("flavor");
-        console.log(flavor);
-        gFlavor = flavor;
-        document.getElementById("flavorSelect").style.display = "none";
-        document.getElementById("playerSelect").style.display = "block";
-        refreshInputs();
+        function ReadAndFillFavors() {
+            flavors = sabores();
+            console.log("creating botons");
+            console.log(flavors);
+            for (var i = 0; i < flavors.length; i++) {
+                var element = flavors[i];
+                var wip = document.createElement("boton");
 
-    }
+                console.log("creating boton");
 
-    function StartGame() {
-        document.getElementById("playerSelect").style.display = "none";
-        document.getElementById("gamePlay").style.display = "block";
-        var insplay = document.getElementById("gamePlay");
+                wip.innerHTML = element.flavorName;
+                wip.objFlavor = element;
+                wip.onclick = function () { gameFlavor(this.objFlavor); };
+                document.getElementById("flavorSelect").appendChild(wip);
 
-        for (var i = 0; i < document.getElementsByClassName("PlayerName").length; i++) {
-            var element = document.getElementsByClassName("PlayerName")[i];
-            players.push(element.value);
-        }
-        console.log(players);
-
-        var wiping = document.createElement("table")
-        var repeticiones = gFlavor.characterNames.length;
-        if (repeticiones < gFlavor.toolNames.length) repeticiones = flavor.toolNames.length;
-        if (repeticiones < gFlavor.placeNames.length) repeticiones = flavor.placeNames.length;
-
-        let chdisplay = document.createElement("display");
-        let todisplay = document.createElement("display");
-        let pldisplay = document.createElement("display");
-
-        chdisplay.innerHTML = "select a character";
-        todisplay.innerHTML = "select a tool";
-        pldisplay.innerHTML = "select a place";
-
-        chdisplay.id = "selcha";
-        todisplay.id = "seltoo";
-        pldisplay.id = "selpla";
-
-        let tdch = document.createElement("td");
-        let tdto = document.createElement("td");
-        let tdpl = document.createElement("td");
-
-        tdch.appendChild(chdisplay);
-        tdto.appendChild(todisplay);
-        tdpl.appendChild(pldisplay);
-
-        const tr0 = document.createElement("tr");
-
-        tr0.appendChild(tdch);
-        tr0.appendChild(tdto);
-        tr0.appendChild(tdpl);
-
-                    wiping.appendChild(tr0);
-
-
-        for (var j = 0; j < repeticiones; j++) {
-            const tr = document.createElement("tr");
-
-            const boton0 = document.createElement("boton");
-            boton0.innerHTML = gFlavor.characterNames[j];
-            boton0.onclick = "presed(this)";
-            boton0.classList.add("pequeño");
-            let td0 = document.createElement("td");
-            td0.appendChild(boton0);
-            tr.appendChild(td0);
-
-            const boton1 = document.createElement("boton");
-            boton1.innerHTML = gFlavor.toolNames[j];
-            boton1.onclick = "presed(this)";
-            boton1.classList.add("pequeño");
-            let td1 = document.createElement("td");
-            td1.appendChild(boton1);
-            tr.appendChild(td1);
-
-            const boton2 = document.createElement("boton");
-            boton2.innerHTML = gFlavor.placeNames[j];
-            boton2.onclick = "presed(this)";
-            boton2.classList.add("pequeño");
-            let td2 = document.createElement("td");
-            td2.appendChild(boton2);
-            tr.appendChild(td2);
-
-            wiping.appendChild(tr);
-        }
-
-        document.getElementById("gamePlay").appendChild(wiping);
-
-
-
-    }
-
-
-
-    function numeroDeJugadoresElement() {
-        return document.getElementById("numero de jugadores");
-    }
-
-    function mostrarErrorEnElemento(element, errorColor, time) {
-        var oldBackground = element.style.backgroundColor;
-
-        errorColor = errorColor || "red";
-
-        if (!time) {
-            time = 50;
-        }
-
-        element.style.backgroundColor = errorColor;
-        setTimeout(function () {
-            element.style.backgroundColor = oldBackground;
-        }, time);
-    }
-
-
-    function jugadorMas() {
-        console.log("mas");
-        console.log(gFlavor.characterNames.length)
-        if (numeroDeJugadores != gFlavor.characterNames.length) {
-            numeroDeJugadores = numeroDeJugadores + 1;
-            refreshInputs();
-        } else {
-            var numero = numeroDeJugadoresElement();
-            mostrarErrorEnElemento(numero);
-        }
-    }
-
-    function jugadorMenos() {
-        console.log("menos");
-        if (numeroDeJugadores - 1 != 1) {
-            numeroDeJugadores = numeroDeJugadores - 1;
-            refreshInputs();
-        } else {
-            var numero = numeroDeJugadoresElement();
-            mostrarErrorEnElemento(numero);
-        }
-    }
-
-    function refreshInputs() {
-        box = document.getElementById("InputDeJugadores");
-        var numero = numeroDeJugadoresElement();
-        numero.innerHTML = numeroDeJugadores;
-
-        while (box.firstChild) {
-            box.removeChild(box.firstChild);
-        }
-
-        for (var i = 0; i < numeroDeJugadores; i++) {
-            var wip = document.createElement("input");
-            wip.className += "PlayerName";
-            if (i == 0) {
-                wip.value = "You";
-            } else {
-                wip.value = "Player " + i;
+                
             }
-            box.appendChild(wip);
-            box.appendChild(document.createElement("br"))
+
+        }
+        function gameFlavor(flavor) {
+            console.log("flavor");
+            console.log(flavor);
+            gFlavor = flavor;
+            document.getElementById("flavorSelect").style.display = "none";
+            document.getElementById("playerSelect").style.display = "block";
+            CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores,gFlavor)
+            refreshInputs();
+            }
+
+        function numeroDeCartasCorrecto() {
+            let cartasTotales = 0;
+            for (var i = 0; i < CartasQueTieneCadaPlayer.length; i++) {
+                var element = CartasQueTieneCadaPlayer[i];
+                cartasTotales = cartasTotales+element;
+            }
+            console.log(CluedoFlavors.allCards(gFlavor))
+            var ok = cartasTotales == CluedoFlavors.allCards(gFlavor).length-3;
+            console.log("Correcot:" + ok );
+            return ok;
         }
 
-    }
-    
-</script>
+
+        function StartGame() {if(numeroDeCartasCorrecto()){
+
+            document.getElementById("playerSelect").style.display = "none";
+            document.getElementById("gamePlay").style.display = "block";
+            var insplay = document.getElementById("gamePlay");
+
+            for (var i = 0; i < document.getElementsByClassName("PlayerName").length; i++) {
+                var element = document.getElementsByClassName("PlayerName")[i];
+                players.push(element.value);
+            }
+            console.log(players);
+
+            var wiping = document.createElement("table")
+            var repeticiones = gFlavor.characterNames.length;
+            if (repeticiones < gFlavor.toolNames.length) repeticiones = gFlavor.toolNames.length;
+            if (repeticiones < gFlavor.placeNames.length) repeticiones = gFlavor.placeNames.length;
+
+            let chdisplay = document.createElement("display");
+            let todisplay = document.createElement("display");
+            let pldisplay = document.createElement("display");
+
+            chdisplay.innerHTML = "select a character";
+            todisplay.innerHTML = "select a tool";
+            pldisplay.innerHTML = "select a place";
+
+            chdisplay.id = "selcha";
+            todisplay.id = "seltoo";
+            pldisplay.id = "selpla";
+
+            let tdch = document.createElement("td");
+            let tdto = document.createElement("td");
+            let tdpl = document.createElement("td");
+
+            tdch.appendChild(chdisplay);
+            tdto.appendChild(todisplay);
+            tdpl.appendChild(pldisplay);
+
+            const tr0 = document.createElement("tr");
+
+            tr0.appendChild(tdch);
+            tr0.appendChild(tdto);
+            tr0.appendChild(tdpl);
+
+            wiping.appendChild(tr0);
+
+            for (var j = 0; j < repeticiones; j++) {
+                const tr = document.createElement("tr");
+
+               
+                const boton0 = document.createElement("boton");
+                boton0.innerHTML = gFlavor.characterNames[j];
+                boton0.onclick = function () { presedSelCha(this);};
+                boton0.classList.add("pequeño");
+
+                let td0 = document.createElement("td");
+                if (typeof(gFlavor.characterNames[j]) != "undefined") {
+                    td0.appendChild(boton0);
+                }
+                tr.appendChild(td0);
+            
+                const boton1 = document.createElement("boton");
+                boton1.innerHTML = gFlavor.toolNames[j];
+                boton1.onclick = function () { presedSelToo(this);};
+                boton1.classList.add("pequeño");
+
+                let td1 = document.createElement("td");
+                if (typeof(gFlavor.toolNames[j]) != "undefined") {
+                    td1.appendChild(boton1);
+                }
+                tr.appendChild(td1);
+            
+
+            
+                const boton2 = document.createElement("boton");
+                boton2.innerHTML = gFlavor.placeNames[j];
+                boton2.onclick = function(){ presedSelPla(this); };
+                boton2.classList.add("pequeño");
+
+                let td2 = document.createElement("td");
+                if (typeof(gFlavor.placeNames[j]) != "undefined") {
+                    td2.appendChild(boton2);
+                }
+                tr.appendChild(td2);
+                
+                
+                wiping.appendChild(tr);
+
+            }
+
+            document.getElementById("gamePlay").appendChild(wiping);
+
+            let wiping2 = document.createElement("table")
+            for (var i = 0; i < players.length; i++) {
+                
+                let tr1 = document.createElement("tr")
+                
+                var element = players[i];
+                let td0 = document.createElement("td");
+                const displei = document.createElement("display");
+                displei.innerHTML = element;
+                td0.appendChild(displei);
+                tr1.appendChild(td0);
+
+                let td1 = document.createElement("td");
+                let yeap = document.createElement("boton");
+                yeap.onclick = function () { presedyeap(this);};
+                yeap.innerHTML = "🖒";
+                yeap.owner = i;
+                td1.appendChild(yeap);
+                tr1.appendChild(td1);
+
+                let td2 = document.createElement("td");
+                let nope = document.createElement("boton");
+                nope.onclick = function () { presednope(this);};
+                nope.innerHTML = "🖓"
+                nope.owner = i;
+                td2.appendChild(nope);
+                tr1.appendChild(td2);
+                
+                wiping2.appendChild(tr1)
+            }
+
+            document.getElementById("gamePlay").appendChild(wiping2);
+        }}
+        
+        
+        let selChaed = undefined;
+        let selPlaed = undefined;
+        let selTooed = undefined;
+        let ThingsThatHaveEverHappened = [];
+
+        function RefreshHedings(){
+            document.getElementById("selcha").innerHTML = selChaed
+            if (selChaed == undefined ) {
+                document.getElementById("selcha").innerHTML = "select a character"                
+            }
+            document.getElementById("selpla").innerHTML = selPlaed
+            if (selPlaed == undefined ) {
+                document.getElementById("selpla").innerHTML = "select a place"                
+            }
+            document.getElementById("seltoo").innerHTML = selTooed
+            if (selTooed == undefined ) {
+                document.getElementById("seltoo").innerHTML = "select a tool"                
+            }
+        }
+
+        function presedSelCha(presedButon) {
+            if (selChaed == presedButon.innerHTML) {
+                selChaed = undefined
+            }else
+            selChaed = presedButon.innerHTML;
+            RefreshHedings();
+        }
+        function presedSelPla(presedButon) {
+            if (selPlaed == presedButon.innerHTML) {
+                selPlaed = undefined
+            }else
+            selPlaed = presedButon.innerHTML;
+            RefreshHedings();
+        }
+        function presedSelToo(presedButon) {
+            if (selTooed == presedButon.innerHTML) {
+                selTooed = undefined
+            }else
+            selTooed = presedButon.innerHTML;
+            RefreshHedings();
+        }
+        function presedyeap(presedButon) {
+            if (presedButon.owner == 0) {
+                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0,[selChaed]))
+                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0,[selPlaed]))
+                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0,[selTooed]))
+            }else ThingsThatHaveEverHappened.push(new PlayerHasSomeFact( presedButon.owner, [selChaed,selPlaed,selTooed] ))
+            check();
+        }
+        function presednope(presedButon) {
+            if (presedButon.owner == 0) {
+                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0,[selChaed]))
+                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0,[selPlaed]))
+                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0,[selTooed]))
+            }else ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact( presedButon.owner, [selChaed,selPlaed,selTooed] ))
+            check();
+        }
+
+        function check() {
+            ThingsThatHaveEverHappened.push(new PlayersFact(CartasQueTieneCadaPlayer));
+            var c = new Cluedo(gFlavor,ThingsThatHaveEverHappened);
+            c.printCards(c.cards());
+
+        }
+
+        function numeroDeJugadoresElement() {
+            return document.getElementById("numero de jugadores");
+        }
+
+        function mostrarErrorEnElemento(element, errorColor, time) {
+            var oldBackground = element.style.backgroundColor;
+
+            errorColor = errorColor || "red";
+
+            if (!time) {
+                time = 50;
+            }
+
+            element.style.backgroundColor = errorColor;
+            setTimeout(function () {
+                element.style.backgroundColor = oldBackground;
+            }, time);
+        }
+
+
+        function jugadorMas() {
+            console.log("mas");
+            console.log(CartasQueTieneCadaPlayer);
+            console.log(gFlavor.characterNames.length)
+            if (numeroDeJugadores != gFlavor.characterNames.length) {
+                numeroDeJugadores = numeroDeJugadores + 1;
+                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores,gFlavor)
+                refreshInputs();
+            } else {
+                var numero = numeroDeJugadoresElement();
+                mostrarErrorEnElemento(numero);
+            }
+            
+        }
+
+        function jugadorMenos() {
+            console.log("menos");
+            console.log(CartasQueTieneCadaPlayer);
+            if (numeroDeJugadores - 1 != 1) {
+                numeroDeJugadores = numeroDeJugadores - 1;
+                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores,gFlavor)
+                refreshInputs();
+            } else {
+                var numero = numeroDeJugadoresElement();
+                mostrarErrorEnElemento(numero);
+            }
+            
+        }
+
+        function refreshInputs() {
+            
+            box = document.getElementById("InputDeJugadores");
+            var numero = numeroDeJugadoresElement();
+            numero.innerHTML = numeroDeJugadores;
+
+            while (box.firstChild) {
+                box.removeChild(box.firstChild);
+            }
+
+            function creaFilaParaJugador( numeroDeJugador ){
+                var i = numeroDeJugador;
+                var wip = document.createElement("input");
+                wip.className += "PlayerName";
+                if (i == 0) {
+                    wip.value = "You";
+                } else {
+                    wip.value = "Player " + i;
+                }
+                box.appendChild(wip);
+
+                var wip0 = document.createElement("boton");
+                wip0.innerHTML="-";
+                wip0.UM1 = i;
+                wip0.onclick = function () {removeto(wip0);};
+                
+                var wip1 = document.createElement("display");
+                if(typeof(CartasQueTieneCadaPlayer[i])=="undefined"){
+                    CartasQueTieneCadaPlayer[i] = 0;
+                }
+                wip1.innerHTML=CartasQueTieneCadaPlayer[i];
+
+                var wip2 = document.createElement("boton");
+                wip2.innerHTML="+";
+                wip2.UM1 = i;
+                wip2.onclick = function () {addto(wip2);};
+
+                box.appendChild(wip0)
+                box.appendChild(wip1)
+                box.appendChild(wip2)
+                box.appendChild(document.createElement("br"))
+            }
+
+            for (var i = 0; i < numeroDeJugadores; i++) {
+                creaFilaParaJugador(i);
+            }
+
+            function addto(Apetecan) {
+                console.log("add");
+                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1]+1;
+                refreshInputs();
+            }
+
+            function removeto(Apetecan) {
+                console.log("remove");
+                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1]-1;
+                refreshInputs();
+            }
+
+            CartasQueTieneCadaPlayer = CartasQueTieneCadaPlayer.slice(0, numeroDeJugadores);
+            console.log(CartasQueTieneCadaPlayer)
+        }
+    </script>
 </body>
+
 </html>
