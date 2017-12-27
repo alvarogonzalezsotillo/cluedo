@@ -63,7 +63,8 @@
 
     </div>
     <div id="gamePlay" style="display:none">
-
+        <div id="historial">
+        </div>
     </div>
 
 
@@ -91,7 +92,7 @@
                 wip.onclick = function () { gameFlavor(this.objFlavor); };
                 document.getElementById("flavorSelect").appendChild(wip);
 
-                
+
             }
 
         }
@@ -101,212 +102,322 @@
             gFlavor = flavor;
             document.getElementById("flavorSelect").style.display = "none";
             document.getElementById("playerSelect").style.display = "block";
-            CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores,gFlavor)
+            CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores, gFlavor)
             refreshInputs();
-            }
+        }
 
         function numeroDeCartasCorrecto() {
             let cartasTotales = 0;
             for (var i = 0; i < CartasQueTieneCadaPlayer.length; i++) {
                 var element = CartasQueTieneCadaPlayer[i];
-                cartasTotales = cartasTotales+element;
+                cartasTotales = cartasTotales + element;
             }
             console.log(CluedoFlavors.allCards(gFlavor))
-            var ok = cartasTotales == CluedoFlavors.allCards(gFlavor).length-3;
-            console.log("Correcot:" + ok );
+            var ok = cartasTotales == CluedoFlavors.allCards(gFlavor).length - 3;
+            console.log("Correcot:" + ok);
             return ok;
         }
 
 
-        function StartGame() {if(numeroDeCartasCorrecto()){
+        function StartGame() {
+            if (numeroDeCartasCorrecto()) {
 
-            document.getElementById("playerSelect").style.display = "none";
-            document.getElementById("gamePlay").style.display = "block";
-            var insplay = document.getElementById("gamePlay");
+                document.getElementById("playerSelect").style.display = "none";
+                document.getElementById("gamePlay").style.display = "block";
+                var insplay = document.getElementById("gamePlay");
 
-            for (var i = 0; i < document.getElementsByClassName("PlayerName").length; i++) {
-                var element = document.getElementsByClassName("PlayerName")[i];
-                players.push(element.value);
-            }
-            console.log(players);
-
-            var wiping = document.createElement("table")
-            var repeticiones = gFlavor.characterNames.length;
-            if (repeticiones < gFlavor.toolNames.length) repeticiones = gFlavor.toolNames.length;
-            if (repeticiones < gFlavor.placeNames.length) repeticiones = gFlavor.placeNames.length;
-
-            let chdisplay = document.createElement("display");
-            let todisplay = document.createElement("display");
-            let pldisplay = document.createElement("display");
-
-            chdisplay.innerHTML = "select a character";
-            todisplay.innerHTML = "select a tool";
-            pldisplay.innerHTML = "select a place";
-
-            chdisplay.id = "selcha";
-            todisplay.id = "seltoo";
-            pldisplay.id = "selpla";
-
-            let tdch = document.createElement("td");
-            let tdto = document.createElement("td");
-            let tdpl = document.createElement("td");
-
-            tdch.appendChild(chdisplay);
-            tdto.appendChild(todisplay);
-            tdpl.appendChild(pldisplay);
-
-            const tr0 = document.createElement("tr");
-
-            tr0.appendChild(tdch);
-            tr0.appendChild(tdto);
-            tr0.appendChild(tdpl);
-
-            wiping.appendChild(tr0);
-
-            for (var j = 0; j < repeticiones; j++) {
-                const tr = document.createElement("tr");
-
-               
-                const boton0 = document.createElement("boton");
-                boton0.innerHTML = gFlavor.characterNames[j];
-                boton0.onclick = function () { presedSelCha(this);};
-                boton0.classList.add("pequeño");
-
-                let td0 = document.createElement("td");
-                if (typeof(gFlavor.characterNames[j]) != "undefined") {
-                    td0.appendChild(boton0);
+                for (var i = 0; i < document.getElementsByClassName("PlayerName").length; i++) {
+                    var element = document.getElementsByClassName("PlayerName")[i];
+                    players.push(element.value);
                 }
-                tr.appendChild(td0);
-            
-                const boton1 = document.createElement("boton");
-                boton1.innerHTML = gFlavor.toolNames[j];
-                boton1.onclick = function () { presedSelToo(this);};
-                boton1.classList.add("pequeño");
+                console.log(players);
 
-                let td1 = document.createElement("td");
-                if (typeof(gFlavor.toolNames[j]) != "undefined") {
-                    td1.appendChild(boton1);
+                var wiping = document.createElement("table")
+                var repeticiones = gFlavor.characterNames.length;
+                if (repeticiones < gFlavor.toolNames.length) repeticiones = gFlavor.toolNames.length;
+                if (repeticiones < gFlavor.placeNames.length) repeticiones = gFlavor.placeNames.length;
+
+                let chdisplay = document.createElement("display");
+                let todisplay = document.createElement("display");
+                let pldisplay = document.createElement("display");
+
+                chdisplay.innerHTML = "select a character";
+                todisplay.innerHTML = "select a tool";
+                pldisplay.innerHTML = "select a place";
+
+                chdisplay.id = "selcha";
+                todisplay.id = "seltoo";
+                pldisplay.id = "selpla";
+
+                let tdch = document.createElement("td");
+                let tdto = document.createElement("td");
+                let tdpl = document.createElement("td");
+
+                tdch.appendChild(chdisplay);
+                tdto.appendChild(todisplay);
+                tdpl.appendChild(pldisplay);
+
+                const tr0 = document.createElement("tr");
+
+                tr0.appendChild(tdch);
+                tr0.appendChild(tdto);
+                tr0.appendChild(tdpl);
+
+                wiping.appendChild(tr0);
+
+                for (var j = 0; j < repeticiones; j++) {
+                    const tr = document.createElement("tr");
+
+                    const boton0 = document.createElement("boton");
+                    boton0.innerHTML = gFlavor.characterNames[j];
+                    boton0.onclick = function () { presedSelCha(this); };
+                    boton0.classList.add("pequeño");
+
+                    let td0 = document.createElement("td");
+                    if (typeof (gFlavor.characterNames[j]) != "undefined") {
+                        td0.appendChild(boton0);
+                    }
+                    tr.appendChild(td0);
+
+                    const boton1 = document.createElement("boton");
+                    boton1.innerHTML = gFlavor.toolNames[j];
+                    boton1.onclick = function () { presedSelToo(this); };
+                    boton1.classList.add("pequeño");
+
+                    let td1 = document.createElement("td");
+                    if (typeof (gFlavor.toolNames[j]) != "undefined") {
+                        td1.appendChild(boton1);
+                    }
+                    tr.appendChild(td1);
+
+
+
+                    const boton2 = document.createElement("boton");
+                    boton2.innerHTML = gFlavor.placeNames[j];
+                    boton2.onclick = function () { presedSelPla(this); };
+                    boton2.classList.add("pequeño");
+
+                    let td2 = document.createElement("td");
+                    if (typeof (gFlavor.placeNames[j]) != "undefined") {
+                        td2.appendChild(boton2);
+                    }
+                    tr.appendChild(td2);
+
+
+                    wiping.appendChild(tr);
+
                 }
-                tr.appendChild(td1);
-            
 
-            
-                const boton2 = document.createElement("boton");
-                boton2.innerHTML = gFlavor.placeNames[j];
-                boton2.onclick = function(){ presedSelPla(this); };
-                boton2.classList.add("pequeño");
+                document.getElementById("gamePlay").appendChild(wiping);
 
-                let td2 = document.createElement("td");
-                if (typeof(gFlavor.placeNames[j]) != "undefined") {
-                    td2.appendChild(boton2);
+                let wiping2 = document.createElement("table")
+                for (var i = 0; i < players.length; i++) {
+
+                    let tr1 = document.createElement("tr")
+
+                    var element = players[i];
+                    let td0 = document.createElement("td");
+                    const displei = document.createElement("display");
+                    displei.innerHTML = element;
+                    td0.appendChild(displei);
+                    tr1.appendChild(td0);
+
+                    let td2 = document.createElement("td");
+                    let nope = document.createElement("boton");
+                    nope.onclick = function () { presednope(this); };
+                    nope.innerHTML = "Does not have any of them"
+                    nope.classList.add("pequeño");
+                    nope.owner = i;
+                    td2.appendChild(nope);
+                    tr1.appendChild(td2);
+
+                    let td1 = document.createElement("td");
+                    let yeap = document.createElement("boton");
+                    yeap.onclick = function () { presedyeap(this); };
+                    yeap.innerHTML = "Has some of them";
+                    yeap.classList.add("pequeño");
+                    yeap.owner = i;
+                    td1.appendChild(yeap);
+                    tr1.appendChild(td1);
+
+
+
+                    wiping2.appendChild(tr1)
                 }
-                tr.appendChild(td2);
-                
-                
-                wiping.appendChild(tr);
-
-            }
-
-            document.getElementById("gamePlay").appendChild(wiping);
-
-            let wiping2 = document.createElement("table")
-            for (var i = 0; i < players.length; i++) {
-                
                 let tr1 = document.createElement("tr")
-                
-                var element = players[i];
+
                 let td0 = document.createElement("td");
                 const displei = document.createElement("display");
-                displei.innerHTML = element;
+                displei.innerHTML = "envelope";
                 td0.appendChild(displei);
                 tr1.appendChild(td0);
 
-                let td1 = document.createElement("td");
-                let yeap = document.createElement("boton");
-                yeap.onclick = function () { presedyeap(this);};
-                yeap.innerHTML = "🖒";
-                yeap.owner = i;
-                td1.appendChild(yeap);
-                tr1.appendChild(td1);
-
                 let td2 = document.createElement("td");
                 let nope = document.createElement("boton");
-                nope.onclick = function () { presednope(this);};
-                nope.innerHTML = "🖓"
-                nope.owner = i;
+                nope.onclick = function () { presedenvelopenope(this); };
+                nope.innerHTML = "Does not have any of them"
+                nope.classList.add("pequeño");
                 td2.appendChild(nope);
                 tr1.appendChild(td2);
-                
-                wiping2.appendChild(tr1)
-            }
 
-            document.getElementById("gamePlay").appendChild(wiping2);
-        }}
-        
-        
+                wiping2.appendChild(tr1)
+
+                document.getElementById("gamePlay").appendChild(wiping2);
+            }        
+}
+
+
         let selChaed = undefined;
         let selPlaed = undefined;
         let selTooed = undefined;
-        let ThingsThatHaveEverHappened = [];
+        var factsB = [
+            new PlayerHasSomeFact(0, ["Herramienta"]),
+            new PlayerHasSomeFact(0, ["Sala de billar"]),
+            new PlayerHasSomeFact(0, ["Rubio"]),
+            new PlayerHasSomeFact(0, ["Cocina"]),
+            new PlayerHasSomeFact(0, ["Vestíbulo"]),
+            new PlayerHasSomeFact(0, ["Candelabro"]),
+            new PlayerHasSomeFact(1, ["Rubio", "Herramienta", "Estudio"]),
+            new PlayerDoesntHaveAnyFact(2, ["Vestíbulo", "Rubio", "Candelabro"]),
 
-        function RefreshHedings(){
+            new PlayerHasSomeFact(0, ["Amapola", "Cuerda", "Vestíbulo"]),
+
+            new PlayerHasSomeFact(1, ["Estudio"]),
+            new PlayerHasSomeFact(1, ["Pistola"]),
+            new PlayerHasSomeFact(2, ["Sala de baile"]),
+            new PlayerHasSomeFact(2, ["Vestíbulo", "Celeste", "Puñal"]),
+            new PlayerHasSomeFact(1, ["Biblioteca", "Orquídea", "Pistola"]),
+            new PlayerHasSomeFact(1, ["Orquídea"]),
+            new PlayerHasSomeFact(1, ["Prado"]),
+            new PlayerHasSomeFact(2, ["Comedor", "Rubio", "Candelabro"]),
+
+            new PlayerHasSomeFact(2, ["Puñal"]),
+
+            new PlayerDoesntHaveAnyFact(1, ["Mora", "Cocina", "Cuerda"]),
+
+            new PlayerDoesntHaveAnyFact(1, ["Mora", "Cocina", "Cuerda"]),
+
+            new PlayerHasSomeFact(2, ["Mora"]),
+
+            new PlayerHasSomeFact(1, ["Cuerda", "Prado", "Invernadero"]),
+
+            new PlayerHasSomeFact(2, ["Salón", "Pistola", "Prado"]),
+
+            new PlayerDoesntHaveAnyFact(1, ["Biblioteca", "Rubio", "Herramienta"]),
+            new PlayerDoesntHaveAnyFact(2, ["Biblioteca", "Rubio", "Herramienta"]),
+
+
+            new PlayerDoesntHaveAnyFact(2, ["Invernadero", "Candelabro", "Celeste"]),
+
+            new PlayerHasSomeFact(1, ["Prado", "Tubería", "Biblioteca"]),
+
+            new PlayerHasSomeFact(1, ["Amapola"]),
+
+
+            new PlayerHasSomeFact(2, ["Invernadero", "Tubería", "Celeste"]),
+
+        ];
+        let ThingsThatHaveEverHappened = factsB;
+
+        function RefreshHedings() {
             document.getElementById("selcha").innerHTML = selChaed
-            if (selChaed == undefined ) {
-                document.getElementById("selcha").innerHTML = "select a character"                
+            if (selChaed == undefined) {
+                document.getElementById("selcha").innerHTML = "select a character"
             }
             document.getElementById("selpla").innerHTML = selPlaed
-            if (selPlaed == undefined ) {
-                document.getElementById("selpla").innerHTML = "select a place"                
+            if (selPlaed == undefined) {
+                document.getElementById("selpla").innerHTML = "select a place"
             }
             document.getElementById("seltoo").innerHTML = selTooed
-            if (selTooed == undefined ) {
-                document.getElementById("seltoo").innerHTML = "select a tool"                
+            if (selTooed == undefined) {
+                document.getElementById("seltoo").innerHTML = "select a tool"
             }
         }
 
         function presedSelCha(presedButon) {
             if (selChaed == presedButon.innerHTML) {
                 selChaed = undefined
-            }else
-            selChaed = presedButon.innerHTML;
+            } else
+                selChaed = presedButon.innerHTML;
             RefreshHedings();
         }
         function presedSelPla(presedButon) {
             if (selPlaed == presedButon.innerHTML) {
                 selPlaed = undefined
-            }else
-            selPlaed = presedButon.innerHTML;
+            } else
+                selPlaed = presedButon.innerHTML;
             RefreshHedings();
         }
         function presedSelToo(presedButon) {
             if (selTooed == presedButon.innerHTML) {
                 selTooed = undefined
-            }else
-            selTooed = presedButon.innerHTML;
+            } else
+                selTooed = presedButon.innerHTML;
             RefreshHedings();
         }
         function presedyeap(presedButon) {
             if (presedButon.owner == 0) {
-                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0,[selChaed]))
-                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0,[selPlaed]))
-                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0,[selTooed]))
-            }else ThingsThatHaveEverHappened.push(new PlayerHasSomeFact( presedButon.owner, [selChaed,selPlaed,selTooed] ))
+                if (selChaed) ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selChaed]))
+                if (selPlaed) ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selPlaed]))
+                if (selTooed) ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selTooed]))
+            } else {
+                let ThingsThatExist = []
+                if (selChaed) ThingsThatExist.push(selChaed)
+                if (selPlaed) ThingsThatExist.push(selPlaed)
+                if (selTooed) ThingsThatExist.push(selTooed)
+                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(presedButon.owner, ThingsThatExist))
+            }
             check();
         }
         function presednope(presedButon) {
             if (presedButon.owner == 0) {
-                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0,[selChaed]))
-                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0,[selPlaed]))
-                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0,[selTooed]))
-            }else ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact( presedButon.owner, [selChaed,selPlaed,selTooed] ))
+                if (selChaed) ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selChaed]))
+                if (selPlaed) ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selPlaed]))
+                if (selTooed) ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selTooed]))
+            } else {
+                let ThingsThatExist = []
+                if (selChaed) ThingsThatExist.push(selChaed)
+                if (selPlaed) ThingsThatExist.push(selPlaed)
+                if (selTooed) ThingsThatExist.push(selTooed)
+                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(presedButon.owner, ThingsThatExist))
+            }
+            check();
+        }
+
+        function presedenvelopenope(presedButon) {
+            ThingsThatHaveEverHappened.push(new EnvelopeDoesntHaveFact([selChaed, selPlaed, selTooed]));
             check();
         }
 
         function check() {
             ThingsThatHaveEverHappened.push(new PlayersFact(CartasQueTieneCadaPlayer));
-            var c = new Cluedo(gFlavor,ThingsThatHaveEverHappened);
-            c.printCards(c.cards());
+            try {
+                var c = new Cluedo(gFlavor, ThingsThatHaveEverHappened);
+                c.printCards(c.cards());
+                console.log(c.envelopeCards)
+            }
+            catch (e) {
+                alert("No es compatible:" + e );
+                console.log(e.stack);
+            }
+            refreshHistorial()
 
+        }
+
+        function refreshHistorial() {
+            for (var j = 0; j < ThingsThatHaveEverHappened.length; j++) {
+                var element = ThingsThatHaveEverHappened[j];
+                var superInecesariltComplicatedtype = element.factType();
+                var type;
+                if(superInecesariltComplicatedtype == PlayersFact.prototype.thisType) type = "cuantos jugadores"
+                if(superInecesariltComplicatedtype == PlayerHasSomeFact.prototype.thisType) type = "tiene alguno de"
+                if(superInecesariltComplicatedtype == PlayerDoesntHaveAnyFact.prototype.thisType) type = "no tiene algo de"
+                if(superInecesariltComplicatedtype == EnvelopeDoesntHaveFact.prototype.thisType) type = "el sobre noo tiene"
+
+                let div = document.getElementById("historial")
+                let text = document.createElement("Display")
+                
+            }
         }
 
         function numeroDeJugadoresElement() {
@@ -335,13 +446,13 @@
             console.log(gFlavor.characterNames.length)
             if (numeroDeJugadores != gFlavor.characterNames.length) {
                 numeroDeJugadores = numeroDeJugadores + 1;
-                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores,gFlavor)
+                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores, gFlavor)
                 refreshInputs();
             } else {
                 var numero = numeroDeJugadoresElement();
                 mostrarErrorEnElemento(numero);
             }
-            
+
         }
 
         function jugadorMenos() {
@@ -349,17 +460,17 @@
             console.log(CartasQueTieneCadaPlayer);
             if (numeroDeJugadores - 1 != 1) {
                 numeroDeJugadores = numeroDeJugadores - 1;
-                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores,gFlavor)
+                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores, gFlavor)
                 refreshInputs();
             } else {
                 var numero = numeroDeJugadoresElement();
                 mostrarErrorEnElemento(numero);
             }
-            
+
         }
 
         function refreshInputs() {
-            
+
             box = document.getElementById("InputDeJugadores");
             var numero = numeroDeJugadoresElement();
             numero.innerHTML = numeroDeJugadores;
@@ -368,7 +479,7 @@
                 box.removeChild(box.firstChild);
             }
 
-            function creaFilaParaJugador( numeroDeJugador ){
+            function creaFilaParaJugador(numeroDeJugador) {
                 var i = numeroDeJugador;
                 var wip = document.createElement("input");
                 wip.className += "PlayerName";
@@ -380,20 +491,20 @@
                 box.appendChild(wip);
 
                 var wip0 = document.createElement("boton");
-                wip0.innerHTML="-";
+                wip0.innerHTML = "-";
                 wip0.UM1 = i;
-                wip0.onclick = function () {removeto(wip0);};
-                
+                wip0.onclick = function () { removeto(wip0); };
+
                 var wip1 = document.createElement("display");
-                if(typeof(CartasQueTieneCadaPlayer[i])=="undefined"){
+                if (typeof (CartasQueTieneCadaPlayer[i]) == "undefined") {
                     CartasQueTieneCadaPlayer[i] = 0;
                 }
-                wip1.innerHTML=CartasQueTieneCadaPlayer[i];
+                wip1.innerHTML = CartasQueTieneCadaPlayer[i];
 
                 var wip2 = document.createElement("boton");
-                wip2.innerHTML="+";
+                wip2.innerHTML = "+";
                 wip2.UM1 = i;
-                wip2.onclick = function () {addto(wip2);};
+                wip2.onclick = function () { addto(wip2); };
 
                 box.appendChild(wip0)
                 box.appendChild(wip1)
@@ -401,19 +512,20 @@
                 box.appendChild(document.createElement("br"))
             }
 
+
             for (var i = 0; i < numeroDeJugadores; i++) {
                 creaFilaParaJugador(i);
             }
 
             function addto(Apetecan) {
                 console.log("add");
-                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1]+1;
+                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1] + 1;
                 refreshInputs();
             }
 
             function removeto(Apetecan) {
                 console.log("remove");
-                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1]-1;
+                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1] - 1;
                 refreshInputs();
             }
 
