@@ -1,3 +1,4 @@
+
 <html>
 
 <style>
@@ -63,7 +64,12 @@
 
     </div>
     <div id="gamePlay" style="display:none">
-        <div id="historial">
+        <boton onclick="TablaDeInputs()">Inputs</boton> <boton onclick="ShowHistorial()">Stack</boton> <boton onclick="ShowInfo()">Info</boton>
+        <div id="historial" style="display:none">
+        </div>
+        <pre id="Info" style="display:none">
+        </pre>
+        <div id="TablaDeInputs">
         </div>
     </div>
 
@@ -74,6 +80,25 @@
         var numeroDeJugadores = 2;
         var players = [];
         var CartasQueTieneCadaPlayer = [];
+
+        function TablaDeInputs() {
+            document.getElementById("Info").style.display = "none";
+            document.getElementById("historial").style.display = "none";
+            document.getElementById("TablaDeInputs").style.display = "block";
+        }
+
+        function ShowHistorial() {
+            document.getElementById("Info").style.display = "none";
+            document.getElementById("historial").style.display = "block";
+            document.getElementById("TablaDeInputs").style.display = "none";
+        }
+
+        function ShowInfo() {
+            document.getElementById("Info").style.display = "block  ";
+            document.getElementById("historial").style.display = "none";
+            document.getElementById("TablaDeInputs").style.display = "none";
+        }
+
         function sabores() {
             return CluedoFlavors.flavors();
         }
@@ -124,7 +149,7 @@
 
                 document.getElementById("playerSelect").style.display = "none";
                 document.getElementById("gamePlay").style.display = "block";
-                var insplay = document.getElementById("gamePlay");
+                var insplay = document.getElementById("TablaDeInputs");
 
                 for (var i = 0; i < document.getElementsByClassName("PlayerName").length; i++) {
                     var element = document.getElementsByClassName("PlayerName")[i];
@@ -208,7 +233,7 @@
 
                 }
 
-                document.getElementById("gamePlay").appendChild(wiping);
+                document.getElementById("TablaDeInputs").appendChild(wiping);
 
                 let wiping2 = document.createElement("table")
                 for (var i = 0; i < players.length; i++) {
@@ -262,7 +287,7 @@
 
                 wiping2.appendChild(tr1)
 
-                document.getElementById("gamePlay").appendChild(wiping2);
+                document.getElementById("TablaDeInputs").appendChild(wiping2);
             }        
 }
 
@@ -317,7 +342,8 @@
             new PlayerHasSomeFact(2, ["Invernadero", "Tubería", "Celeste"]),
 
         ];
-        let ThingsThatHaveEverHappened = factsB;
+        let ThingsThatHaveEverHappened = [];
+        let ReadeableEvents = []
 
         function RefreshHedings() {
             document.getElementById("selcha").innerHTML = selChaed
@@ -357,67 +383,117 @@
         }
         function presedyeap(presedButon) {
             if (presedButon.owner == 0) {
-                if (selChaed) ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selChaed]))
-                if (selPlaed) ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selPlaed]))
-                if (selTooed) ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selTooed]))
+                if (selChaed) {ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selChaed]));ReadeableEvents.push("tienes:"+selChaed)}
+                if (selPlaed) {ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selPlaed]));ReadeableEvents.push("tienes:"+selPlaed)}
+                if (selTooed) {ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selTooed]));ReadeableEvents.push("tienes:"+selTooed)}
             } else {
                 let ThingsThatExist = []
                 if (selChaed) ThingsThatExist.push(selChaed)
                 if (selPlaed) ThingsThatExist.push(selPlaed)
                 if (selTooed) ThingsThatExist.push(selTooed)
                 ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(presedButon.owner, ThingsThatExist))
+                ReadeableEvents.push("el jugador "+players[presedButon.owner]+" tiene alguno de "+ThingsThatExist)
             }
             check();
         }
         function presednope(presedButon) {
             if (presedButon.owner == 0) {
-                if (selChaed) ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selChaed]))
-                if (selPlaed) ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selPlaed]))
-                if (selTooed) ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selTooed]))
+                if (selChaed) {ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selChaed]));ReadeableEvents.push("no tienes:"+selChaed)}
+                if (selPlaed) {ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selPlaed]));ReadeableEvents.push("no tienes:"+selPlaed)}
+                if (selTooed) {ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selTooed]));ReadeableEvents.push("no tienes:"+selTooed)}
             } else {
                 let ThingsThatExist = []
                 if (selChaed) ThingsThatExist.push(selChaed)
                 if (selPlaed) ThingsThatExist.push(selPlaed)
                 if (selTooed) ThingsThatExist.push(selTooed)
                 ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(presedButon.owner, ThingsThatExist))
+                ReadeableEvents.push("el jugador "+players[presedButon.owner]+" no tiene ninguno de "+ThingsThatExist)
             }
             check();
         }
 
         function presedenvelopenope(presedButon) {
-            ThingsThatHaveEverHappened.push(new EnvelopeDoesntHaveFact([selChaed, selPlaed, selTooed]));
+            let ThingsThatExist = []
+                if (selChaed) ThingsThatExist.push(selChaed)
+                if (selPlaed) ThingsThatExist.push(selPlaed)
+                if (selTooed) ThingsThatExist.push(selTooed)
+                ThingsThatHaveEverHappened.push(new EnvelopeDoesntHaveFact(ThingsThatExist))
+                ReadeableEvents.push("el sobre no tiene ninguno de "+ThingsThatExist)
+
             check();
         }
 
         function check() {
+            refreshHistorial();
             ThingsThatHaveEverHappened.push(new PlayersFact(CartasQueTieneCadaPlayer));
             try {
                 var c = new Cluedo(gFlavor, ThingsThatHaveEverHappened);
-                c.printCards(c.cards());
+                var todo = "";
+                c.printCards(c.cards(), function(msg){
+                    todo += msg + "\n";
+                });
+                console.log(todo);
                 console.log(c.envelopeCards)
             }
             catch (e) {
                 alert("No es compatible:" + e );
                 console.log(e.stack);
             }
-            refreshHistorial()
+            ThingsThatHaveEverHappened.pop();
+            
 
         }
 
         function refreshHistorial() {
-            for (var j = 0; j < ThingsThatHaveEverHappened.length; j++) {
-                var element = ThingsThatHaveEverHappened[j];
-                var superInecesariltComplicatedtype = element.factType();
-                var type;
-                if(superInecesariltComplicatedtype == PlayersFact.prototype.thisType) type = "cuantos jugadores"
-                if(superInecesariltComplicatedtype == PlayerHasSomeFact.prototype.thisType) type = "tiene alguno de"
-                if(superInecesariltComplicatedtype == PlayerDoesntHaveAnyFact.prototype.thisType) type = "no tiene algo de"
-                if(superInecesariltComplicatedtype == EnvelopeDoesntHaveFact.prototype.thisType) type = "el sobre noo tiene"
-
-                let div = document.getElementById("historial")
-                let text = document.createElement("Display")
-                
+            var div = document.getElementById("historial")
+            
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
             }
+            
+            console.log("before    "+ReadeableEvents+" - "+ThingsThatHaveEverHappened)
+
+            for (var j = 0; j < ReadeableEvents.length; j++) {
+                var Msg = ReadeableEvents[j];
+                
+                console.log("creando fila para: "+Msg);
+                var text = document.createElement("Display");
+                text.innerHTML = Msg;
+                text.classList.add("pequeño");
+                div.appendChild(text);
+                var cancel = document.createElement("boton");
+                cancel.innerHTML="x"
+                cancel.classList.add("pequeño");
+                cancel.UM1 = j;
+                cancel.onclick = function() {F1(this)};
+                
+                div.appendChild(cancel);
+                div.appendChild(document.createElement("br"));
+
+            }
+
+            console.log(ReadeableEvents+" - "+ThingsThatHaveEverHappened)
+        }
+
+        function F1(um1Holder) {
+            ThingsThatHaveEverHappened = removeIndexFrom(um1Holder.UM1,ThingsThatHaveEverHappened);
+            ReadeableEvents = removeIndexFrom(um1Holder.UM1,ReadeableEvents);
+            console.log("fresquitas: "+ThingsThatHaveEverHappened+ReadeableEvents);
+            check();
+        }
+
+        function removeIndexFrom(j,Array) {
+            var ret = [];
+            console.log("array inicial"+Array)
+            for (var h = 0; h < Array.length; h++) {
+                var element = Array[h];
+                if(h!=j){
+                    ret.push(element);
+                    //console.log("Voy a dejar "+element+" porque " + j +" y "+ h + " son diferentes");
+                }           
+            }
+            console.log("ret = a "+ ret);
+            return ret;
         }
 
         function numeroDeJugadoresElement() {
