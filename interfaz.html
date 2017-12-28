@@ -37,6 +37,12 @@
         display: inline-block;
     }
 
+    .alerta {
+        background-color: red;
+        border-color: yellow;
+        border-width: 5px
+    }
+
     div {
         font-size: 100px;
     }
@@ -64,10 +70,10 @@
 
     </div>
     <div id="gamePlay" style="display:none">
-        <boton onclick="TablaDeInputs()">Inputs</boton> <boton onclick="ShowHistorial()">Stack</boton> <boton onclick="ShowInfo()">Info</boton>
+        <boton onclick="TablaDeInputs()">Inputs</boton> <boton class="alerta" id="StackB" onclick="ShowHistorial()">Stack</boton> <boton id="InfoB" onclick="ShowInfo()">Info</boton>
         <div id="historial" style="display:none">
         </div>
-        <pre id="Info" style="display:none">
+        <pre id="Info" style="display:none" class="pequeño">
         </pre>
         <div id="TablaDeInputs">
         </div>
@@ -433,16 +439,28 @@
                     todo += msg + "\n";
                 });
                 console.log(todo);
+                document.getElementById("Info").innerHTML=todo
                 console.log(c.envelopeCards)
+                desAlerta(document.getElementById("InfoB"));
             }
             catch (e) {
                 alert("No es compatible:" + e );
                 console.log(e.stack);
+                alerta(document.getElementById("InfoB"));
             }
             ThingsThatHaveEverHappened.pop();
-            
+        }
+
+        function alerta(thing) {
+            thing.classList.add("alerta");
+            console.log("alerta");
+        }
+        function desAlerta(thing) {
+            thing.classList.remove("alerta");
+            console.log("desAlerta" + thing);
 
         }
+
 
         function refreshHistorial() {
             var div = document.getElementById("historial")
