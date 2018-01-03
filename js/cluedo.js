@@ -284,11 +284,15 @@ Cluedo.prototype = {
 
     valuesOfCards : ["V","x","."],
 
+    valueOfCardIfTrue : function(){ return this.valuesOfCards[0]; },
+    valueOfCardIfFalse : function(){ return this.valuesOfCards[1]; },
+    valueOfCardIfNone : function(){ return this.valuesOfCards[2]; },
+
     cardsOf : function(playerOrEnvelopeCP){
         var flavor = this._flavor;
-        var ifTrue = this.valuesOfCards[0];
-        var ifFalse = this.valuesOfCards[1];
-        var ifNone = this.valuesOfCards[2];
+        var ifTrue = this.valueOfCardIfTrue();
+        var ifFalse = this.valueOfCardIfFalse();
+        var ifNone = this.valueOfCardIfNone();
 
         var t = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.tools.length ; i ++){
@@ -578,9 +582,9 @@ wether a1 or a2, c0 is true
 */
 
         var self = this;
-        var ifTrue = this.valuesOfCards[0];
-        var ifFalse = this.valuesOfCards[1];
-        var ifNone = this.valuesOfCards[2];
+        var ifTrue = this.valueOfCardIfTrue();
+        var ifFalse = this.valueOfCardIfFalse();
+        var ifNone = this.valueOfCardIfNone();
         var allCards = CluedoFlavors.allCards(this._flavor);
         var println = function(){};
         
