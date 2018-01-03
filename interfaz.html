@@ -440,25 +440,26 @@
                 });
                 console.log(todo);
                 document.getElementById("Info").innerHTML=todo
-                console.log(c.envelopeCards)
-                desAlerta(document.getElementById("InfoB"));
+                var w = c.envelopeCards();
+                console.log(w);
+                desAlerta(document.getElementById("StackB"));
             }
             catch (e) {
                 alert("No es compatible:" + e );
                 console.log(e.stack);
-                alerta(document.getElementById("InfoB"));
+                alerta(document.getElementById("StackB"));
             }
             ThingsThatHaveEverHappened.pop();
+            
         }
 
         function alerta(thing) {
             thing.classList.add("alerta");
-            console.log("alerta");
+            
         }
         function desAlerta(thing) {
             thing.classList.remove("alerta");
-            console.log("desAlerta" + thing);
-
+            
         }
 
 
