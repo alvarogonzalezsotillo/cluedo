@@ -150,7 +150,7 @@ var CluedoFlavors = {
     defaultPlayerCardsForFlavor : function(players,flavor){
         var cards = this.allCards(flavor).length;
         var pc = cards - 3;
-        var c = Math.floor(pc / players);
+        var c = pc / players;
         var ret = [];
         for( var i = 0 ; i < players ; i++ ){
             ret.push(c);
@@ -284,11 +284,15 @@ Cluedo.prototype = {
 
     valuesOfCards : ["V","x","."],
 
+    valueOfCardIfTrue : function(){ return this.valuesOfCards[0]; },
+    valueOfCardIfFalse : function(){ return this.valuesOfCards[1]; },
+    valueOfCardIfNone : function(){ return this.valuesOfCards[2]; },
+
     cardsOf : function(playerOrEnvelopeCP){
         var flavor = this._flavor;
-        var ifTrue = this.valuesOfCards[0];
-        var ifFalse = this.valuesOfCards[1];
-        var ifNone = this.valuesOfCards[2];
+        var ifTrue = this.valueOfCardIfTrue();
+        var ifFalse = this.valueOfCardIfFalse();
+        var ifNone = this.valueOfCardIfNone();
 
         var t = [];
         for( var i = 0 ; i < playerOrEnvelopeCP.tools.length ; i ++){
@@ -578,9 +582,9 @@ wether a1 or a2, c0 is true
 */
 
         var self = this;
-        var ifTrue = this.valuesOfCards[0];
-        var ifFalse = this.valuesOfCards[1];
-        var ifNone = this.valuesOfCards[2];
+        var ifTrue = this.valueOfCardIfTrue();
+        var ifFalse = this.valueOfCardIfFalse();
+        var ifNone = this.valueOfCardIfNone();
         var allCards = CluedoFlavors.allCards(this._flavor);
         var println = function(){};
         
@@ -740,7 +744,7 @@ wether a1 or a2, c0 is true
         
     },
 
-    printCards : function (cards,println){
+    printCards : function (cards,println,playerNames){
 
         function pad(s,n){
             if( !n ){
@@ -760,16 +764,30 @@ wether a1 or a2, c0 is true
             };
         }
 
+       
+    
+
         var playerCards = cards.playerCards;
         var envelopeCards = cards.envelopeCards;
         var nPlayers = playerCards.length;
         var nCards = playerCards[0].allCards.length;
 
-        var s = pad("");
-        for( var p = 0 ; p < nPlayers ; p++ ){
-            s += pad("Player " + p,10);
+        if( !playerNames ){
+            playerNames = [];
+            for( let p = 0 ; p < nPlayers ; p ++ ){
+                playerNames.push("Player " + p );
+            }
+            playerNames.push("Envelope");
         }
-        s += pad("Envelope",10);
+        
+        console.log(playerNames.length);
+        assert( playerNames.length == nPlayers + 1);
+
+        var s = pad("");
+        for( let p = 0 ; p < nPlayers ; p++ ){
+            s += pad( playerNames[p],10);
+        }
+        s += pad( playerNames[nPlayers],10);
         println(s);
 
         

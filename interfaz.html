@@ -440,9 +440,25 @@
                 });
                 console.log(todo);
                 document.getElementById("Info").innerHTML=todo
-                var w = c.envelopeCards();
-                console.log(w());
+                var w = c.envelopeCards().allCards;
                 desAlerta(document.getElementById("StackB"));
+                var s = 0;
+                
+                for (var g = 0; g < w.length; g++) {
+                    var element = w[g];
+                    if (g.value == c.valueOfCardIfTrue) {
+                        s = s+1;
+                    }
+                }
+
+                if (s==3) {
+                    console.log("alerta en info" + s);
+                    alerta(document.getElementById("InfoB"));
+                }else{
+                    desAlerta(document.getElementById("InfoB"));
+                }
+
+
             }
             catch (e) {
                 alert("No es compatible:" + e );
