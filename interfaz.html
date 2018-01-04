@@ -29,6 +29,10 @@
         font-size: 40px
     }
 
+    .superPequeño{
+        font-size: 26px
+    }
+
     .ancho {
         display: block;
     }
@@ -70,10 +74,10 @@
 
     </div>
     <div id="gamePlay" style="display:none">
-        <boton onclick="TablaDeInputs()">Inputs</boton> <boton class="alerta" id="StackB" onclick="ShowHistorial()">Stack</boton> <boton id="InfoB" onclick="ShowInfo()">Info</boton>
+        <boton onclick="TablaDeInputs()">Inputs</boton> <boton id="StackB" onclick="ShowHistorial()">Stack</boton> <boton id="InfoB" onclick="ShowInfo()">Info</boton>
         <div id="historial" style="display:none">
         </div>
-        <pre id="Info" style="display:none" class="pequeño">
+        <pre id="Info" style="display:none" class="superPequeño">
         </pre>
         <div id="TablaDeInputs">
         </div>
@@ -256,7 +260,7 @@
                     let td2 = document.createElement("td");
                     let nope = document.createElement("boton");
                     nope.onclick = function () { presednope(this); };
-                    nope.innerHTML = "Does not have any of them"
+                    nope.innerHTML = "Does not have some of them"
                     nope.classList.add("pequeño");
                     nope.owner = i;
                     td2.appendChild(nope);
@@ -286,7 +290,7 @@
                 let td2 = document.createElement("td");
                 let nope = document.createElement("boton");
                 nope.onclick = function () { presedenvelopenope(this); };
-                nope.innerHTML = "Does not have any of them"
+                nope.innerHTML = "Does not have some of them"
                 nope.classList.add("pequeño");
                 td2.appendChild(nope);
                 tr1.appendChild(td2);
@@ -348,7 +352,7 @@
             new PlayerHasSomeFact(2, ["Invernadero", "Tubería", "Celeste"]),
 
         ];
-        let ThingsThatHaveEverHappened = [];
+        let ThingsThatHaveEverHappened = factsB;
         let ReadeableEvents = []
 
         function RefreshHedings() {
@@ -446,10 +450,14 @@
                 
                 for (var g = 0; g < w.length; g++) {
                     var element = w[g];
-                    if (g.value == c.valueOfCardIfTrue) {
+                    console.log(element.value);
+
+                    if (element.value == "V") {
                         s = s+1;
                     }
                 }
+
+                console.log("tururu "+s)
 
                 if (s==3) {
                     console.log("alerta en info" + s);
