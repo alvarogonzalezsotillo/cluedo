@@ -1,13 +1,16 @@
 
-<html>
-
-<style>
+<html><head><style>
     boton {
-        border: 1px solid black;
+        border-bottom: 5px solid black;
+        border-right: 5px solid black;
+        border-top: 1px solid black;
+        border-left: 1px solid black;
         background-color: lightgray;
         font-size: 100px;
         margin: 30px;
         display: inline-block;
+        text-align: center;
+
     }
 
     input {
@@ -15,6 +18,8 @@
         font-size: 100px;
         width: 40%;
         margin: 10px;
+        text-align: center;
+
     }
 
     display {
@@ -23,14 +28,42 @@
         padding: 5px;
         font-size: 40px;
         width: 33%;
+        text-align: center;
     }
 
     .pequeño {
-        font-size: 40px
+        font-size: 40px;
+    }
+
+    .muyPequeño{
+        font-size: 40px;
+        width: 80%;
+        display: inline-block;
+        
+    }
+
+    .UnTercioExpecialito {
+        width: 33%;
+        margin: 5px;
+        padding: 5px;
+        text-align: center;
+
+    }
+    .UnTercioExpecialito {
+        width: 29%;
+        text-align: center;
+        margin: 2px;
+    }
+
+    .Entero {
+        width: 96%;
+        margin: 5px;
+        padding: 10px;
+        text-align: center;
     }
 
     .superPequeño{
-        font-size: 26px
+        font-size: 26px;
     }
 
     .ancho {
@@ -47,22 +80,36 @@
         border-width: 5px
     }
 
+    .Presed {
+        background-color: gray;
+        border-bottom: 1px solid black;
+        border-right: 1px solid black;
+        border-top: 5px solid black;
+        border-left: 5px solid black;
+    }
+
+    .Unpresed {
+        background-color: lightgray;
+        border-bottom: 5px solid black;
+        border-right: 5px solid black;
+        border-top: 1px solid black;
+        border-left: 1px solid black;
+    }
+
     div {
         font-size: 100px;
     }
 </style>
 
-<body onload="ReadAndFillFavors()">
+</head><body onload="ReadAndFillFavors()">
 
-    <script src="./js/common.js"></script>
-    <script src="./js/cp.js"></script>
-    <script src="./js/cluedo.js"></script>
+    <script src="./interfaz_files/common.js"></script>
+    <script src="./interfaz_files/cp.js"></script>
+    <script src="./interfaz_files/cluedo.js"></script>
 
     <div id="setUp">
-        <div id="flavorSelect">
-
-        </div>
-        <div id="playerSelect" style="display:none">
+        <div id="flavorSelect" style="display: block;"></div>
+        <div id="playerSelect" style="display: none;">
             <boton onclick="jugadorMenos()">-</boton>
             <div class="estrecho" id="numero de jugadores">2</div>
             <boton onclick="jugadorMas()">+</boton>
@@ -73,14 +120,15 @@
         </div>
 
     </div>
-    <div id="gamePlay" style="display:none">
-        <boton onclick="TablaDeInputs()">Inputs</boton> <boton id="StackB" onclick="ShowHistorial()">Stack</boton> <boton id="InfoB" onclick="ShowInfo()">Info</boton>
-        <div id="historial" style="display:none">
-        </div>
-        <pre id="Info" style="display:none" class="superPequeño">
-        </pre>
-        <div id="TablaDeInputs">
-        </div>
+    <div id="gamePlay" style="display: none;">
+        <boton onclick="TablaDeInputs()" class="UnTercioExpecialito">Inputs</boton> 
+        <boton id="StackB" onclick="ShowHistorial()" class="UnTercioExpecialito">Stack</boton> 
+        <boton id="InfoB" onclick="ShowInfo()" class="UnTercioExpecialito">Info</boton>
+
+        <div id="historial" style="display: none;"></div>
+        <pre id="Info" style="display: none;" class="superPequeño"></pre>
+
+        <div id="TablaDeInputs" style="display: block;"></div>
     </div>
 
 
@@ -119,7 +167,7 @@
             for (var i = 0; i < flavors.length; i++) {
                 var element = flavors[i];
                 var wip = document.createElement("boton");
-
+                wip.classList.add("Entero")
                 console.log("creating boton");
 
                 wip.innerHTML = element.flavorName;
@@ -153,6 +201,10 @@
             return ok;
         }
 
+        var grupoBotonesCha = [];
+        var grupoBotonesToo = [];
+        var grupoBotonesPla = [];
+
 
         function StartGame() {
             if (numeroDeCartasCorrecto()) {
@@ -168,6 +220,7 @@
                 console.log(players);
 
                 var wiping = document.createElement("table")
+                wiping.classList.add("Entero");
                 var repeticiones = gFlavor.characterNames.length;
                 if (repeticiones < gFlavor.toolNames.length) repeticiones = gFlavor.toolNames.length;
                 if (repeticiones < gFlavor.placeNames.length) repeticiones = gFlavor.placeNames.length;
@@ -176,13 +229,17 @@
                 let todisplay = document.createElement("display");
                 let pldisplay = document.createElement("display");
 
-                chdisplay.innerHTML = "select a character";
-                todisplay.innerHTML = "select a tool";
-                pldisplay.innerHTML = "select a place";
+                chdisplay.innerHTML = "character";
+                todisplay.innerHTML = "tool";
+                pldisplay.innerHTML = "place";
 
                 chdisplay.id = "selcha";
                 todisplay.id = "seltoo";
                 pldisplay.id = "selpla";
+
+                chdisplay.classList.add("Entero");
+                todisplay.classList.add("Entero");
+                pldisplay.classList.add("Entero");
 
                 let tdch = document.createElement("td");
                 let tdto = document.createElement("td");
@@ -191,6 +248,10 @@
                 tdch.appendChild(chdisplay);
                 tdto.appendChild(todisplay);
                 tdpl.appendChild(pldisplay);
+
+                tdch.classList.add("UnTercio");
+                tdto.classList.add("UnTercio");
+                tdpl.classList.add("UnTercio");
 
                 const tr0 = document.createElement("tr");
 
@@ -207,37 +268,43 @@
                     boton0.innerHTML = gFlavor.characterNames[j];
                     boton0.onclick = function () { presedSelCha(this); };
                     boton0.classList.add("pequeño");
+                    grupoBotonesCha.push(boton0);
+                    boton0.classList.add("Entero");
 
                     let td0 = document.createElement("td");
                     if (typeof (gFlavor.characterNames[j]) != "undefined") {
                         td0.appendChild(boton0);
                     }
                     tr.appendChild(td0);
+                    td0.classList.add("UnTercio");
 
                     const boton1 = document.createElement("boton");
                     boton1.innerHTML = gFlavor.toolNames[j];
                     boton1.onclick = function () { presedSelToo(this); };
                     boton1.classList.add("pequeño");
+                    grupoBotonesToo.push(boton1);
+                    boton1.classList.add("Entero");
 
                     let td1 = document.createElement("td");
                     if (typeof (gFlavor.toolNames[j]) != "undefined") {
                         td1.appendChild(boton1);
                     }
                     tr.appendChild(td1);
-
-
+                    td1.classList.add("UnTercio");
 
                     const boton2 = document.createElement("boton");
                     boton2.innerHTML = gFlavor.placeNames[j];
                     boton2.onclick = function () { presedSelPla(this); };
                     boton2.classList.add("pequeño");
+                    grupoBotonesPla.push(boton2);
+                    boton2.classList.add("Entero");
 
                     let td2 = document.createElement("td");
                     if (typeof (gFlavor.placeNames[j]) != "undefined") {
                         td2.appendChild(boton2);
                     }
                     tr.appendChild(td2);
-
+                    td2.classList.add("UnTercio");
 
                     wiping.appendChild(tr);
 
@@ -352,44 +419,61 @@
             new PlayerHasSomeFact(2, ["Invernadero", "Tubería", "Celeste"]),
 
         ];
-        let ThingsThatHaveEverHappened = factsB;
+        let ThingsThatHaveEverHappened = [];
         let ReadeableEvents = []
 
         function RefreshHedings() {
             document.getElementById("selcha").innerHTML = selChaed
             if (selChaed == undefined) {
-                document.getElementById("selcha").innerHTML = "select a character"
+                document.getElementById("selcha").innerHTML = "character"
             }
             document.getElementById("selpla").innerHTML = selPlaed
             if (selPlaed == undefined) {
-                document.getElementById("selpla").innerHTML = "select a place"
+                document.getElementById("selpla").innerHTML = "place"
             }
             document.getElementById("seltoo").innerHTML = selTooed
             if (selTooed == undefined) {
-                document.getElementById("seltoo").innerHTML = "select a tool"
+                document.getElementById("seltoo").innerHTML = "tool"
             }
         }
 
         function presedSelCha(presedButon) {
+            setToClass(grupoBotonesCha,"Unpresed","Presed");
             if (selChaed == presedButon.innerHTML) {
                 selChaed = undefined
-            } else
+            } else{
                 selChaed = presedButon.innerHTML;
+                setToClass([presedButon],"Presed","Unpresed");
+            }
             RefreshHedings();
         }
         function presedSelPla(presedButon) {
+            setToClass(grupoBotonesPla,"Unpresed","Presed");
             if (selPlaed == presedButon.innerHTML) {
                 selPlaed = undefined
-            } else
+            } else{
                 selPlaed = presedButon.innerHTML;
+                setToClass([presedButon],"Presed","Unpresed");
+            }
             RefreshHedings();
         }
         function presedSelToo(presedButon) {
+            setToClass(grupoBotonesToo,"Unpresed","Presed");
             if (selTooed == presedButon.innerHTML) {
                 selTooed = undefined
-            } else
+            } else{
                 selTooed = presedButon.innerHTML;
+                setToClass([presedButon],"Presed","Unpresed");
+            }
             RefreshHedings();
+        }
+
+        function setToClass(Array,yClass,nClass){
+            for (var i = 0; i < Array.length; i++) {
+                var element = Array[i];
+                element.classList.add(yClass);
+                element.classList.remove(nClass)
+            }
         }
         function presedyeap(presedButon) {
             if (presedButon.owner == 0) {
@@ -418,7 +502,7 @@
                 if (selTooed) ThingsThatExist.push(selTooed)
                 ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(presedButon.owner, ThingsThatExist))
                 ReadeableEvents.push("el jugador "+players[presedButon.owner]+" no tiene ninguno de "+ThingsThatExist)
-            }
+            } 
             check();
         }
 
@@ -439,9 +523,12 @@
             try {
                 var c = new Cluedo(gFlavor, ThingsThatHaveEverHappened);
                 var todo = "";
+                var playersArray = players.slice(0);
+                playersArray.push("Envelope");
                 c.printCards(c.cards(), function(msg){
                     todo += msg + "\n";
-                });
+                },playersArray);
+                //playersArray
                 console.log(todo);
                 document.getElementById("Info").innerHTML=todo
                 var w = c.envelopeCards().allCards;
@@ -469,7 +556,6 @@
 
             }
             catch (e) {
-                alert("No es compatible:" + e );
                 console.log(e.stack);
                 alerta(document.getElementById("StackB"));
             }
@@ -498,9 +584,8 @@
 
             for (var j = 0; j < ReadeableEvents.length; j++) {
                 var Msg = ReadeableEvents[j];
-                
-                console.log("creando fila para: "+Msg);
                 var text = document.createElement("Display");
+                text.classList.add("muyPequeño")
                 text.innerHTML = Msg;
                 text.classList.add("pequeño");
                 div.appendChild(text);
@@ -652,6 +737,6 @@
             console.log(CartasQueTieneCadaPlayer)
         }
     </script>
-</body>
 
-</html>
+
+</body></html>
