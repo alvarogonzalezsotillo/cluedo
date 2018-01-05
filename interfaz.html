@@ -99,6 +99,17 @@
     div {
         font-size: 100px;
     }
+
+    #toast{
+        display: none;
+    }
+
+    #toast.visible{
+        display: block;
+        position: absolute;
+        bottom: 0px;
+        background-color: red;
+    }
 </style>
 
 </head><body onload="ReadAndFillFavors()">
@@ -116,24 +127,38 @@
             <div id="InputDeJugadores">
 
             </div>
-            <boton onclick="StartGame()">GO</boton>
+            <boton onclick="StartGame()">Empezar</boton>
         </div>
 
     </div>
     <div id="gamePlay" style="display: none;">
-        <boton onclick="TablaDeInputs()" class="UnTercioExpecialito">Inputs</boton> 
-        <boton id="StackB" onclick="ShowHistorial()" class="UnTercioExpecialito">Stack</boton> 
-        <boton id="InfoB" onclick="ShowInfo()" class="UnTercioExpecialito">Info</boton>
+        <boton onclick="TablaDeInputs()" class="UnTercioExpecialito">Panel</boton> 
+        <boton id="StackB" onclick="ShowHistorial()" class="UnTercioExpecialito">Hist.</boton> 
+        <boton id="InfoB" onclick="ShowInfo()" class="UnTercioExpecialito">Info.</boton>
 
         <div id="historial" style="display: none;"></div>
         <pre id="Info" style="display: none;" class="superPequeño"></pre>
 
         <div id="TablaDeInputs" style="display: block;"></div>
+
     </div>
 
-
+    <div id="toast">El toast</div>
+    
 
     <script>
+
+
+        function toast( msg ){
+            let label = document.getElementById("toast");
+            label.innerText = msg;
+            label.classList.add("visible");
+            window.setTimeout( function(){
+                label.classList.remove("visible");
+            },2000);
+        }
+
+        
         var gFlavor = {};
         var numeroDeJugadores = 2;
         var players = [];
@@ -229,9 +254,9 @@
                 let todisplay = document.createElement("display");
                 let pldisplay = document.createElement("display");
 
-                chdisplay.innerHTML = "character";
-                todisplay.innerHTML = "tool";
-                pldisplay.innerHTML = "place";
+                chdisplay.innerHTML = "Personaje";
+                todisplay.innerHTML = "Objeto";
+                pldisplay.innerHTML = "Lugar";
 
                 chdisplay.id = "selcha";
                 todisplay.id = "seltoo";
@@ -327,7 +352,7 @@
                     let td2 = document.createElement("td");
                     let nope = document.createElement("boton");
                     nope.onclick = function () { presednope(this); };
-                    nope.innerHTML = "Does not have some of them"
+                    nope.innerHTML = "No tiene ninguno"
                     nope.classList.add("pequeño");
                     nope.owner = i;
                     td2.appendChild(nope);
@@ -336,7 +361,7 @@
                     let td1 = document.createElement("td");
                     let yeap = document.createElement("boton");
                     yeap.onclick = function () { presedyeap(this); };
-                    yeap.innerHTML = "Has some of them";
+                    yeap.innerHTML = "Tiene alguno";
                     yeap.classList.add("pequeño");
                     yeap.owner = i;
                     td1.appendChild(yeap);
@@ -357,7 +382,7 @@
                 let td2 = document.createElement("td");
                 let nope = document.createElement("boton");
                 nope.onclick = function () { presedenvelopenope(this); };
-                nope.innerHTML = "Does not have some of them"
+                nope.innerHTML = "No tiene ninguno"
                 nope.classList.add("pequeño");
                 td2.appendChild(nope);
                 tr1.appendChild(td2);
@@ -475,45 +500,43 @@
                 element.classList.remove(nClass)
             }
         }
+        function popToast(params) {
+            toast(ReadeableEvents[ReadeableEvents.length-1]);
+        }
+
         function presedyeap(presedButon) {
-            if (presedButon.owner == 0) {
-                if (selChaed) {ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selChaed]));ReadeableEvents.push("tienes:"+selChaed)}
-                if (selPlaed) {ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selPlaed]));ReadeableEvents.push("tienes:"+selPlaed)}
-                if (selTooed) {ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(0, [selTooed]));ReadeableEvents.push("tienes:"+selTooed)}
-            } else {
-                let ThingsThatExist = []
-                if (selChaed) ThingsThatExist.push(selChaed)
-                if (selPlaed) ThingsThatExist.push(selPlaed)
-                if (selTooed) ThingsThatExist.push(selTooed)
-                ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(presedButon.owner, ThingsThatExist))
-                ReadeableEvents.push("el jugador "+players[presedButon.owner]+" tiene alguno de "+ThingsThatExist)
-            }
+            
+            let ThingsThatExist = []
+            if (selChaed) ThingsThatExist.push(selChaed)
+            if (selPlaed) ThingsThatExist.push(selPlaed)
+            if (selTooed) ThingsThatExist.push(selTooed)
+            ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(presedButon.owner, ThingsThatExist))
+            ReadeableEvents.push("el jugador "+players[presedButon.owner]+" tiene alguno de "+ThingsThatExist)
+        
+            popToast();
             check();
         }
         function presednope(presedButon) {
-            if (presedButon.owner == 0) {
-                if (selChaed) {ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selChaed]));ReadeableEvents.push("no tienes:"+selChaed)}
-                if (selPlaed) {ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selPlaed]));ReadeableEvents.push("no tienes:"+selPlaed)}
-                if (selTooed) {ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(0, [selTooed]));ReadeableEvents.push("no tienes:"+selTooed)}
-            } else {
-                let ThingsThatExist = []
-                if (selChaed) ThingsThatExist.push(selChaed)
-                if (selPlaed) ThingsThatExist.push(selPlaed)
-                if (selTooed) ThingsThatExist.push(selTooed)
-                ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(presedButon.owner, ThingsThatExist))
-                ReadeableEvents.push("el jugador "+players[presedButon.owner]+" no tiene ninguno de "+ThingsThatExist)
-            } 
+        
+            let ThingsThatExist = []
+            if (selChaed) ThingsThatExist.push(selChaed)
+            if (selPlaed) ThingsThatExist.push(selPlaed)
+            if (selTooed) ThingsThatExist.push(selTooed)
+            ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(presedButon.owner, ThingsThatExist))
+            ReadeableEvents.push("el jugador "+players[presedButon.owner]+" no tiene ninguno de "+ThingsThatExist)
+        
+            popToast();
             check();
         }
 
         function presedenvelopenope(presedButon) {
-            let ThingsThatExist = []
-                if (selChaed) ThingsThatExist.push(selChaed)
-                if (selPlaed) ThingsThatExist.push(selPlaed)
-                if (selTooed) ThingsThatExist.push(selTooed)
-                ThingsThatHaveEverHappened.push(new EnvelopeDoesntHaveFact(ThingsThatExist))
-                ReadeableEvents.push("el sobre no tiene ninguno de "+ThingsThatExist)
-
+            let ThingsThatExist = [];
+            if (selChaed) ThingsThatExist.push(selChaed)
+            if (selPlaed) ThingsThatExist.push(selPlaed)
+            if (selTooed) ThingsThatExist.push(selTooed)
+            ThingsThatHaveEverHappened.push(new EnvelopeDoesntHaveFact(ThingsThatExist))
+            ReadeableEvents.push("el sobre no tiene ninguno de "+ThingsThatExist)
+            popToast();
             check();
         }
 
@@ -528,7 +551,6 @@
                 c.printCards(c.cards(), function(msg){
                     todo += msg + "\n";
                 },playersArray);
-                //playersArray
                 console.log(todo);
                 document.getElementById("Info").innerHTML=todo
                 var w = c.envelopeCards().allCards;
@@ -688,9 +710,9 @@
                 var wip = document.createElement("input");
                 wip.className += "PlayerName";
                 if (i == 0) {
-                    wip.value = "You";
+                    wip.value = "Tu";
                 } else {
-                    wip.value = "Player " + i;
+                    wip.value = "Jug. " + i;
                 }
                 box.appendChild(wip);
 
