@@ -29,6 +29,14 @@ class CPManager {
     }
 
     static defaultEmptyDomainHandler(cp){
+        console.log( cp.name() + " has empty domain. Contained in " + cp._containers.length + " containers:" )
+        for( let i = 0 ; i < cp._containers.length ; i++ ){
+            console.log( "  " + cp._containers[i].name() );
+        }
+
+        console.log( "All cps:" );
+        cp.manager().describe(console.log);
+        
         var error = new Error(cp.name() + " has empty domain");
         error.cp = cp;
         throw error;
@@ -62,7 +70,7 @@ class CPManager {
         return this._stackIndex;
     }
     
-    concatenateNames(cps){
+    static concatenateNames(cps){
         var names = "";
         for( var i = 0 ; i < cps.length ; i++ ){
             names += cps[i].name() + " ";
@@ -80,16 +88,21 @@ class CPManager {
 
     And(cps){
         var ret =  this.SomeTrue(cps,cps.length);
-        var names = this.concatenateNames(cps);
+        var names = CPManager.concatenateNames(cps);
         return this.Rename(ret,"And(" + names + ")");
     }
 
     Not(cp){
-        return new CPNot(this,cp);
+        //if( cp instanceof CPNot ){
+        //    return cp.negatedCP();
+        //}
+        //else{
+            return new CPNot(this,cp);
+        //}
     }
 
     Rename(cp,name){
-        return this.Identity(cp,name); 
+        return cp.rename(name); 
     }
 
     Identity(cp,name){
@@ -112,7 +125,7 @@ class CPManager {
 
     Or(cps){
         var negatedCPS = [];
-        var names = this.concatenateNames(cps);
+        var names = CPManager.concatenateNames(cps);
         for( var i = 0 ; i < cps.length ; i++ ){
             negatedCPS.push( this.Not(cps[i]) );
         }
@@ -137,9 +150,12 @@ class CPManager {
     }
 
     describe(println){
+        if( !println ) println = console.log;
         for( var i = 0 ; i < this._cps.length ; i++ ){
             var cp = this._cps[i];
-            cp.describe(println);
+            if( cp._containers.length == 0 ){
+                cp.describe(println);
+            }
         }
 
     }
@@ -167,7 +183,8 @@ class CPBase {
     }
     
     rename(name){
-        return this.manager().Rename(this,name);
+        this._name=name;
+        return this;
     }
 
     pushDomain(){
@@ -224,7 +241,7 @@ class CPBase {
         for( var i = 0 ; i < level ; i++ ){
             s += "  ";
         }
-        println( s + this.toString() );
+        println( s + this.toString() + " (" + this._containers.length + " containers)" );
 
         for( var i = 0; i < this.observed().length ; i++ ){
             this.observed()[i].describe(println,level+1);
@@ -347,16 +364,8 @@ class CPBoolean extends CPBase{
 
 class CPNumberTrue extends CPBoolean{
 
-    static computeNames(cps){
-        var names = "";
-        for (var i = 0; i < cps.length; i++) {
-            names += " " + cps[i].name();
-        }
-        return names;        
-    }
-
     constructor(manager, cps, number) {
-        super( manager, "AreTrue(" + number + ")(" + CPNumberTrue.computeNames(cps) + ")", cps);
+        super( manager, "AreTrue(" + number + ")(" + CPManager.concatenateNames(cps) + ")", cps);
         this._number = number;
         this.reduceOwnDomain();
         this.reduceObservedDomain();
@@ -403,24 +412,23 @@ class CPNumberTrue extends CPBoolean{
         var ret = false;
         
         if( s.trues.length > this.number() ){
+            log( this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
             ret = ret || this.remove(true);
-            log( ret + "  " + this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
-
         }
         else if( s.falses.length > cps.length - this.number() ){
+            log( this.name() + ": falses.length:" + s.falses.length + ": more false than expected" );
             ret = ret || this.remove(true);
-            log( ret + "  " + this.name() + ": falses.length:" + s.falses.length + ": more false than expected" );
         }
-        else if( s.falses.length  + s.trues.length == cps.length ){
+        else if( s.falses.length  + s.trues.length == cps.length && s.trues.length == this.number() ){
+            log( this.name() + ": all defined and number correct" );
             ret = ret || this.remove(false);
-            log( ret + "  " + this.name() + ": all defined and number correct" );
-
         }
+        log( "reduceOwnDomain ends: " + ret );
         return ret;
     }
 
     reduceObservedDomain(){
-        var log = function(s){/*console.log(s);*/};
+        //var log = function(s){/*console.log(s);*/};
 
         var s = this.status();
         var remainingTrues = this.number() - s.trues.length;
@@ -528,6 +536,10 @@ class CPNot extends CPBase{
         this._cp = cp;
         this.reduceOwnDomain();
         this.reduceObservedDomain();
+    }
+
+    negatedCP(){
+        return this._cp;
     }
     
     defined(){

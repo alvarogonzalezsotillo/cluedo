@@ -16,6 +16,18 @@ if( typeof require != "undefined32"){
 function test(){
 
     var tests = [
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            a.remove(false)
+
+            var or = CP.Or([a]);
+            
+
+            assert(or.isTrue());
+        },
+        
         function(){
             var CP = new CPManager();
             var a = CP.Boolean("a");

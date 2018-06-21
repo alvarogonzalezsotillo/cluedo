@@ -397,7 +397,10 @@ Cluedo.prototype = {
 
         // EACH PLAYER HAS HIS NUMBER OF CARDS
         for( var p = 0 ; p < numberOfPlayers ; p++ ){
-            var cp = CP.SomeTrue(this._playerCardsCP[p].allCards,playersF.numberOfCardsOrEachPlayer[p]);
+            var numberOfCards = playersF.numberOfCardsOrEachPlayer[p];
+            var cp = CP.
+                SomeTrue(this._playerCardsCP[p].allCards,numberOfCards).
+                rename("Player " + p + " has " + numberOfCards + " cards");
             cp.remove(false);
             restrictions.push(cp);
         }
@@ -409,7 +412,7 @@ Cluedo.prototype = {
                 cpsOfCard.push(this._playerCardsCP[p].allCards[i]);
             }
             cpsOfCard.push(this._envelopeCardsCP.allCards[i]);
-            var thisCardInOnePlace = CP.SomeTrue(cpsOfCard,1);
+            var thisCardInOnePlace = CP.SomeTrue(cpsOfCard,1).rename("Card " + allCards[i] + " only in one place");
             thisCardInOnePlace.remove(false);
             restrictions.push(thisCardInOnePlace);
         }
@@ -417,13 +420,13 @@ Cluedo.prototype = {
         // ENVELOPE HAS ONE CHARACTER, ONE TOOL AND ONE PLACE
         var that = this;
         (function(){
-            var cp = CP.SomeTrue(that._envelopeCardsCP.tools,1);
+            var cp = CP.SomeTrue(that._envelopeCardsCP.tools,1).rename("One tool card in envelope");
             cp.remove(false);
             restrictions.push(cp);
-            cp = CP.SomeTrue(that._envelopeCardsCP.characters,1);
+            cp = CP.SomeTrue(that._envelopeCardsCP.characters,1).rename("One character card in envelope");
             cp.remove(false);
             restrictions.push(cp);
-            cp = CP.SomeTrue(that._envelopeCardsCP.places,1);
+            cp = CP.SomeTrue(that._envelopeCardsCP.places,1).rename("One place card in evelope");
             cp.remove(false);
             restrictions.push(cp);
         })();
@@ -433,25 +436,25 @@ Cluedo.prototype = {
             var f = this.facts()[i];
             if( f.factType() == PlayerHasSomeFact.prototype.thisType ){
                 var cps = this.cpArrayFor(f.player(),f.cards());
-                var cp = CP.Or(cps);
+                var cp = CP.Or(cps).rename( "Player" + f.player() + " has some of " + f.cards() );
                 cp.remove(false);
                 restrictions.push(cp);
 
             }
             if( f.factType() == PlayerDoesntHaveAnyFact.prototype.thisType ){
                 var cps = this.cpArrayFor(f.player(),f.cards());
-                var cp = CP.Not(CP.Or(cps));
+                var cp = CP.Not(CP.Or(cps)).rename( "Player " + f.player() + " doesn't have any of " + f.cards() );
                 cp.remove(false);
                 restrictions.push(cp);
             }
             if( f.factType() == EnvelopeDoesntHaveFact.prototype.thisType ){
                 var cps = this.cpArrayForEnvelope(f.cards());
-                var cp = CP.Not(CP.And(cps));
+                var cp = CP.Not(CP.And(cps)).rename( "Envelope doesn't have all of these cards:" + f.cards() );
                 cp.remove(false);
                 restrictions.push(cp);
             }
             if( f.factType() == EnvelopeHasFact.prototype.thisType ){
-                var cps = this.cpArrayForEnvelope(f.cards());
+                var cps = this.cpArrayForEnvelope(f.cards()).rename( "Evelope has this card:" + f.cards() );
                 var cp = CP.And(cps);
                 cp.remove(false);
                 restrictions.push(cp);
