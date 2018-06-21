@@ -1,0 +1,764 @@
+
+<html><head><style>
+    boton {
+        border-bottom: 5px solid black;
+        border-right: 5px solid black;
+        border-top: 1px solid black;
+        border-left: 1px solid black;
+        background-color: lightgray;
+        font-size: 100px;
+        margin: 30px;
+        display: inline-block;
+        text-align: center;
+
+    }
+
+    input {
+        border: 2px solid black;
+        font-size: 100px;
+        width: 40%;
+        margin: 10px;
+        text-align: center;
+
+    }
+
+    display {
+        margin: 10px;
+        border: 2px solid black;
+        padding: 5px;
+        font-size: 40px;
+        width: 33%;
+        text-align: center;
+    }
+
+    .pequeño {
+        font-size: 40px;
+    }
+
+    .muyPequeño{
+        font-size: 40px;
+        width: 80%;
+        display: inline-block;
+        
+    }
+
+    .UnTercioExpecialito {
+        width: 33%;
+        margin: 5px;
+        padding: 5px;
+        text-align: center;
+
+    }
+    .UnTercioExpecialito {
+        width: 29%;
+        text-align: center;
+        margin: 2px;
+    }
+
+    .Entero {
+        width: 96%;
+        margin: 5px;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .superPequeño{
+        font-size: 26px;
+    }
+
+    .ancho {
+        display: block;
+    }
+
+    .estrecho {
+        display: inline-block;
+    }
+
+    .alerta {
+        background-color: red;
+        border-color: yellow;
+        border-width: 5px
+    }
+
+    .Presed {
+        background-color: gray;
+        border-bottom: 1px solid black;
+        border-right: 1px solid black;
+        border-top: 5px solid black;
+        border-left: 5px solid black;
+    }
+
+    .Unpresed {
+        background-color: lightgray;
+        border-bottom: 5px solid black;
+        border-right: 5px solid black;
+        border-top: 1px solid black;
+        border-left: 1px solid black;
+    }
+
+    div {
+        font-size: 100px;
+    }
+
+    #toast{
+        display: none;
+    }
+
+    #toast.visible{
+        display: block;
+        position: absolute;
+        bottom: 0px;
+        background-color: red;
+    }
+</style>
+
+</head><body onload="ReadAndFillFavors()">
+
+    <script src="./interfaz_files/common.js"></script>
+    <script src="./interfaz_files/cp.js"></script>
+    <script src="./interfaz_files/cluedo.js"></script>
+
+    <div id="setUp">
+        <div id="flavorSelect" style="display: block;"></div>
+        <div id="playerSelect" style="display: none;">
+            <boton onclick="jugadorMenos()">-</boton>
+            <div class="estrecho" id="numero de jugadores">2</div>
+            <boton onclick="jugadorMas()">+</boton>
+            <div id="InputDeJugadores">
+
+            </div>
+            <boton onclick="StartGame()">Empezar</boton>
+        </div>
+
+    </div>
+    <div id="gamePlay" style="display: none;">
+        <boton onclick="TablaDeInputs()" class="UnTercioExpecialito">Panel</boton> 
+        <boton id="StackB" onclick="ShowHistorial()" class="UnTercioExpecialito">Hist.</boton> 
+        <boton id="InfoB" onclick="ShowInfo()" class="UnTercioExpecialito">Info.</boton>
+
+        <div id="historial" style="display: none;"></div>
+        <pre id="Info" style="display: none;" class="superPequeño"></pre>
+
+        <div id="TablaDeInputs" style="display: block;"></div>
+
+    </div>
+
+    <div id="toast">El toast</div>
+    
+
+    <script>
+
+
+        function toast( msg ){
+            let label = document.getElementById("toast");
+            label.innerText = msg;
+            label.classList.add("visible");
+            window.setTimeout( function(){
+                label.classList.remove("visible");
+            },2000);
+        }
+
+        
+        var gFlavor = {};
+        var numeroDeJugadores = 2;
+        var players = [];
+        var CartasQueTieneCadaPlayer = [];
+
+        function TablaDeInputs() {
+            document.getElementById("Info").style.display = "none";
+            document.getElementById("historial").style.display = "none";
+            document.getElementById("TablaDeInputs").style.display = "block";
+        }
+
+        function ShowHistorial() {
+            document.getElementById("Info").style.display = "none";
+            document.getElementById("historial").style.display = "block";
+            document.getElementById("TablaDeInputs").style.display = "none";
+        }
+
+        function ShowInfo() {
+            document.getElementById("Info").style.display = "block  ";
+            document.getElementById("historial").style.display = "none";
+            document.getElementById("TablaDeInputs").style.display = "none";
+        }
+
+        function sabores() {
+            return CluedoFlavors.flavors();
+        }
+        function ReadAndFillFavors() {
+            flavors = sabores();
+            console.log("creating botons");
+            console.log(flavors);
+            for (var i = 0; i < flavors.length; i++) {
+                var element = flavors[i];
+                var wip = document.createElement("boton");
+                wip.classList.add("Entero")
+                console.log("creating boton");
+
+                wip.innerHTML = element.flavorName;
+                wip.objFlavor = element;
+                wip.onclick = function () { gameFlavor(this.objFlavor); };
+                document.getElementById("flavorSelect").appendChild(wip);
+
+
+            }
+
+        }
+        function gameFlavor(flavor) {
+            console.log("flavor");
+            console.log(flavor);
+            gFlavor = flavor;
+            document.getElementById("flavorSelect").style.display = "none";
+            document.getElementById("playerSelect").style.display = "block";
+            CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores, gFlavor)
+            refreshInputs();
+        }
+
+        function numeroDeCartasCorrecto() {
+            let cartasTotales = 0;
+            for (var i = 0; i < CartasQueTieneCadaPlayer.length; i++) {
+                var element = CartasQueTieneCadaPlayer[i];
+                cartasTotales = cartasTotales + element;
+            }
+            console.log(CluedoFlavors.allCards(gFlavor))
+            var ok = cartasTotales == CluedoFlavors.allCards(gFlavor).length - 3;
+            console.log("Correcot:" + ok);
+            return ok;
+        }
+
+        var grupoBotonesCha = [];
+        var grupoBotonesToo = [];
+        var grupoBotonesPla = [];
+
+
+        function StartGame() {
+            if (numeroDeCartasCorrecto()) {
+
+                document.getElementById("playerSelect").style.display = "none";
+                document.getElementById("gamePlay").style.display = "block";
+                var insplay = document.getElementById("TablaDeInputs");
+
+                for (var i = 0; i < document.getElementsByClassName("PlayerName").length; i++) {
+                    var element = document.getElementsByClassName("PlayerName")[i];
+                    players.push(element.value);
+                }
+                console.log(players);
+
+                var wiping = document.createElement("table")
+                wiping.classList.add("Entero");
+                var repeticiones = gFlavor.characterNames.length;
+                if (repeticiones < gFlavor.toolNames.length) repeticiones = gFlavor.toolNames.length;
+                if (repeticiones < gFlavor.placeNames.length) repeticiones = gFlavor.placeNames.length;
+
+                let chdisplay = document.createElement("display");
+                let todisplay = document.createElement("display");
+                let pldisplay = document.createElement("display");
+
+                chdisplay.innerHTML = "Personaje";
+                todisplay.innerHTML = "Objeto";
+                pldisplay.innerHTML = "Lugar";
+
+                chdisplay.id = "selcha";
+                todisplay.id = "seltoo";
+                pldisplay.id = "selpla";
+
+                chdisplay.classList.add("Entero");
+                todisplay.classList.add("Entero");
+                pldisplay.classList.add("Entero");
+
+                let tdch = document.createElement("td");
+                let tdto = document.createElement("td");
+                let tdpl = document.createElement("td");
+
+                tdch.appendChild(chdisplay);
+                tdto.appendChild(todisplay);
+                tdpl.appendChild(pldisplay);
+
+                tdch.classList.add("UnTercio");
+                tdto.classList.add("UnTercio");
+                tdpl.classList.add("UnTercio");
+
+                const tr0 = document.createElement("tr");
+
+                tr0.appendChild(tdch);
+                tr0.appendChild(tdto);
+                tr0.appendChild(tdpl);
+
+                wiping.appendChild(tr0);
+
+                for (var j = 0; j < repeticiones; j++) {
+                    const tr = document.createElement("tr");
+
+                    const boton0 = document.createElement("boton");
+                    boton0.innerHTML = gFlavor.characterNames[j];
+                    boton0.onclick = function () { presedSelCha(this); };
+                    boton0.classList.add("pequeño");
+                    grupoBotonesCha.push(boton0);
+                    boton0.classList.add("Entero");
+
+                    let td0 = document.createElement("td");
+                    if (typeof (gFlavor.characterNames[j]) != "undefined") {
+                        td0.appendChild(boton0);
+                    }
+                    tr.appendChild(td0);
+                    td0.classList.add("UnTercio");
+
+                    const boton1 = document.createElement("boton");
+                    boton1.innerHTML = gFlavor.toolNames[j];
+                    boton1.onclick = function () { presedSelToo(this); };
+                    boton1.classList.add("pequeño");
+                    grupoBotonesToo.push(boton1);
+                    boton1.classList.add("Entero");
+
+                    let td1 = document.createElement("td");
+                    if (typeof (gFlavor.toolNames[j]) != "undefined") {
+                        td1.appendChild(boton1);
+                    }
+                    tr.appendChild(td1);
+                    td1.classList.add("UnTercio");
+
+                    const boton2 = document.createElement("boton");
+                    boton2.innerHTML = gFlavor.placeNames[j];
+                    boton2.onclick = function () { presedSelPla(this); };
+                    boton2.classList.add("pequeño");
+                    grupoBotonesPla.push(boton2);
+                    boton2.classList.add("Entero");
+
+                    let td2 = document.createElement("td");
+                    if (typeof (gFlavor.placeNames[j]) != "undefined") {
+                        td2.appendChild(boton2);
+                    }
+                    tr.appendChild(td2);
+                    td2.classList.add("UnTercio");
+
+                    wiping.appendChild(tr);
+
+                }
+
+                document.getElementById("TablaDeInputs").appendChild(wiping);
+
+                let wiping2 = document.createElement("table")
+                for (var i = 0; i < players.length; i++) {
+
+                    let tr1 = document.createElement("tr")
+
+                    var element = players[i];
+                    let td0 = document.createElement("td");
+                    const displei = document.createElement("display");
+                    displei.innerHTML = element;
+                    td0.appendChild(displei);
+                    tr1.appendChild(td0);
+
+                    let td2 = document.createElement("td");
+                    let nope = document.createElement("boton");
+                    nope.onclick = function () { presednope(this); };
+                    nope.innerHTML = "No tiene ninguno"
+                    nope.classList.add("pequeño");
+                    nope.owner = i;
+                    td2.appendChild(nope);
+                    tr1.appendChild(td2);
+
+                    let td1 = document.createElement("td");
+                    let yeap = document.createElement("boton");
+                    yeap.onclick = function () { presedyeap(this); };
+                    yeap.innerHTML = "Tiene alguno";
+                    yeap.classList.add("pequeño");
+                    yeap.owner = i;
+                    td1.appendChild(yeap);
+                    tr1.appendChild(td1);
+
+
+
+                    wiping2.appendChild(tr1)
+                }
+                let tr1 = document.createElement("tr")
+
+                let td0 = document.createElement("td");
+                const displei = document.createElement("display");
+                displei.innerHTML = "envelope";
+                td0.appendChild(displei);
+                tr1.appendChild(td0);
+
+                let td2 = document.createElement("td");
+                let nope = document.createElement("boton");
+                nope.onclick = function () { presedenvelopenope(this); };
+                nope.innerHTML = "No tiene ninguno"
+                nope.classList.add("pequeño");
+                td2.appendChild(nope);
+                tr1.appendChild(td2);
+
+                wiping2.appendChild(tr1)
+
+                document.getElementById("TablaDeInputs").appendChild(wiping2);
+            }        
+        }
+
+
+        let selChaed = undefined;
+        let selPlaed = undefined;
+        let selTooed = undefined;
+        var factsB = [
+            new PlayerHasSomeFact(0, ["Herramienta"]),
+            new PlayerHasSomeFact(0, ["Sala de billar"]),
+            new PlayerHasSomeFact(0, ["Rubio"]),
+            new PlayerHasSomeFact(0, ["Cocina"]),
+            new PlayerHasSomeFact(0, ["Vestíbulo"]),
+            new PlayerHasSomeFact(0, ["Candelabro"]),
+            new PlayerHasSomeFact(1, ["Rubio", "Herramienta", "Estudio"]),
+            new PlayerDoesntHaveAnyFact(2, ["Vestíbulo", "Rubio", "Candelabro"]),
+
+            new PlayerHasSomeFact(0, ["Amapola", "Cuerda", "Vestíbulo"]),
+
+            new PlayerHasSomeFact(1, ["Estudio"]),
+            new PlayerHasSomeFact(1, ["Pistola"]),
+            new PlayerHasSomeFact(2, ["Sala de baile"]),
+            new PlayerHasSomeFact(2, ["Vestíbulo", "Celeste", "Puñal"]),
+            new PlayerHasSomeFact(1, ["Biblioteca", "Orquídea", "Pistola"]),
+            new PlayerHasSomeFact(1, ["Orquídea"]),
+            new PlayerHasSomeFact(1, ["Prado"]),
+            new PlayerHasSomeFact(2, ["Comedor", "Rubio", "Candelabro"]),
+
+            new PlayerHasSomeFact(2, ["Puñal"]),
+
+            new PlayerDoesntHaveAnyFact(1, ["Mora", "Cocina", "Cuerda"]),
+
+            new PlayerDoesntHaveAnyFact(1, ["Mora", "Cocina", "Cuerda"]),
+
+            new PlayerHasSomeFact(2, ["Mora"]),
+
+            new PlayerHasSomeFact(1, ["Cuerda", "Prado", "Invernadero"]),
+
+            new PlayerHasSomeFact(2, ["Salón", "Pistola", "Prado"]),
+
+            new PlayerDoesntHaveAnyFact(1, ["Biblioteca", "Rubio", "Herramienta"]),
+            new PlayerDoesntHaveAnyFact(2, ["Biblioteca", "Rubio", "Herramienta"]),
+
+
+            new PlayerDoesntHaveAnyFact(2, ["Invernadero", "Candelabro", "Celeste"]),
+
+            new PlayerHasSomeFact(1, ["Prado", "Tubería", "Biblioteca"]),
+
+            new PlayerHasSomeFact(1, ["Amapola"]),
+
+
+            new PlayerHasSomeFact(2, ["Invernadero", "Tubería", "Celeste"]),
+
+        ];
+        let ThingsThatHaveEverHappened = [];
+        let ReadeableEvents = []
+
+        function RefreshHedings() {
+            document.getElementById("selcha").innerHTML = selChaed
+            if (selChaed == undefined) {
+                document.getElementById("selcha").innerHTML = "character"
+            }
+            document.getElementById("selpla").innerHTML = selPlaed
+            if (selPlaed == undefined) {
+                document.getElementById("selpla").innerHTML = "place"
+            }
+            document.getElementById("seltoo").innerHTML = selTooed
+            if (selTooed == undefined) {
+                document.getElementById("seltoo").innerHTML = "tool"
+            }
+        }
+
+        function presedSelCha(presedButon) {
+            setToClass(grupoBotonesCha,"Unpresed","Presed");
+            if (selChaed == presedButon.innerHTML) {
+                selChaed = undefined
+            } else{
+                selChaed = presedButon.innerHTML;
+                setToClass([presedButon],"Presed","Unpresed");
+            }
+            RefreshHedings();
+        }
+        function presedSelPla(presedButon) {
+            setToClass(grupoBotonesPla,"Unpresed","Presed");
+            if (selPlaed == presedButon.innerHTML) {
+                selPlaed = undefined
+            } else{
+                selPlaed = presedButon.innerHTML;
+                setToClass([presedButon],"Presed","Unpresed");
+            }
+            RefreshHedings();
+        }
+        function presedSelToo(presedButon) {
+            setToClass(grupoBotonesToo,"Unpresed","Presed");
+            if (selTooed == presedButon.innerHTML) {
+                selTooed = undefined
+            } else{
+                selTooed = presedButon.innerHTML;
+                setToClass([presedButon],"Presed","Unpresed");
+            }
+            RefreshHedings();
+        }
+
+        function setToClass(Array,yClass,nClass){
+            for (var i = 0; i < Array.length; i++) {
+                var element = Array[i];
+                element.classList.add(yClass);
+                element.classList.remove(nClass)
+            }
+        }
+        function popToast(params) {
+            toast(ReadeableEvents[ReadeableEvents.length-1]);
+        }
+
+        function presedyeap(presedButon) {
+            
+            let ThingsThatExist = []
+            if (selChaed) ThingsThatExist.push(selChaed)
+            if (selPlaed) ThingsThatExist.push(selPlaed)
+            if (selTooed) ThingsThatExist.push(selTooed)
+            ThingsThatHaveEverHappened.push(new PlayerHasSomeFact(presedButon.owner, ThingsThatExist))
+            ReadeableEvents.push("el jugador "+players[presedButon.owner]+" tiene alguno de "+ThingsThatExist)
+        
+            popToast();
+            check();
+        }
+        function presednope(presedButon) {
+        
+            let ThingsThatExist = []
+            if (selChaed) ThingsThatExist.push(selChaed)
+            if (selPlaed) ThingsThatExist.push(selPlaed)
+            if (selTooed) ThingsThatExist.push(selTooed)
+            ThingsThatHaveEverHappened.push(new PlayerDoesntHaveAnyFact(presedButon.owner, ThingsThatExist))
+            ReadeableEvents.push("el jugador "+players[presedButon.owner]+" no tiene ninguno de "+ThingsThatExist)
+        
+            popToast();
+            check();
+        }
+
+        function presedenvelopenope(presedButon) {
+            let ThingsThatExist = [];
+            if (selChaed) ThingsThatExist.push(selChaed)
+            if (selPlaed) ThingsThatExist.push(selPlaed)
+            if (selTooed) ThingsThatExist.push(selTooed)
+            ThingsThatHaveEverHappened.push(new EnvelopeDoesntHaveFact(ThingsThatExist))
+            ReadeableEvents.push("el sobre no tiene ninguno de "+ThingsThatExist)
+            popToast();
+            check();
+        }
+
+        function check() {
+            refreshHistorial();
+            ThingsThatHaveEverHappened.push(new PlayersFact(CartasQueTieneCadaPlayer));
+            try {
+                var c = new Cluedo(gFlavor, ThingsThatHaveEverHappened);
+                var todo = "";
+                var playersArray = players.slice(0);
+                playersArray.push("Envelope");
+                c.printCards(c.cards(), function(msg){
+                    todo += msg + "\n";
+                },playersArray);
+                console.log(todo);
+                document.getElementById("Info").innerHTML=todo
+                var w = c.envelopeCards().allCards;
+                desAlerta(document.getElementById("StackB"));
+                var s = 0;
+                
+                for (var g = 0; g < w.length; g++) {
+                    var element = w[g];
+                    console.log(element.value);
+
+                    if (element.value == "V") {
+                        s = s+1;
+                    }
+                }
+
+                console.log("tururu "+s)
+
+                if (s==3) {
+                    console.log("alerta en info" + s);
+                    alerta(document.getElementById("InfoB"));
+                }else{
+                    desAlerta(document.getElementById("InfoB"));
+                }
+
+
+            }
+            catch (e) {
+                console.log(e.stack);
+                alerta(document.getElementById("StackB"));
+            }
+            ThingsThatHaveEverHappened.pop();
+            
+        }
+
+        function alerta(thing) {
+            thing.classList.add("alerta");
+            
+        }
+        function desAlerta(thing) {
+            thing.classList.remove("alerta");
+            
+        }
+
+
+        function refreshHistorial() {
+            var div = document.getElementById("historial")
+            
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
+            }
+            
+            console.log("before    "+ReadeableEvents+" - "+ThingsThatHaveEverHappened)
+
+            for (var j = 0; j < ReadeableEvents.length; j++) {
+                var Msg = ReadeableEvents[j];
+                var text = document.createElement("Display");
+                text.classList.add("muyPequeño")
+                text.innerHTML = Msg;
+                text.classList.add("pequeño");
+                div.appendChild(text);
+                var cancel = document.createElement("boton");
+                cancel.innerHTML="x"
+                cancel.classList.add("pequeño");
+                cancel.UM1 = j;
+                cancel.onclick = function() {F1(this)};
+                
+                div.appendChild(cancel);
+                div.appendChild(document.createElement("br"));
+
+            }
+
+            console.log(ReadeableEvents+" - "+ThingsThatHaveEverHappened)
+        }
+
+        function F1(um1Holder) {
+            ThingsThatHaveEverHappened = removeIndexFrom(um1Holder.UM1,ThingsThatHaveEverHappened);
+            ReadeableEvents = removeIndexFrom(um1Holder.UM1,ReadeableEvents);
+            console.log("fresquitas: "+ThingsThatHaveEverHappened+ReadeableEvents);
+            check();
+        }
+
+        function removeIndexFrom(j,Array) {
+            var ret = [];
+            console.log("array inicial"+Array)
+            for (var h = 0; h < Array.length; h++) {
+                var element = Array[h];
+                if(h!=j){
+                    ret.push(element);
+                    //console.log("Voy a dejar "+element+" porque " + j +" y "+ h + " son diferentes");
+                }           
+            }
+            console.log("ret = a "+ ret);
+            return ret;
+        }
+
+        function numeroDeJugadoresElement() {
+            return document.getElementById("numero de jugadores");
+        }
+
+        function mostrarErrorEnElemento(element, errorColor, time) {
+            var oldBackground = element.style.backgroundColor;
+
+            errorColor = errorColor || "red";
+
+            if (!time) {
+                time = 50;
+            }
+
+            element.style.backgroundColor = errorColor;
+            setTimeout(function () {
+                element.style.backgroundColor = oldBackground;
+            }, time);
+        }
+
+
+        function jugadorMas() {
+            console.log("mas");
+            console.log(CartasQueTieneCadaPlayer);
+            console.log(gFlavor.characterNames.length)
+            if (numeroDeJugadores != gFlavor.characterNames.length) {
+                numeroDeJugadores = numeroDeJugadores + 1;
+                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores, gFlavor)
+                refreshInputs();
+            } else {
+                var numero = numeroDeJugadoresElement();
+                mostrarErrorEnElemento(numero);
+            }
+
+        }
+
+        function jugadorMenos() {
+            console.log("menos");
+            console.log(CartasQueTieneCadaPlayer);
+            if (numeroDeJugadores - 1 != 1) {
+                numeroDeJugadores = numeroDeJugadores - 1;
+                CartasQueTieneCadaPlayer = CluedoFlavors.defaultPlayerCardsForFlavor(numeroDeJugadores, gFlavor)
+                refreshInputs();
+            } else {
+                var numero = numeroDeJugadoresElement();
+                mostrarErrorEnElemento(numero);
+            }
+
+        }
+
+        function refreshInputs() {
+
+            box = document.getElementById("InputDeJugadores");
+            var numero = numeroDeJugadoresElement();
+            numero.innerHTML = numeroDeJugadores;
+
+            while (box.firstChild) {
+                box.removeChild(box.firstChild);
+            }
+
+            function creaFilaParaJugador(numeroDeJugador) {
+                var i = numeroDeJugador;
+                var wip = document.createElement("input");
+                wip.className += "PlayerName";
+                if (i == 0) {
+                    wip.value = "Tu";
+                } else {
+                    wip.value = "Jug. " + i;
+                }
+                box.appendChild(wip);
+
+                var wip0 = document.createElement("boton");
+                wip0.innerHTML = "-";
+                wip0.UM1 = i;
+                wip0.onclick = function () { removeto(wip0); };
+
+                var wip1 = document.createElement("display");
+                if (typeof (CartasQueTieneCadaPlayer[i]) == "undefined") {
+                    CartasQueTieneCadaPlayer[i] = 0;
+                }
+                wip1.innerHTML = CartasQueTieneCadaPlayer[i];
+
+                var wip2 = document.createElement("boton");
+                wip2.innerHTML = "+";
+                wip2.UM1 = i;
+                wip2.onclick = function () { addto(wip2); };
+
+                box.appendChild(wip0)
+                box.appendChild(wip1)
+                box.appendChild(wip2)
+                box.appendChild(document.createElement("br"))
+            }
+
+
+            for (var i = 0; i < numeroDeJugadores; i++) {
+                creaFilaParaJugador(i);
+            }
+
+            function addto(Apetecan) {
+                console.log("add");
+                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1] + 1;
+                refreshInputs();
+            }
+
+            function removeto(Apetecan) {
+                console.log("remove");
+                CartasQueTieneCadaPlayer[Apetecan.UM1] = CartasQueTieneCadaPlayer[Apetecan.UM1] - 1;
+                refreshInputs();
+            }
+
+            CartasQueTieneCadaPlayer = CartasQueTieneCadaPlayer.slice(0, numeroDeJugadores);
+            console.log(CartasQueTieneCadaPlayer)
+        }
+    </script>
+
+
+</body></html>
