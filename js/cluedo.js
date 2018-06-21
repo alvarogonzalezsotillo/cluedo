@@ -783,7 +783,6 @@ wether a1 or a2, c0 is true
             playerNames.push("Envelope");
         }
         
-        console.log(playerNames.length);
         assert( playerNames.length == nPlayers + 1);
 
         var s = pad("");
