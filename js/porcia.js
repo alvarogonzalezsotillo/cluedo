@@ -165,7 +165,7 @@ function porciaIV(){
             cero_una_dos(cajaPlomo,cajaPlata,cajaOro)], 1).asTrue().rename("Una caja dos una caja una una caja ninguna");
     }
 
-        var CP = new CPManager();
+    var CP = new CPManager();
 
     var retratoEnOro = CP.Boolean("enOro");
     var retratoEnPlata = CP.Boolean("enPlata");
@@ -208,10 +208,48 @@ function porciaIV(){
 
 }
 
-porciaI();
-porciaII();
-porciaIII();
-porciaIV();
+function porciaV(){
+    var CP = new CPManager();
+
+    var dagaEnOro = CP.Boolean("enOro");
+    var dagaEnPlata = CP.Boolean("enPlata");
+    var dagaEnPlomo = CP.Boolean("enPlomo");
+
+
+    var belliniHizoOro = CP.Boolean("BelliniHizoOro");
+    var belliniHizoPlata = CP.Boolean("BelliniHizoPlata");
+    var belliniHizoPlomo = CP.Boolean("BelliniHizoPlomo");
+
+    var inscripcionPlomo = CP.SomeTrue([belliniHizoOro,belliniHizoPlata,belliniHizoPlomo],0,1).rename("Todo lo más uno es de Bellini");
+
+    CP.Iff( belliniHizoOro, dagaEnOro ).asTrue();
+    CP.Iff( belliniHizoPlata, CP.Not(dagaEnPlata) ).asTrue();
+    CP.Iff( belliniHizoPlomo, inscripcionPlomo).asTrue();
+
+    CP.SomeTrue([dagaEnOro,dagaEnPlata,dagaEnPlomo],1).
+        rename("Solo un daga en total").
+        asTrue();
+
+
+    let cps = [dagaEnOro,dagaEnPlata,dagaEnPlomo,inscripcionPlomo];
+    CPBacktrack(cps, function(cps){
+
+        
+        var println = function(s){console.log("** " + s )};
+        println( "************************************");
+
+        var cps = CP.cps();
+        for( var i = 0 ; i < cps.length ; i++ ){
+            println( cps[i].toString() );
+        }
+    });
+}
+
+//porciaI();
+//porciaII();
+//porciaIII();
+//porciaIV();
+porciaV();
 
 
 

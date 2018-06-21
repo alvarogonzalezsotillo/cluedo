@@ -125,7 +125,7 @@ MixIn(CPManager.prototype, {
     },
     Iff : function(lhs,rhs){
         var ret = this.And( [this.IfThen(lhs,rhs),this.IfThen(rhs,lhs)]);
-        return this.Rename(ret,"Iff(" + lhs.name() + ", (" + rhs.name() + ")");
+        return this.Rename(ret,"Iff(" + lhs.name() + ", " + rhs.name() + ")");
     },
 
     describe : function(println){
