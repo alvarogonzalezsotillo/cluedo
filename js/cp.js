@@ -105,9 +105,6 @@ class CPManager {
         return cp.rename(name); 
     }
 
-    Identity(cp,name){
-        return new CPIdentity(this,cp,name);
-    }
 
     SomeTrue(cps,numberMin,numberMax){
         numberMax = numberMax || numberMin;
@@ -483,52 +480,6 @@ class CPNumberTrue extends CPBoolean{
     }
 }
 
-class CPIdentity extends CPBase{
-    constructor(manager, cp, name) {
-        super(manager,name,[cp])
-        name = name || "Identity(" + cp.name() + ")";
-        this._cp = cp;
-        this.reduceOwnDomain();
-        this.reduceObservedDomain();
-    }
-  
-    defined(){
-        return this._cp.defined();
-    }
-
-    canBeTrue(){
-        return this._cp.canBeTrue();
-    }
-
-    canBeFalse(){
-        return this._cp.canBeFalse();
-    }
-
-    remove(value){
-        var changed = this._cp.remove(value);
-        if( changed ){
-            this.notifyContainers();
-        }
-        return changed;
-    }
-
-    reduceOwnDomain(){
-        var ret = this._cp.reduceOwnDomain();
-        if( ret ){
-            this.notifyContainers();
-        }
-        return ret;
-    }
-
-    notified(){
-        this.notifyContainers();
-    }
-
-    reduceObservedDomain(){
-        return this._cp.reduceObservedDomain();
-    }
-
-}
 
 class CPNot extends CPBase{
     constructor(manager, cp) {
