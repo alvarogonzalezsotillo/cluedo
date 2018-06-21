@@ -93,12 +93,12 @@ class CPManager {
     }
 
     Not(cp){
-        //if( cp instanceof CPNot ){
-        //    return cp.negatedCP();
-        //}
-        //else{
+        if( cp instanceof CPNot ){
+            return cp.negatedCP();
+        }
+        else{
             return new CPNot(this,cp);
-        //}
+        }
     }
 
     Rename(cp,name){
