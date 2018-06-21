@@ -147,7 +147,7 @@ function porciaIII(){
 function porciaIV(){
 
     function unaCajaDos_unaCajaUna_unaCajaNinguna(cajaOro,cajaPlata,cajaOro){
-    
+        
         function cero_una_dos(cp1,cp2,cp3){
             return CP.And( [
                 CP.SomeTrue(cp1,0),
