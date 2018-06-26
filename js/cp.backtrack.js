@@ -71,8 +71,9 @@ function CPBacktrack(cps,foundCallback,fromIndex){
     }
 }
 
-function CPContinuableBacktrack( cps ){
+function CPContinuableBacktrack( cps, toBeDefined ){
     this._cps = cps;
+    this._toBeDefined = toBeDefined || cps;
     this._CP = this._cps[0].manager();
     this.executed = false;
 
@@ -132,8 +133,8 @@ MixIn(CPContinuableBacktrack.prototype,{
     },
 
     allDefined : function(){
-        for( var i = 0 ; i < this._cps.length ; i++ ){
-            if( !this._cps[i].defined() ){
+        for( var i = 0 ; i < this._toBeDefined.length ; i++ ){
+            if( !this._toBeDefined[i].defined() ){
                 return false;
             }
         }

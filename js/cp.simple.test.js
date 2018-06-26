@@ -403,6 +403,35 @@ function test(){
             assert(b.isTrue());
         },
 
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var a2 = CP.Boolean("a");
+            assert(a === a2);
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var a2 = a.rename("b");
+
+            assert(a === a2);
+            assert(a.name() == "b");
+            assert(a.id() == "a")
+            assert(a2.name() == "b");
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+
+            var f = CP.ForAll([a,b], CP.IfThen( CP.And([a,b]), CP.Or([a,b]) ));
+            CP.describe();
+            
+            assert(f.isTrue());
+        }
+
 
     ];
 

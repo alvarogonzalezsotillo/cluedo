@@ -12,6 +12,7 @@ class CPManager {
         var self = this;
         this._stackIndex = 0;
         this.setEmptyDomainHandler(CPManager.defaultEmptyDomainHandler);
+        this.booleans = {};
     }
 
 
@@ -83,7 +84,12 @@ class CPManager {
     }
     
     Boolean(name){
-        return new CPBoolean(this,name);
+        let ret = this.booleans[name];
+        if( !ret ){
+            ret = new CPBoolean(this,name);
+            this.booleans[name] = ret;
+        }
+        return ret;
     }
 
     And(cps){
@@ -91,6 +97,8 @@ class CPManager {
         var names = CPManager.concatenateNames(cps);
         return this.Rename(ret,"And(" + names + ")");
     }
+
+
 
     Not(cp){
         if( cp instanceof CPNot ){
@@ -141,11 +149,45 @@ class CPManager {
         return this.Rename(ret,"If(" + cpIf.name() + ")Then(" + cpThen.name() + ")");
     }
 
+    ForAll(cps,cpThen){
+        const binaryDigit = function(number,size,digit){
+            let bin = (number>>>0).toString(2);
+            while( bin.length < size ){
+                bin = "0"+bin;
+            }
+            let ret = bin.substr(digit,1)
+            return Number(ret);
+        }
+
+        let cpsNot = [];
+        for( let i = 0 ; i < cps.length ; i += 1 ){
+            cpsNot.push( this.Not(cps[i]));
+        }
+        
+        let ifthens = [];
+        for( let i = 0 ; i < (2 << cps.length) ; i += 1 ){
+            let combination = [];
+            for( let j = 0 ; j < cps.length ; j += 1 ){
+                let bit = binaryDigit(i,j);
+                let c = cps[j];
+                if( !bit ){
+                    c = cpsNot[j];
+                }
+                combination.push(c);
+            }
+            ifthens.push( this.IfThen( this.And(combination) ,cpThen));
+        }
+
+        let ret =  this.And(ifthens);
+        return ret.rename( "ForAll(" + CPManager.concatenateNames(cps) + ")Then(" + cpThen.name() + ")");
+    }
+
     Iff(lhs,rhs){
         var ret = this.And( [this.IfThen(lhs,rhs),this.IfThen(rhs,lhs)]);
         return this.Rename(ret,"Iff(" + lhs.name() + ", " + rhs.name() + ")");
     }
 
+    
     describe(println){
         if( !println ) println = console.log;
         for( var i = 0 ; i < this._cps.length ; i++ ){
@@ -161,9 +203,10 @@ class CPManager {
 
 
 class CPBase {
-    constructor(manager, name, observed) {
+    constructor(manager, id, observed) {
         this._manager = manager;
-        this._name = name;
+        this._id = id;
+        this._name = id;
         this._containers = [];
         this._observed = [];
         if (observed) {
@@ -250,6 +293,11 @@ class CPBase {
     }
     
     toString(){
+        let id = "";
+        if( this.id() != this.name() ){
+            id = "(id:" + this.id() + ")";
+        }
+        
         return "[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]:" + this.name();
     }
 
@@ -271,6 +319,10 @@ class CPBase {
     
     name(){
         return this._name;
+    }
+
+    id(){
+        return this._id;
     }
 
     impossible(){
@@ -335,6 +387,12 @@ class CPBoolean extends CPBase{
         return this._canBeFalse[this.manager().stackIndex()];
     }
 
+    rename(name){
+        this._name=name;
+        return this;
+    }
+
+
     remove(value){
         log( this.name() + ": remove:" + value );
         if( value && this.canBeTrue() ){
@@ -356,6 +414,24 @@ class CPBoolean extends CPBase{
         }
 
         return false;
+    }
+}
+
+class CPForAll extends CPBoolean{
+    constructor(manager, cps, cpThen ){
+        super( manager, "ForAll(" + CPManager.concatenateNames(cps) + ")Then(" + cpThen.name() + ")", cps.concat(cpThen) );
+        this._cps = cps;
+        this._cpThen = cpThen;
+        this.reduceOwnDomain();
+    }
+
+    reduceOwnDomain(){
+        let backtrack = new CPContinuableBacktrack(this._cps, [cpThen]);
+        let solutions = 0;
+        while( backtrack.nextSolution() ){
+            solutions += 1;
+        }
+        
     }
 }
 
