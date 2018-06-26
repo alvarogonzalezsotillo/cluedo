@@ -95,7 +95,12 @@ MixIn(CPContinuableBacktrack.prototype,{
         this.execute = function(){
             assert( this.executed === false );
             this.executed = true;
-            cp.remove(value);
+
+            if( !cp.defined() ){
+                cp.remove(value);
+            }
+
+            
             var nextRestCps = restCps.slice(0);
             var nextCp = nextRestCps.pop();
             log( "nextCp: " + nextCp );

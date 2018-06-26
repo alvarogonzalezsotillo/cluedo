@@ -1,8 +1,10 @@
 if( typeof require != "undefined" ){
     var common = require("./common");
+    var backtrack = require("./cp.backtrack");
     MixIn = common.MixIn;
     assert = common.assert;
     log = common.log;
+    CPContinuableBacktrack = backtrack.CPContinuableBacktrack;
 }
 
 
@@ -11,7 +13,8 @@ class CPManager {
         this._cps = [];
         var self = this;
         this._stackIndex = 0;
-        this.setEmptyDomainHandler(CPManager.defaultEmptyDomainHandler);
+        this._emptyDomainHandlers = [];
+        this.pushEmptyDomainHandler(CPManager.defaultEmptyDomainHandler);
         this.booleans = {};
     }
 
@@ -43,13 +46,17 @@ class CPManager {
         throw error;
     }
 
-    setEmptyDomainHandler(h){
-        this._emptyDomainHandler = h;
+    pushEmptyDomainHandler(h){
+        this._emptyDomainHandlers.push(h);
+    }
+
+    popEmptyDomainHandler(){
+        this._emptyDomainHandlers.pop();
     }
 
     notifyEmptyDomain(cp){
         log( "------ emptyDomain:" + cp.toString() );
-        this._emptyDomainHandler(cp);
+        this._emptyDomainHandlers[this._emptyDomainHandlers.length-1](cp);
     }
 
     pushScenario(){
@@ -150,36 +157,7 @@ class CPManager {
     }
 
     ForAll(cps,cpThen){
-        const binaryDigit = function(number,size,digit){
-            let bin = (number>>>0).toString(2);
-            while( bin.length < size ){
-                bin = "0"+bin;
-            }
-            let ret = bin.substr(digit,1)
-            return Number(ret);
-        }
-
-        let cpsNot = [];
-        for( let i = 0 ; i < cps.length ; i += 1 ){
-            cpsNot.push( this.Not(cps[i]));
-        }
-        
-        let ifthens = [];
-        for( let i = 0 ; i < (2 << cps.length) ; i += 1 ){
-            let combination = [];
-            for( let j = 0 ; j < cps.length ; j += 1 ){
-                let bit = binaryDigit(i,j);
-                let c = cps[j];
-                if( !bit ){
-                    c = cpsNot[j];
-                }
-                combination.push(c);
-            }
-            ifthens.push( this.IfThen( this.And(combination) ,cpThen));
-        }
-
-        let ret =  this.And(ifthens);
-        return ret.rename( "ForAll(" + CPManager.concatenateNames(cps) + ")Then(" + cpThen.name() + ")");
+        return new CPForAll(this,cps,cpThen);
     }
 
     Iff(lhs,rhs){
@@ -425,13 +403,54 @@ class CPForAll extends CPBoolean{
         this.reduceOwnDomain();
     }
 
-    reduceOwnDomain(){
-        let backtrack = new CPContinuableBacktrack(this._cps, [cpThen]);
-        let solutions = 0;
-        while( backtrack.nextSolution() ){
-            solutions += 1;
+    notified(){
+        var own = this.reduceOwnDomain();
+        var obs = this.reduceObservedDomain();
+        if( own ){
+            this.notifyContainers();
         }
-        
+    }
+
+
+    reduceOwnDomain(){
+        if( !this._cps ){
+            // STILL IN BASE CONSTRUCTOR
+            return false;
+        }
+        if( !this.canBeFalse ){
+            return false;
+        }
+        let backtrack = new CPContinuableBacktrack(this._cps);
+        let failed = false;
+        const failedCB = function(){
+            failed = true;
+        }
+        this._manager.pushEmptyDomainHandler(failedCB);
+
+        let someTrue = false;
+        let someFalse = false;
+        let someUndefined = false;
+        while( backtrack.nextSolution() ){
+            if( this._cpThen.isTrue() ){
+                someTrue = true;
+            }
+            if( this._cpThen.isFalse() ){
+                someFalse = true;
+            }
+            if( !this._cpThen.defined() ){
+                someUndefined = true;
+            }
+        }
+        this._manager.popEmptyDomainHandler();
+        if( !failed && !someFalse && !someUndefined ){
+            this.remove(false);
+            return true;
+        }
+        if( someFalse ){
+            this.remove(true);
+            return true;
+        }
+        return false;
     }
 }
 

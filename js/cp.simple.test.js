@@ -256,47 +256,44 @@ function test(){
         function(){
             var CP = new CPManager();
             var a = CP.Boolean("a");
+
+            var failed = false;
+            var failedCP = null;
+            CP.pushEmptyDomainHandler(function(e){failedCP=e;failed=true;});
+            a.remove(false);
             a.remove(true);
-            try{
-                a.remove(false);
-            }
-            catch(e){
-                assert(e.cp === a);
-                return;
-            }
-            assert(false);
+            assert(failed);
+            assert(failedCP === a);
         },
 
         function(){
             var CP = new CPManager();
+
             var a = CP.Boolean("a");
             var st = CP.SomeTrue([a],1);
             var nst = CP.Not(CP.SomeTrue([a],1));
 
+            var failed = false;
+            CP.pushEmptyDomainHandler(function(){failed=true;});
+
             st.remove(false);
-            try{
-                nst.remove(false);
-            }
-            catch(e){
-                return;
-            }
-            assert(false);
+            nst.remove(false);
+            assert(failed);
         },
 
         function(){
             var CP = new CPManager();
+
             var a = CP.Boolean("a");
             var st = CP.Or([a]);
             var nst = CP.Not(CP.Or([a]));
 
+            var failed = false;
+            CP.pushEmptyDomainHandler(function(){failed=true;});
+
             st.remove(false);
-            try{
-                nst.remove(false);
-            }
-            catch(e){
-                return;
-            }
-            assert(false);
+            nst.remove(false);
+            assert(failed);
         },
 
         function(){
@@ -427,11 +424,50 @@ function test(){
             var b = CP.Boolean("b");
 
             var f = CP.ForAll([a,b], CP.IfThen( CP.And([a,b]), CP.Or([a,b]) ));
-            CP.describe();
             
             assert(f.isTrue());
-        }
+        },
 
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+            var c = CP.Boolean("c");
+
+            var f = CP.ForAll([a,b,c], CP.IfThen( CP.And([a,b,c]), CP.Or([a,b,c]) ));
+            
+            assert(f.isTrue());
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+
+            var f = CP.ForAll([a], a );
+            
+            assert(f.isFalse());
+        },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+
+            var f = CP.ForAll([a], b );
+            
+            assert(!f.defined());
+        },
+        
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+            var b = CP.Boolean("b");
+
+            a.remove(false);
+            var f = CP.ForAll([a,b], CP.Or([a,b]) );
+            
+            assert(f.isTrue());
+        },
 
     ];
 
