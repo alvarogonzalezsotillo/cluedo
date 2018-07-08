@@ -220,7 +220,8 @@ function porciaV(){
     var belliniHizoPlata = CP.Boolean("BelliniHizoPlata");
     var belliniHizoPlomo = CP.Boolean("BelliniHizoPlomo");
 
-    var inscripcionPlomo = CP.SomeTrue([belliniHizoOro,belliniHizoPlata,belliniHizoPlomo],0,1).rename("Todo lo más uno es de Bellini");
+    var inscripcionPlomo = CP.SomeTrue([belliniHizoOro,belliniHizoPlata,belliniHizoPlomo],0,1).
+        rename("Todo lo más uno es de Bellini");
 
     CP.Iff( belliniHizoOro, dagaEnOro ).asTrue();
     CP.Iff( belliniHizoPlata, CP.Not(dagaEnPlata) ).asTrue();
@@ -241,26 +242,60 @@ function porciaV(){
     var abrirSiempreOro = CP.ForAll(cps,abrirOro).rename("Abrir siempre oro");
     var abrirSiemprePlomo = CP.ForAll(cps,abrirPlomo).rename("Abrir siempre plomo");
     var abrirSiemprePlata = CP.ForAll(cps,abrirPlata).rename("Abrir siempre plata");
-    
-    //abrirSiempreOro.describe();
-    //abrirSiemprePlata.describe();
-    //abrirSiemprePlomo.describe();
 
-    CP.describe();
+    console.log( abrirSiempreOro.toString() );
+    console.log( abrirSiemprePlata.toString() );
+    console.log( abrirSiemprePlomo.toString() );
+    
+}
+
+
+function porciaVI(){
+    var CP = new CPManager();
+
+    var retratoEnOro = CP.Boolean("enOro");
+    var retratoEnPlata = CP.Boolean("enPlata");
+
+
+    var belliniHizoOro = CP.Boolean("BelliniHizoOro");
+    var belliniHizoPlata = CP.Boolean("BelliniHizoPlata");
+
+    var inscripcionPlata = CP.SomeTrue([belliniHizoOro,belliniHizoPlata],1).
+        rename("Uno y solo uno es de Bellini");
+
+    CP.Iff( belliniHizoOro, retratoEnPlata ).asTrue();
+    CP.Iff( belliniHizoPlata, inscripcionPlata).asTrue();
+
+    CP.SomeTrue([retratoEnOro,retratoEnPlata],1).
+        rename("Solo un daga en total").
+        asTrue();
+
+    let cps = [belliniHizoOro,belliniHizoPlata];
+
+
+
+    var abrirSiempreOro = CP.ForAll(cps,retratoEnOro).rename("Abrir siempre oro");
+    var abrirSiemprePlata = CP.ForAll(cps,retratoEnPlata).rename("Abrir siempre plata");
+
+
+    console.log( abrirSiempreOro.toString() );
+    console.log( abrirSiemprePlata.toString() );
     
 }
 
 let print = function(s){console.log("===== " + s + " =====")};
-// print( "PORCIAI");
-// porciaI();
-// print( "PORCIAII");
-// porciaII();
-// print( "PORCIAIII");
-// porciaIII();
-// print( "PORCIAIV");
-// porciaIV();
-print( "PORCIAV");
+print( "PORCIA-I");
+porciaI();
+print( "PORCIA-II");
+porciaII();
+print( "PORCIA-III");
+porciaIII();
+print( "PORCIA-IV");
+porciaIV();
+print( "PORCIA-V");
 porciaV();
+print( "PORCIA-VI");
+porciaVI();
 
 
 
