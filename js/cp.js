@@ -1,6 +1,6 @@
 if( typeof require != "undefined" ){
-    var common = require("./common");
-    var backtrack = require("./cp.backtrack");
+    let common = require("./common");
+    let backtrack = require("./cp.backtrack");
     MixIn = common.MixIn;
     assert = common.assert;
     log = common.log;
@@ -11,7 +11,6 @@ if( typeof require != "undefined" ){
 class CPManager {
     constructor() {
         this._cps = [];
-        var self = this;
         this._stackIndex = 0;
         this._emptyDomainHandlers = [];
         this.pushEmptyDomainHandler(CPManager.defaultEmptyDomainHandler);
@@ -20,7 +19,7 @@ class CPManager {
 
 
     checkIfFailed(){
-        for( var i = 0 ; i < this.cps().length ; i++ ){
+        for( let i = 0 ; i < this.cps().length ; i++ ){
             if( this.cps()[i].impossible() ){
                 return true;
             }
@@ -41,7 +40,7 @@ class CPManager {
         console.log( "All cps:" );
         cp.manager().describe(console.log);
         
-        var error = new Error(cp.name() + " has empty domain");
+        let error = new Error(cp.name() + " has empty domain");
         error.cp = cp;
         throw error;
     }
@@ -60,7 +59,7 @@ class CPManager {
     }
 
     pushScenario(){
-        for( var i = 0 ; i < this._cps.length ; i++ ){
+        for( let i = 0 ; i < this._cps.length ; i++ ){
             this._cps[i].pushDomain();
         }
         this._stackIndex += 1;
@@ -68,7 +67,7 @@ class CPManager {
 
     popScenario(){
         assert(this._stackIndex>0);
-        for( var i = 0 ; i < this._cps.length ; i++ ){
+        for( let i = 0 ; i < this._cps.length ; i++ ){
             this._cps[i].popDomain();
         }
         this._stackIndex -= 1;
@@ -79,8 +78,8 @@ class CPManager {
     }
     
     static concatenateNames(cps){
-        var names = "";
-        for( var i = 0 ; i < cps.length ; i++ ){
+        let names = "";
+        for( let i = 0 ; i < cps.length ; i++ ){
             names += cps[i].name() + " ";
         }
         return names;
@@ -100,8 +99,8 @@ class CPManager {
     }
 
     And(cps){
-        var ret =  this.SomeTrue(cps,cps.length);
-        var names = CPManager.concatenateNames(cps);
+        let ret =  this.SomeTrue(cps,cps.length);
+        let names = CPManager.concatenateNames(cps);
         return this.Rename(ret,"And(" + names + ")");
     }
 
@@ -127,8 +126,8 @@ class CPManager {
             return new CPNumberTrue(this,cps,numberMin);
         }
         else{
-            var rets = [];
-            for( var i = numberMin ; i <= numberMax ; i++ ){
+            let rets = [];
+            for( let i = numberMin ; i <= numberMax ; i++ ){
                 rets.push( new CPNumberTrue(this,cps,i) );
             }
             return new CPNumberTrue(this,rets,1);
@@ -136,12 +135,12 @@ class CPManager {
     }
 
     Or(cps){
-        var negatedCPS = [];
-        var names = CPManager.concatenateNames(cps);
-        for( var i = 0 ; i < cps.length ; i++ ){
+        let negatedCPS = [];
+        let names = CPManager.concatenateNames(cps);
+        for( let i = 0 ; i < cps.length ; i++ ){
             negatedCPS.push( this.Not(cps[i]) );
         }
-        var ret =  this.Not( this.And(negatedCPS) );
+        let ret =  this.Not( this.And(negatedCPS) );
         return this.Rename(ret,"Or(" + names + ")" );
     }
 
@@ -152,7 +151,7 @@ class CPManager {
         // t     f    f
         // t     t    t
 
-        var ret = this.Or( [this.Not(cpIf), cpThen] );
+        let ret = this.Or( [this.Not(cpIf), cpThen] );
         return this.Rename(ret,"If(" + cpIf.name() + ")Then(" + cpThen.name() + ")");
     }
 
@@ -161,15 +160,15 @@ class CPManager {
     }
 
     Iff(lhs,rhs){
-        var ret = this.And( [this.IfThen(lhs,rhs),this.IfThen(rhs,lhs)]);
+        let ret = this.And( [this.IfThen(lhs,rhs),this.IfThen(rhs,lhs)]);
         return this.Rename(ret,"Iff(" + lhs.name() + ", " + rhs.name() + ")");
     }
 
     
     describe(println){
         if( !println ) println = console.log;
-        for( var i = 0 ; i < this._cps.length ; i++ ){
-            var cp = this._cps[i];
+        for( let i = 0 ; i < this._cps.length ; i++ ){
+            let cp = this._cps[i];
             if( cp._containers.length == 0 ){
                 cp.describe(println);
             }
@@ -190,7 +189,7 @@ class CPBase {
         if (observed) {
             this._observed = observed;
         }
-        for (var i = 0; i < this._observed.length; i++) {
+        for (let i = 0; i < this._observed.length; i++) {
             this._observed[i].addContainer(this);
         }
         manager.addCP(this);
@@ -223,16 +222,16 @@ class CPBase {
 
     notifyContainers(){
         log( this.name() + ": notifyContainers ");
-        for( var i = 0 ; i < this._containers.length ; i++ ){
-            var cp = this._containers[i];
+        for( let i = 0 ; i < this._containers.length ; i++ ){
+            let cp = this._containers[i];
             log( "  " + this.name() + ": notifyContainers: " + cp.name() );
             cp.notified();
         }
     }
 
     notified(){
-        var own = this.reduceOwnDomain();
-        var obs = this.reduceObservedDomain();
+        let own = this.reduceOwnDomain();
+        let obs = this.reduceObservedDomain();
         log( "obs:" + obs +  "  own:" + own + "  --- " + this.name() );
         if( own ){
             this.notifyContainers();
@@ -255,13 +254,13 @@ class CPBase {
             level = 0;
         }
         
-        var s = "";
-        for( var i = 0 ; i < level ; i++ ){
+        let s = "";
+        for( let i = 0 ; i < level ; i++ ){
             s += "  ";
         }
         println( s + this.toString() + " (" + this._containers.length + " containers)" );
 
-        for( var i = 0; i < this.observed().length ; i++ ){
+        for( let i = 0; i < this.observed().length ; i++ ){
             this.observed()[i].describe(println,level+1);
         }
     }
@@ -366,8 +365,10 @@ class CPBoolean extends CPBase{
     }
 
     rename(name){
-        this._name=name;
-        return this;
+        if( this.constructor.name == CPBoolean.name ){
+            throw new Error("No se puede cambiar el nombre de un CPBoolean");
+        }
+        return super.rename(name);
     }
 
 
@@ -404,8 +405,8 @@ class CPForAll extends CPBoolean{
     }
 
     notified(){
-        var own = this.reduceOwnDomain();
-        var obs = this.reduceObservedDomain();
+        let own = this.reduceOwnDomain();
+        let obs = this.reduceObservedDomain();
         if( own ){
             this.notifyContainers();
         }
@@ -442,12 +443,9 @@ class CPForAll extends CPBoolean{
             }
         }
         this._manager.popEmptyDomainHandler();
+
         if( !failed && !someFalse && !someUndefined ){
             this.remove(false);
-            return true;
-        }
-        if( someFalse ){
-            this.remove(true);
             return true;
         }
         return false;
@@ -468,15 +466,15 @@ class CPNumberTrue extends CPBoolean{
     }
 
     status(){
-        var cps = this.observed();
+        let cps = this.observed();
 
-        var ret = {
+        let ret = {
             falses : [],
             trues : [],
             undefineds : []
         }
 
-        for( var i = 0 ; i < cps.length ; i++ ){
+        for( let i = 0 ; i < cps.length ; i++ ){
             if( cps[i].isFalse() ){
                 ret.falses.push(cps[i]);
             }
@@ -492,16 +490,16 @@ class CPNumberTrue extends CPBoolean{
     }
     
     reduceOwnDomain(){
-        var cps = this.observed();
+        let cps = this.observed();
 
-        //var log = function(s){ console.log(s); };
+        //let log = function(s){ console.log(s); };
 
         
-        var s = this.status();
+        let s = this.status();
         
         log( this.name() + ": reduceOwndomain" );
 
-        var ret = false;
+        let ret = false;
         
         if( s.trues.length > this.number() ){
             log( this.name() + ": trueNumber:" + s.trues.length + ": more true than expected");
@@ -520,11 +518,11 @@ class CPNumberTrue extends CPBoolean{
     }
 
     reduceObservedDomain(){
-        //var log = function(s){/*console.log(s);*/};
+        //let log = function(s){/*console.log(s);*/};
 
-        var s = this.status();
-        var remainingTrues = this.number() - s.trues.length;
-        var possibleTruesOrFalses = s.undefineds.length;
+        let s = this.status();
+        let remainingTrues = this.number() - s.trues.length;
+        let possibleTruesOrFalses = s.undefineds.length;
 
         log(this.name());
         log(s)
@@ -534,17 +532,17 @@ class CPNumberTrue extends CPBoolean{
             //assert( s.trues.length <= this.number() );
             if( remainingTrues == possibleTruesOrFalses ){
                 log( this.name() + ": needed some more trues, the same as undefined");
-                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                for( let i = 0 ; i < s.undefineds.length ; i++ ){
                     s.undefineds[i].remove(false);
                 }
                 return true;
             }
 
-            var cps = this.observed();
+            let cps = this.observed();
             
             if( s.trues.length == this.number()  ){
                 log( this.name() + ": all needed trues defined, the rest are falses" );
-                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                for( let i = 0 ; i < s.undefineds.length ; i++ ){
                     s.undefineds[i].remove(true);
                 }
                 return true;
@@ -555,7 +553,7 @@ class CPNumberTrue extends CPBoolean{
 
             if( s.trues.length == this.number()-1 && possibleTruesOrFalses == 1 ){
                 log( this.name() + ": since I am false, at least one of my possible trues can not be true");
-                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                for( let i = 0 ; i < s.undefineds.length ; i++ ){
                     s.undefineds[i].remove(true);
                 }
                 return true;
@@ -563,7 +561,7 @@ class CPNumberTrue extends CPBoolean{
 
             if( s.trues.length == this.number() && possibleTruesOrFalses == 1 ){
                 log( this.name() + ": since I am false, at least one of my possible trues is true");
-                for( var i = 0 ; i < s.undefineds.length ; i++ ){
+                for( let i = 0 ; i < s.undefineds.length ; i++ ){
                     s.undefineds[i].remove(false);
                 }
                 return true;
@@ -601,7 +599,7 @@ class CPNot extends CPBase{
     }
 
     remove(value){
-        var changed = this._cp.remove(!value);
+        let changed = this._cp.remove(!value);
         if( changed ){
             this.notifyContainers();
         }
@@ -609,7 +607,7 @@ class CPNot extends CPBase{
     }
 
     reduceOwnDomain(){
-        var ret = this._cp.reduceOwnDomain();
+        let ret = this._cp.reduceOwnDomain();
         if( ret ){
             this.notifyContainers();
         }

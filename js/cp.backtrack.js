@@ -1,6 +1,6 @@
 if( typeof require != "undefined" ){
-    var common = require("./common");
-    var cp = require("./cp");
+    let common = require("./common");
+    let cp = require("./cp");
     MixIn = common.MixIn;
     assert = common.assert;
     log = common.log;
@@ -9,9 +9,9 @@ if( typeof require != "undefined" ){
 
 
 function CPBacktrack(cps,foundCallback,fromIndex){
-    var CP = cps[0].manager();
-    CP.setEmptyDomainHandler(failedCallback);
-    var self = this;
+    let CP = cps[0].manager();
+    CP.pushEmptyDomainHandler(failedCallback);
+    let self = this;
     self._failed = false;
 
 
@@ -45,11 +45,11 @@ function CPBacktrack(cps,foundCallback,fromIndex){
     function tryRemoving(i,b){
 
         log( "tryRemoving:" + i + "  " + b );
-        for( var j = 0 ; j < cps.length ; j++ ){
+        for( let j = 0 ; j < cps.length ; j++ ){
             log( cps[j].toString() );
         }
         
-        var cp = cps[i];
+        let cp = cps[i];
         CP.pushScenario();
         setFailed(false);
         cp.remove(b);
@@ -64,11 +64,12 @@ function CPBacktrack(cps,foundCallback,fromIndex){
         CP.popScenario();
     }
 
-    var i = firstUndefinedIndexFrom(fromIndex);
+    let i = firstUndefinedIndexFrom(fromIndex);
     if( i != -1 ){
         tryRemoving(i,true);
         tryRemoving(i,false);
     }
+    CP.popEmptyDomainHandler();
 }
 
 function CPContinuableBacktrack( cps, toBeDefined ){
@@ -77,10 +78,10 @@ function CPContinuableBacktrack( cps, toBeDefined ){
     this._CP = this._cps[0].manager();
     this.executed = false;
 
-    var self = this;
+    let self = this;
 
-    var nextRestCps = cps.slice(0);
-    var nextCp = nextRestCps.pop();
+    let nextRestCps = cps.slice(0);
+    let nextCp = nextRestCps.pop();
     
     
     this._stack = [new this.State(nextCp,true,nextRestCps), new this.State(nextCp,false,nextRestCps)];
@@ -101,10 +102,10 @@ MixIn(CPContinuableBacktrack.prototype,{
             }
 
             
-            var nextRestCps = restCps.slice(0);
-            var nextCp = nextRestCps.pop();
+            let nextRestCps = restCps.slice(0);
+            let nextCp = nextRestCps.pop();
             log( "nextCp: " + nextCp );
-            var S = CPContinuableBacktrack.prototype.State;
+            let S = CPContinuableBacktrack.prototype.State;
             if( nextCp ){
                 return [new S(nextCp,true,nextRestCps), new S(nextCp,false,nextRestCps)];
             }
@@ -138,7 +139,7 @@ MixIn(CPContinuableBacktrack.prototype,{
     },
 
     allDefined : function(){
-        for( var i = 0 ; i < this._toBeDefined.length ; i++ ){
+        for( let i = 0 ; i < this._toBeDefined.length ; i++ ){
             if( !this._toBeDefined[i].defined() ){
                 return false;
             }
@@ -150,14 +151,21 @@ MixIn(CPContinuableBacktrack.prototype,{
         return this.currentLevel() < 0;
     },
 
+
+    finalize : function(){
+        while(!this.stackEmpty() ){
+            this.popState();
+            this._CP.popScenario();
+        }
+    },
     
     nextSolution : function(){
+
+        //const log = function(msg){console.log(msg);};
         while( !this.stackEmpty() ){
 
             log( "Stack not empty" );
-            
-            
-            var state = this.peekState();
+            let state = this.peekState();
 
             log( "  state:" + state.cp.name() + "  executed:" + state.executed );
 
@@ -167,13 +175,19 @@ MixIn(CPContinuableBacktrack.prototype,{
             }
             else{
                 this._CP.pushScenario();
-                var newStates = state.execute();
+                let failed = false;
+                this._CP.pushEmptyDomainHandler(function(cp){
+                    log( "failed:" + cp )
+                    failed=true;
+                });
+                let newStates = state.execute();
+                this._CP.popEmptyDomainHandler();
                 log( "Executed");
-                if( this.allDefined() ){
+                if( !failed && this.allDefined() ){
                     log( "  Están todos definidos");
                     return true;
                 }
-                else{
+                else if(!failed){
                     log("  newStates:" + newStates + "  level:" + this.currentLevel() );
                     this.pushStates( newStates );
                     log( "  level after push:" + this.currentLevel() );

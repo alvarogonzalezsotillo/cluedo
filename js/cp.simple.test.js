@@ -345,18 +345,10 @@ function test(){
             assert(!b.defined());
         },
 
-        function(){
-            var CP = new CPManager();
-            var a = CP.Boolean("a");
-            var i = CP.Rename(a,"otro nombre");
-            i.remove(false);
-            assert(a.isTrue());
-        },
 
         function(){
             var CP = new CPManager();
-            var aReal = CP.Boolean("a");
-            var a = CP.Rename(aReal,"a cambiado");
+            var a = CP.Boolean("a");
             var b = CP.Boolean("b");
             var c = CP.Boolean("c");
             var d = CP.Boolean("d");
@@ -407,16 +399,6 @@ function test(){
             assert(a === a2);
         },
 
-        function(){
-            var CP = new CPManager();
-            var a = CP.Boolean("a");
-            var a2 = a.rename("b");
-
-            assert(a === a2);
-            assert(a.name() == "b");
-            assert(a.id() == "a")
-            assert(a2.name() == "b");
-        },
 
         function(){
             var CP = new CPManager();
@@ -443,9 +425,9 @@ function test(){
             var CP = new CPManager();
             var a = CP.Boolean("a");
 
-            var f = CP.ForAll([a], a );
+            var f = CP.ForAll([a], CP.Or( [a, CP.Not(a)] ) );
             
-            assert(f.isFalse());
+            assert(f.isTrue());
         },
 
         function(){
@@ -468,6 +450,20 @@ function test(){
             
             assert(f.isTrue());
         },
+
+        function(){
+            var CP = new CPManager();
+            var a = CP.Boolean("a");
+
+            try{
+                a.rename("b");
+                assert(false);
+            }
+            catch( e ){
+                
+            }
+        },
+        
 
     ];
 

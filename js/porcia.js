@@ -230,25 +230,36 @@ function porciaV(){
         rename("Solo un daga en total").
         asTrue();
 
+    var abrirOro = CP.Or([dagaEnPlata,dagaEnPlomo]).rename("abrirOro");
+    var abrirPlata = CP.Or([dagaEnOro,dagaEnPlomo]).rename("abrirPlata");
+    var abrirPlomo = CP.Or([dagaEnOro,dagaEnPlata]).rename("abrirPlomo");
 
-    let cps = [dagaEnOro,dagaEnPlata,dagaEnPlomo,inscripcionPlomo];
-    CPBacktrack(cps, function(cps){
+    let cps = [belliniHizoOro,belliniHizoPlata,belliniHizoPlomo];
 
-        
-        var println = function(s){console.log("** " + s )};
-        println( "************************************");
 
-        var cps = CP.cps();
-        for( var i = 0 ; i < cps.length ; i++ ){
-            println( cps[i].toString() );
-        }
-    });
+
+    var abrirSiempreOro = CP.ForAll(cps,abrirOro).rename("Abrir siempre oro");
+    var abrirSiemprePlomo = CP.ForAll(cps,abrirPlomo).rename("Abrir siempre plomo");
+    var abrirSiemprePlata = CP.ForAll(cps,abrirPlata).rename("Abrir siempre plata");
+    
+    //abrirSiempreOro.describe();
+    //abrirSiemprePlata.describe();
+    //abrirSiemprePlomo.describe();
+
+    CP.describe();
+    
 }
 
-//porciaI();
-//porciaII();
-//porciaIII();
-//porciaIV();
+let print = function(s){console.log("===== " + s + " =====")};
+// print( "PORCIAI");
+// porciaI();
+// print( "PORCIAII");
+// porciaII();
+// print( "PORCIAIII");
+// porciaIII();
+// print( "PORCIAIV");
+// porciaIV();
+print( "PORCIAV");
 porciaV();
 
 
