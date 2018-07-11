@@ -7,16 +7,120 @@ if( typeof require != "undefined" ){
     CPBacktrack = cpb.CPBacktrack;
 }
 
+
+class Cofre{
+    constructor(CP,nombre){
+        this._nombre = nombre;
+        this._diceLaVerdad = CP.Boolean("El cofre " + this._nombre + " dice la verdad");
+        this._cofreLleno = CP.Boolean( "El cofre " + this._nombre + " está lleno" );
+    }
+
+    get nombre(){
+        return this._nombre;
+    }
+
+    set inscripcion(i){
+        if( typeof this._inscripcion != "undefined" ){
+            throw new Error("No se puede cambiar la inscripción de un cofre");
+        }
+        this._inscripcion = i;
+        this._implicacion = this.CP.Iff( this.diceLaVerdad, this._inscripcion ).asTrue();
+    }
+
+    get inscripcion(){
+        return this._inscripcion;
+    }
+    
+
+    get implicacion(){
+        return this._implicacion;
+    }
+
+    get diceLaVerdad(){
+        return this._diceLaVerdad;
+    }
+
+    get cofreLleno(){
+        return this._cofreLleno;
+    }
+
+    get CP(){
+        return this.diceLaVerdad.manager();
+    }
+
+    static soloUnCofreLleno(cofres){
+        var llenos = cofres.map( c => c.cofreLleno );
+        let CP = cofres[0].CP;
+        var soloUnoLleno = CP.SomeTrue(llenos,1).
+            rename("Solo un cofre lleno en total").
+            asTrue();
+        return soloUnoLleno;
+    }
+
+    static creaCofres(CP,nombres){
+        var ret = nombres.map( n => new Cofre(CP,n) );
+        Cofre.soloUnCofreLleno(ret);
+        return ret;
+    }
+
+}
+
+function porciaI_cofre(){
+    let CP = new CPManager();
+    let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
+    let [cofreOro,cofrePlata,cofrePlomo] = cofres;
+
+    cofreOro.inscripcion = cofreOro.cofreLleno;
+    cofrePlata.inscripcion = CP.Not(cofrePlata.cofreLleno);
+    cofrePlomo.inscripcion = CP.Not(cofreOro.cofreLleno);
+
+    CP.SomeTrue(cofres.map(c=>c.inscripcion),0,1).
+        rename( "Como mucho una inscripcion es cierta").
+        asTrue();
+
+    var cps = cofres.map(c=>c.cofreLleno);
+    CPBacktrack(cps, function(cps){
+        var println = function(s){console.log("** " + s )};
+        println( "************************************");
+        for( var i = 0 ; i < cps.length ; i++ ){
+            println( cps[i].toString() );
+        }
+    });
+
+    
+}
+
 function porciaI(){
+    /*
+      En El mercader de Venecia, de Shakespeare, Porcia tenia tres cofres —uno de oro, otro de plata y otro de plomo—, dentro de uno de los cuales estaba el retrato de Porcia. El pretendiente tenía que elegir uno de los cofres y si tenía suerte (o inteligencia) elegiría el que tenía el retrato, pudiendo así pedir a Porcia por esposa. En la tapa de cada cofre había una inscripción para ayudar al pretendiente a elegir sabiamente.
+
+      Pero supongamos que Porcia quisiera elegir marido, no por su bondad, sino por su inteligencia. Tendría las siguientes inscripciones en los cofres:
+
+      Oro
+
+      EL RETRATO ESTÁ EN ESTE COFRE
+
+      Plata
+
+      EL RETRATO NO ESTÁ AQUÍ
+
+      Plomo
+
+      EL RETRATO NO ESTÁ EN EL COFRE DE ORO
+
+      Porcia explicó al pretendiente que de los tres enunciados, a lo sumo uno era verdad. ¿Cuál cofre debe de elegir el pretendiente?
+
+
+     */
     var CP = new CPManager();
 
     var retratoEnOro = CP.Boolean("enOro");
     var retratoEnPlata = CP.Boolean("enPlata");
     var retratoEnPlomo = CP.Boolean("enPlomo");
 
-    var inscripcionOro = CP.Boolean("Está en ORO");
-    var inscripcionPlata = CP.Boolean("No está en PLATA");
-    var inscripcionPlomo = CP.Boolean("No está en ORO");
+    var inscripcionOro = CP.Boolean("EL RETRATO ESTÁ EN ESTE COFRE");
+    var inscripcionPlata = CP.Boolean("EL RETRATO NO ESTÁ AQUÍ");
+    var inscripcionPlomo = CP.Boolean("EL RETRATO NO ESTÁ EN EL COFRE DE ORO");
 
     var inscripciones = [
         inscripcionOro,inscripcionPlata,inscripcionPlomo
