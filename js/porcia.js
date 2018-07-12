@@ -9,49 +9,54 @@ if( typeof require != "undefined" ){
 
 
 class Cofre{
-    constructor(CP,nombre){
+    constructor(manager,nombre){
+        this._manager = manager;
         this._nombre = nombre;
-        this._diceLaVerdad = CP.Boolean("El cofre " + this._nombre + " dice la verdad");
-        this._cofreLleno = CP.Boolean( "El cofre " + this._nombre + " está lleno" );
+        this._cofreLleno = manager.Boolean( "El cofre " + this._nombre + " está lleno" );
     }
 
     get nombre(){
         return this._nombre;
     }
 
-    set inscripcion(i){
-        if( typeof this._inscripcion != "undefined" ){
-            throw new Error("No se puede cambiar la inscripción de un cofre");
+    set inscripciones(ins){
+        if( typeof this._inscripciones != "undefined" ){
+            throw new Error("No se pueden cambiar las inscripciones de un cofre");
         }
-        this._inscripcion = i;
-        this._implicacion = this.CP.Iff( this.diceLaVerdad, this._inscripcion ).asTrue();
+
+
+        
+        this._inscripciones = ins.slice(0);
+
+        this._diceLaVerdad = [];
+        this._implicaciones = [];
+        for( let i = 0 ; i < ins.length ; i++ ){
+            this._diceLaVerdad.push( this.manager.Boolean("La inscripción " + i + " del cofre " + this._nombre + " dice la verdad") );
+            this._implicaciones.push( this.manager.Iff( this._diceLaVerdad[i], ins[i] ).asTrue() );
+        }
     }
 
-    get inscripcion(){
-        return this._inscripcion;
+    get inscripciones(){
+        return this._inscripciones.slice(0);
     }
     
 
-    get implicacion(){
-        return this._implicacion;
-    }
-
-    get diceLaVerdad(){
-        return this._diceLaVerdad;
+    get implicaciones(){
+        return this._implicaciones.slice(0);
     }
 
     get cofreLleno(){
         return this._cofreLleno;
     }
 
-    get CP(){
-        return this.diceLaVerdad.manager();
+    get manager(){
+        return this._manager;
     }
 
     static soloUnCofreLleno(cofres){
         var llenos = cofres.map( c => c.cofreLleno );
-        let CP = cofres[0].CP;
-        var soloUnoLleno = CP.SomeTrue(llenos,1).
+        let manager = cofres[0].manager;
+        var soloUnoLleno = manager.SomeTrue(llenos,1).
             rename("Solo un cofre lleno en total").
             asTrue();
         return soloUnoLleno;
@@ -65,29 +70,29 @@ class Cofre{
 
 }
 
+function listVariables(cps){
+    var println = function(s){console.log("** " + s )};
+    println( "************************************");
+    for( var i = 0 ; i < cps.length ; i++ ){
+        println( cps[i].toString() );
+    }
+}
+
 function porciaI_cofre(){
     let CP = new CPManager();
     let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
     let [cofreOro,cofrePlata,cofrePlomo] = cofres;
 
-    cofreOro.inscripcion = cofreOro.cofreLleno;
-    cofrePlata.inscripcion = CP.Not(cofrePlata.cofreLleno);
-    cofrePlomo.inscripcion = CP.Not(cofreOro.cofreLleno);
+    cofreOro.inscripciones = [cofreOro.cofreLleno];
+    cofrePlata.inscripciones = [CP.Not(cofrePlata.cofreLleno)];
+    cofrePlomo.inscripciones = [CP.Not(cofreOro.cofreLleno)];
 
-    CP.SomeTrue(cofres.map(c=>c.inscripcion),0,1).
+    CP.SomeTrue(cofres.map(c=>c.inscripciones[0]),0,71).
         rename( "Como mucho una inscripcion es cierta").
         asTrue();
 
     var cps = cofres.map(c=>c.cofreLleno);
-    CPBacktrack(cps, function(cps){
-        var println = function(s){console.log("** " + s )};
-        println( "************************************");
-        for( var i = 0 ; i < cps.length ; i++ ){
-            println( cps[i].toString() );
-        }
-    });
-
-    
+    CPBacktrack(cps, listVariables );
 }
 
 function porciaI(){
@@ -195,6 +200,25 @@ function porciaII(){
     });
 }
 
+function porciaIII_cofre(){
+    let CP = new CPManager();
+    let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
+    let [cofreOro,cofrePlata,cofrePlomo] = cofres;
+
+    let veneciano = CP.Boolean( "El autor es veneciano");
+    
+    cofreOro.inscripciones = [CP.Not(cofreOro.cofreLleno), veneciano];
+    cofrePlata.inscripciones = [CP.Not(cofreOro.cofreLleno), CP.Not(veneciano)];
+    cofrePlomo.inscripciones = [CP.Not(cofrePlomo.cofreLleno), cofrePlata.cofreLleno];
+
+    CP.Or(cofreOro.inscripciones).asTrue().rename("Al menos una frase verdadera en oro");
+    CP.Or(cofrePlata.inscripciones).asTrue().rename("Al menos una frase verdadera en plata");
+    CP.Or(cofrePlomo.inscripciones).asTrue().rename("Al menos una frase verdadera en plomo");
+
+    var cps = cofres.map(c=>c.cofreLleno);
+    CPBacktrack(cps, listVariables );
+}
+
 
 function porciaIII(){
     var CP = new CPManager();
@@ -247,6 +271,66 @@ function porciaIII(){
         }
     });
 }
+
+
+function permutaciones(array){
+    if( !array.length ){
+        return [];
+    }
+    if( array.length == 1 ){
+        return [array];
+    }
+    const head = array[0];
+    const tail = array.slice(1);
+
+    const subpermutaciones = permutaciones(tail);
+    
+    const ret = [];
+    for( let i = 0 ; i < subpermutaciones.length ; i += 1 ){
+        const subpermutacion = subpermutaciones[i];
+        for( let p = 0 ; p < array.length ; p += 1 ){
+            const nuevaPermutacion =
+                  subpermutacion.slice(0,p).
+                  concat([head]).
+                  concat(subpermutacion.slice(p))
+            ret.push(nuevaPermutacion)
+        }
+    }
+
+    return ret;
+}
+
+
+
+function porciaIV_cofre(){
+    const CP = new CPManager();
+    const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
+    const [cofreOro,cofrePlata,cofrePlomo] = cofres;
+
+    
+    cofreOro.inscripciones = [CP.Not(cofreOro.cofreLleno), cofrePlata.cofreLleno];
+    cofrePlata.inscripciones = [CP.Not(cofreOro.cofreLleno), cofrePlomo.cofreLleno];
+    cofrePlomo.inscripciones = [CP.Not(cofrePlomo.cofreLleno), cofreOro.cofreLleno];
+
+
+    const posibilidades = permutaciones([
+        cofreOro.inscripciones,
+        cofrePlata.inscripciones,
+        cofrePlomo.inscripciones
+    ]).map(p => CP.And([
+        CP.SomeTrue(p[0],0),
+        CP.SomeTrue(p[1],1),
+        CP.SomeTrue(p[2],2)
+    ]));
+
+    CP.SomeTrue(posibilidades,1).asTrue().rename("Una caja cierta, otra caja falsa, y otra caja a medias");
+    
+
+    const cps = cofres.map(c=>c.cofreLleno);
+    CPBacktrack(cps, listVariables );
+}
+
+
 
 function porciaIV(){
 
@@ -428,20 +512,28 @@ function porciaVII(){
 }
 
 let print = function(s){console.log("===== " + s + " =====")};
+print( "PORCIA-I COFRE");
+porciaI_cofre();
 print( "PORCIA-I");
 porciaI();
-print( "PORCIA-II");
-porciaII();
+
+//print( "PORCIA-II");
+//porciaII();
+print( "PORCIA-III COFRE")
+porciaIII_cofre();
 print( "PORCIA-III");
 porciaIII();
+
+print( "PORCIA-IV COFRE");
+porciaIV_cofre();
 print( "PORCIA-IV");
 porciaIV();
-print( "PORCIA-V");
-porciaV();
-print( "PORCIA-VI");
-porciaVI();
-print( "PORCIA-VII");
-porciaVII();
+//print( "PORCIA-V");
+//porciaV();
+//print( "PORCIA-VI");
+//porciaVI();
+//print( "PORCIA-VII");
+//porciaVII();
 
 
 
