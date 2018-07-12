@@ -396,6 +396,39 @@ function porciaIV(){
 
 }
 
+function porciaV_cofre(){
+    const CP = new CPManager();
+    const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
+    const [cofreOro,cofrePlata,cofrePlomo] = cofres;
+
+
+    const comoMuchoUnCofreDiceLaVerdad = CP.Boolean("Como mucho un cofre lo hizo Bellini");
+    cofreOro.inscripciones = [cofreOro.cofreLleno];
+    cofrePlata.inscripciones = [CP.Not(cofrePlata.cofreLleno)];
+    cofrePlomo.inscripciones = [comoMuchoUnCofreDiceLaVerdad];
+
+    const inscripciones =
+          cofreOro.inscripciones.
+          concat(cofrePlata.inscripciones).
+          concat(cofrePlomo.inscripciones);
+
+    
+    CP.Iff(
+        comoMuchoUnCofreDiceLaVerdad,
+        CP.SomeTrue(inscripciones,0,1)
+    );
+
+
+    const abrirSiempreOro = CP.ForAll(inscripciones,CP.Not(cofreOro.cofreLleno)).rename("Abrir siempre oro");
+    const abrirSiemprePlata = CP.ForAll(inscripciones,CP.Not(cofrePlata.cofreLleno)).rename("Abrir siempre plata");
+    const abrirSiemprePlomo = CP.ForAll(inscripciones,CP.Not(cofrePlomo.cofreLleno)).rename("Abrir siempre plomo");
+
+    console.log( abrirSiempreOro.toString() );
+    console.log( abrirSiemprePlata.toString() );
+    console.log( abrirSiemprePlomo.toString() );
+
+}
+
 function porciaV(){
     var CP = new CPManager();
 
@@ -528,8 +561,12 @@ print( "PORCIA-IV COFRE");
 porciaIV_cofre();
 print( "PORCIA-IV");
 porciaIV();
-//print( "PORCIA-V");
-//porciaV();
+
+print( "PORCIA-V COFRE");
+porciaV_cofre();
+print( "PORCIA-V");
+porciaV();
+
 //print( "PORCIA-VI");
 //porciaVI();
 //print( "PORCIA-VII");
