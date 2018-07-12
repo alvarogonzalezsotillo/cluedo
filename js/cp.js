@@ -164,6 +164,10 @@ class CPManager {
         return this.Rename(ret,"Iff(" + lhs.name() + ", " + rhs.name() + ")");
     }
 
+    Bind(a,b){
+        return this.Iff(a,b).asTrue();
+    }
+
     
     describe(println){
         if( !println ) println = console.log;

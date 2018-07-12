@@ -412,8 +412,7 @@ function porciaV_cofre(){
           concat(cofrePlata.inscripciones).
           concat(cofrePlomo.inscripciones);
 
-    
-    CP.Iff(
+    CP.Bind(
         comoMuchoUnCofreDiceLaVerdad,
         CP.SomeTrue(inscripciones,0,1)
     );
@@ -426,7 +425,6 @@ function porciaV_cofre(){
     console.log( abrirSiempreOro.toString() );
     console.log( abrirSiemprePlata.toString() );
     console.log( abrirSiemprePlomo.toString() );
-
 }
 
 function porciaV(){
@@ -452,9 +450,9 @@ function porciaV(){
         rename("Solo un daga en total").
         asTrue();
 
-    var abrirOro = CP.Or([dagaEnPlata,dagaEnPlomo]).rename("abrirOro");
-    var abrirPlata = CP.Or([dagaEnOro,dagaEnPlomo]).rename("abrirPlata");
-    var abrirPlomo = CP.Or([dagaEnOro,dagaEnPlata]).rename("abrirPlomo");
+    var abrirOro = CP.Not(dagaEnOro).rename("abrirOro");
+    var abrirPlata = CP.Not(dagaEnPlata).rename("abrirPlata");
+    var abrirPlomo = CP.Not(dagaEnPlomo).rename("abrirPlomo");
 
     let cps = [belliniHizoOro,belliniHizoPlata,belliniHizoPlomo];
 
