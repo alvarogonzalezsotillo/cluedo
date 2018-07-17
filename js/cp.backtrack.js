@@ -26,10 +26,6 @@ function CPBacktrack(cps,foundCallback,fromIndex){
         log("-----------   así que failed:" + self._failed );
     }
     
-    if( !fromIndex ){
-        index = -1;
-    }
-    
     function firstUndefinedIndexFrom(j){
         if( !j ){
             j = 0;
