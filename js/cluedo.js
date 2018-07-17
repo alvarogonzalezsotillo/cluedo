@@ -508,7 +508,7 @@ Cluedo.prototype = {
 
         var ret = [];
         
-        CP.setEmptyDomainHandler(impossibleHandler);
+        CP.pushEmptyDomainHandler(impossibleHandler);
         
         for( var c = 0 ; c < booleansOfCards.length ; c++ ){
 
@@ -564,6 +564,8 @@ Cluedo.prototype = {
                 }
             }
         }
+
+        CP.popEmptyDomainHandler();
 
         return ret;
 
@@ -682,7 +684,7 @@ wether a1 or a2, c0 is true
 
         var ret = [];
         
-        CP.setEmptyDomainHandler(impossibleHandler);
+        CP.pushEmptyDomainHandler(impossibleHandler);
         
         for( var c = 0 ; c < booleansOfCards.length ; c++ ){
             var state = undefined;
@@ -743,6 +745,7 @@ wether a1 or a2, c0 is true
             }
         }
 
+        CP.popEmptyDomainHandler();
         return ret;
         
     },

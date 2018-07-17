@@ -85,16 +85,7 @@ class State{
             this.cp.remove(this.value);
         }
 
-        
-        let nextRestCps = this.restCps.slice(0);
-        let nextCp = nextRestCps.pop();
-        log( "nextCp: " + nextCp );
-        if( nextCp ){
-            return [new State(nextCp,true,nextRestCps), new State(nextCp,false,nextRestCps)];
-        }
-        else{
-            return [];
-        }
+        return State.nextStatesFor(this.restCps);
     }
 
     static nextStatesFor(cps){
@@ -120,15 +111,7 @@ class CPContinuableBacktrack{
         this._cps = cps;
         this._toBeDefined = toBeDefined || cps;
         this._CP = this._cps[0].manager();
-        this.executed = false;
-
-        let self = this;
-
-        let nextRestCps = cps.slice(0);
-        let nextCp = nextRestCps.pop();
-        
-        
-        this._stack = [new State(nextCp,true,nextRestCps), new State(nextCp,false,nextRestCps)];
+        this._stack = State.nextStatesFor(cps);
     }
 
 
