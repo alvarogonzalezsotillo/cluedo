@@ -68,94 +68,116 @@ function CPBacktrack(cps,foundCallback,fromIndex){
     CP.popEmptyDomainHandler();
 }
 
-function CPContinuableBacktrack( cps, toBeDefined ){
-    this._cps = cps;
-    this._toBeDefined = toBeDefined || cps;
-    this._CP = this._cps[0].manager();
-    this.executed = false;
+class State{
+    constructor(cp,value,restCps){
+        this.executed = false;
+        this.cp = cp;
+        this.value = value;
+        this.restCps = restCps;
+    }
 
-    let self = this;
+    
+    execute(){
+        assert( this.executed === false );
+        this.executed = true;
 
-    let nextRestCps = cps.slice(0);
-    let nextCp = nextRestCps.pop();
+        if( !this.cp.defined() ){
+            this.cp.remove(this.value);
+        }
+
+        
+        let nextRestCps = this.restCps.slice(0);
+        let nextCp = nextRestCps.pop();
+        log( "nextCp: " + nextCp );
+        if( nextCp ){
+            return [new State(nextCp,true,nextRestCps), new State(nextCp,false,nextRestCps)];
+        }
+        else{
+            return [];
+        }
+    }
+
+    static nextStatesFor(cps){
+        let restCps = cps.slice(0);
+        let nextCp = restCps.pop();
+        log( "nextCp: " + nextCp );
+        if( nextCp ){
+            return [new State(nextCp,true,restCps), new State(nextCp,false,restCps)];
+        }
+        else{
+            return [];
+        }
+    }
     
-    
-    this._stack = [new this.State(nextCp,true,nextRestCps), new this.State(nextCp,false,nextRestCps)];
 }
 
 
-MixIn(CPContinuableBacktrack.prototype,{
+class CPContinuableBacktrack{
 
-    State : function(cp,value,restCps){
+
+
+    constructor( cps, toBeDefined ){
+        this._cps = cps;
+        this._toBeDefined = toBeDefined || cps;
+        this._CP = this._cps[0].manager();
         this.executed = false;
-        this.cp = cp;
-        this.execute = function(){
-            assert( this.executed === false );
-            this.executed = true;
 
-            if( !cp.defined() ){
-                cp.remove(value);
-            }
+        let self = this;
 
-            
-            let nextRestCps = restCps.slice(0);
-            let nextCp = nextRestCps.pop();
-            log( "nextCp: " + nextCp );
-            let S = CPContinuableBacktrack.prototype.State;
-            if( nextCp ){
-                return [new S(nextCp,true,nextRestCps), new S(nextCp,false,nextRestCps)];
-            }
-            else{
-                return [];
-            }
-        }
-    },
+        let nextRestCps = cps.slice(0);
+        let nextCp = nextRestCps.pop();
+        
+        
+        this._stack = [new State(nextCp,true,nextRestCps), new State(nextCp,false,nextRestCps)];
+    }
+
+
     
 
-    currentLevel : function(){
+    currentLevel(){
         return this._stack.length-1;
-    },
+    }
 
-    pushStates : function(states){
+    pushStates(states){
         return this._stack = this._stack.concat(states);
-    },
+    }
 
-    popState : function(){
+    popState(){
         if( this.currentLevel() >= 0 ){
             return this._stack.pop();
         }
         return undefined;
-    },
+    }
 
-    peekState : function(){
+    peekState(){
         if( this.currentLevel() >= 0 ){
             return this._stack[this._stack.length-1];
         }
         return undefined;
-    },
+    }
 
-    allDefined : function(){
+    allDefined(){
         for( let i = 0 ; i < this._toBeDefined.length ; i++ ){
             if( !this._toBeDefined[i].defined() ){
                 return false;
             }
         }
         return true;
-    },
+    }
 
-    stackEmpty : function(){
+    stackEmpty(){
         return this.currentLevel() < 0;
-    },
+    }
 
 
-    finalize : function(){
+    finalize(){
         while(!this.stackEmpty() ){
             this.popState();
             this._CP.popScenario();
         }
-    },
+    }
     
-    nextSolution : function(){
+    nextSolution(){
 
         //const log = function(msg){console.log(msg);};
         while( !this.stackEmpty() ){
@@ -193,8 +215,7 @@ MixIn(CPContinuableBacktrack.prototype,{
         
         return false;
     }
-    
-});
+}
 
 
 
