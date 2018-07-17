@@ -452,6 +452,12 @@ class CPForAll extends CPBoolean{
             this.remove(false);
             return true;
         }
+
+        if( !failed && !someTrue && !someUndefined ){
+            this.remove(true);
+            return true;
+        }
+
         return false;
     }
 }

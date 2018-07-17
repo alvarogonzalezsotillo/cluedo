@@ -422,6 +422,10 @@ function porciaV_cofre(){
     const abrirSiemprePlata = CP.ForAll(inscripciones,CP.Not(cofrePlata.cofreLleno)).rename("Abrir siempre plata");
     const abrirSiemprePlomo = CP.ForAll(inscripciones,CP.Not(cofrePlomo.cofreLleno)).rename("Abrir siempre plomo");
 
+    const abrirNuncaOro = CP.ForAll(inscripciones,cofreOro.cofreLleno).rename("Abrir nunca oro");
+    const abrirNuncaPlata = CP.ForAll(inscripciones,cofrePlata.cofreLleno).rename("Abrir nunca plata");
+    const abrirNuncaPlomo = CP.ForAll(inscripciones,cofrePlomo.cofreLleno).rename("Abrir nunca plomo");
+
     console.log( abrirSiempreOro.toString() );
     console.log( abrirSiemprePlata.toString() );
     console.log( abrirSiemprePlomo.toString() );

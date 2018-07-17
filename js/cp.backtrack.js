@@ -38,9 +38,8 @@ class State{
     }
 
     static nextStatesFor(cps){
-        let restCps = cps.slice(0);
-        let nextCp = restCps.pop();
-        log( "nextCp: " + nextCp );
+        const restCps = cps.slice(0);
+        const nextCp = restCps.pop();
         if( nextCp ){
             return [new State(nextCp,true,restCps), new State(nextCp,false,restCps)];
         }
