@@ -78,6 +78,47 @@ function listVariables(cps){
     }
 }
 
+
+function porcia(cofres,buscarCofreLleno){
+    const CP = cofres[0].manager;
+    const inscripciones = cofres.
+          map(c=>c.inscripciones).
+          reduce( (accum,value) => accum.concat(value) );
+
+    const llenos = cofres.map( c=> c.cofreLleno);
+
+    const eleccion = cofres.map( c=> CP.Boolean("Elección cofre " + c.nombre ) );
+
+    const llenoSiempre = cofres.map(
+        c => CP.ForAll(inscripciones,c.cofreLleno)
+    );
+
+    // BUSCAR POR DESCARTE
+    for( let i = 0 ; i < cofres.length ; i++ ){
+        if( llenoSiempre[i].isTrue() && buscarCofreLleno ){
+            return cofres[i];
+        }
+        if( llenoSiempre[i].isFalse() && !buscarCofreLleno ){
+            return cofres[i];
+        }
+    }
+
+    // BUSCAR LA UNICA COMBINACION POSIBLE
+    var ret = null;
+    const foundCallback = function(cps){
+        for( let i = 0 ; i < cofres.length ; i++ ){
+            if( cofres[i].cofreLleno.isTrue() && buscarCofreLleno ){
+                ret = cofres[i];
+            }
+            if( cofres[i].cofreLleno.isFalse() && !buscarCofreLleno ){
+                ret = cofres[i];
+            }
+        }
+    }
+    CPBacktrack(llenos, listVariables );
+    return ret;
+}
+
 function porciaI_cofre(){
     let CP = new CPManager();
     let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
@@ -421,10 +462,6 @@ function porciaV_cofre(){
     const abrirSiempreOro = CP.ForAll(inscripciones,CP.Not(cofreOro.cofreLleno)).rename("Abrir siempre oro");
     const abrirSiemprePlata = CP.ForAll(inscripciones,CP.Not(cofrePlata.cofreLleno)).rename("Abrir siempre plata");
     const abrirSiemprePlomo = CP.ForAll(inscripciones,CP.Not(cofrePlomo.cofreLleno)).rename("Abrir siempre plomo");
-
-    const abrirNuncaOro = CP.ForAll(inscripciones,cofreOro.cofreLleno).rename("Abrir nunca oro");
-    const abrirNuncaPlata = CP.ForAll(inscripciones,cofrePlata.cofreLleno).rename("Abrir nunca plata");
-    const abrirNuncaPlomo = CP.ForAll(inscripciones,cofrePlomo.cofreLleno).rename("Abrir nunca plomo");
 
     console.log( abrirSiempreOro.toString() );
     console.log( abrirSiemprePlata.toString() );
