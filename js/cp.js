@@ -400,6 +400,19 @@ class CPBoolean extends CPBase{
     }
 }
 
+function CPAllPosibilities(cps,cpsReturn){
+    cpsReturn = cpsReturn || cps;
+    const bt = new CPContinuableBacktrack(cps);
+    const posibilities = [];
+    while( bt.nextSolution() ){
+        const posibility = cpsReturn.map( cp => cp.isTrue() );
+        posibilities.push(posibility);
+    }
+    bt.finalize();
+    return posibilities;
+}
+
+
 class CPForAll extends CPBoolean{
     constructor(manager, cps, cpThen ){
         super( manager, "ForAll(" + CPManager.concatenateNames(cps) + ")Then(" + cpThen.name() + ")", cps.concat(cpThen) );
@@ -643,5 +656,6 @@ if( typeof module == "undefined" ){
 
 module.exports = {
     CPManager: CPManager,
+    CPAllPosibilities: CPAllPosibilities,
 };
 

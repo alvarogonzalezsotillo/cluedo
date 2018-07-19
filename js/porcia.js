@@ -5,6 +5,7 @@ if( typeof require != "undefined" ){
     log = common.log;
     CPManager = cp.CPManager;
     CPBacktrack = cpb.CPBacktrack;
+    CPAllPosibilities = cp.CPAllPosibilities;
 }
 
 
@@ -93,30 +94,47 @@ function porcia(cofres,buscarCofreLleno){
         c => CP.ForAll(inscripciones,c.cofreLleno)
     );
 
-    // BUSCAR POR DESCARTE
-    for( let i = 0 ; i < cofres.length ; i++ ){
-        if( llenoSiempre[i].isTrue() && buscarCofreLleno ){
-            return cofres[i];
+
+    const posibilidadesLlenos = CPAllPosibilities(llenos);
+    if( posibilidadesLlenos.length == 1 ){
+        const indice = posibilidadesLlenos[0].indexOf(buscarCofreLleno);
+        if( indice < 0 ){
+            throw new Error("No se encuentra el cofre en la única combinación posible");
         }
-        if( llenoSiempre[i].isFalse() && !buscarCofreLleno ){
-            return cofres[i];
-        }
+        console.log( "1:" + cofres[indice] );
+        return cofres[indice];
     }
 
-    // BUSCAR LA UNICA COMBINACION POSIBLE
-    var ret = null;
-    const foundCallback = function(cps){
-        for( let i = 0 ; i < cofres.length ; i++ ){
-            if( cofres[i].cofreLleno.isTrue() && buscarCofreLleno ){
-                ret = cofres[i];
-            }
-            if( cofres[i].cofreLleno.isFalse() && !buscarCofreLleno ){
-                ret = cofres[i];
-            }
+    const posibilidadesInscripciones = CPAllPosibilities(inscripciones,llenos);
+    if( posibilidadesInscripciones.length < 1 ){
+        throw new Error("No hay ninguna posibilidad en las inscripciones");
+    }
+    for( let indice = 0 ; indice < cofres.length ; indice++ ){
+        const lleno = posibilidadesInscripciones.map( p => p[indice] );
+        if( lleno.every( b => b == buscarCofreLleno ) ){
+            return cofres[indice];
+            console.log( "2:" + cofres[indice] );
         }
     }
-    CPBacktrack(llenos, listVariables );
-    return ret;
+    throw new Error("No hay ninguna posibilidad válida en las inscripciones");
+}
+
+
+function porciaI_general(){
+    let CP = new CPManager();
+    let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
+    let [cofreOro,cofrePlata,cofrePlomo] = cofres;
+
+    cofreOro.inscripciones = [cofreOro.cofreLleno];
+    cofrePlata.inscripciones = [CP.Not(cofrePlata.cofreLleno)];
+    cofrePlomo.inscripciones = [CP.Not(cofreOro.cofreLleno)];
+
+    CP.SomeTrue(cofres.map(c=>c.inscripciones[0]),0,1).
+        rename( "Como mucho una inscripcion es cierta").
+        asTrue();
+
+    const solucion = porcia(cofres,true);
+    console.log("Se debe elegir el cofre:" + solucion.nombre);
 }
 
 function porciaI_cofre(){
@@ -128,7 +146,7 @@ function porciaI_cofre(){
     cofrePlata.inscripciones = [CP.Not(cofrePlata.cofreLleno)];
     cofrePlomo.inscripciones = [CP.Not(cofreOro.cofreLleno)];
 
-    CP.SomeTrue(cofres.map(c=>c.inscripciones[0]),0,71).
+    CP.SomeTrue(cofres.map(c=>c.inscripciones[0]),0,1).
         rename( "Como mucho una inscripcion es cierta").
         asTrue();
 
@@ -342,6 +360,33 @@ function permutaciones(array){
 }
 
 
+function porciaIV_general(){
+    const CP = new CPManager();
+    const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
+    const [cofreOro,cofrePlata,cofrePlomo] = cofres;
+
+    
+    cofreOro.inscripciones = [CP.Not(cofreOro.cofreLleno), cofrePlata.cofreLleno];
+    cofrePlata.inscripciones = [CP.Not(cofreOro.cofreLleno), cofrePlomo.cofreLleno];
+    cofrePlomo.inscripciones = [CP.Not(cofrePlomo.cofreLleno), cofreOro.cofreLleno];
+
+
+    const posibilidades = permutaciones([
+        cofreOro.inscripciones,
+        cofrePlata.inscripciones,
+        cofrePlomo.inscripciones
+    ]).map(p => CP.And([
+        CP.SomeTrue(p[0],0),
+        CP.SomeTrue(p[1],1),
+        CP.SomeTrue(p[2],2)
+    ]));
+
+    CP.SomeTrue(posibilidades,1).asTrue().rename("Una caja cierta, otra caja falsa, y otra caja a medias");
+    
+    const solucion = porcia(cofres,true);
+    console.log("Se debe elegir el cofre:" + solucion.nombre);
+}
+
 
 function porciaIV_cofre(){
     const CP = new CPManager();
@@ -436,6 +481,34 @@ function porciaIV(){
     });
 
 }
+
+
+function porciaV_general(){
+    const CP = new CPManager();
+    const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
+    const [cofreOro,cofrePlata,cofrePlomo] = cofres;
+
+
+    const comoMuchoUnCofreDiceLaVerdad = CP.Boolean("Como mucho un cofre lo hizo Bellini");
+    cofreOro.inscripciones = [cofreOro.cofreLleno];
+    cofrePlata.inscripciones = [CP.Not(cofrePlata.cofreLleno)];
+    cofrePlomo.inscripciones = [comoMuchoUnCofreDiceLaVerdad];
+
+    const inscripciones =
+          cofreOro.inscripciones.
+          concat(cofrePlata.inscripciones).
+          concat(cofrePlomo.inscripciones);
+
+    CP.Bind(
+        comoMuchoUnCofreDiceLaVerdad,
+        CP.SomeTrue(inscripciones,0,1)
+    );
+
+    const solucion = porcia(cofres,false);
+    console.log( "Se debe abrir el cofre:" + solucion.nombre );
+
+}
+
 
 function porciaV_cofre(){
     const CP = new CPManager();
@@ -584,23 +657,31 @@ function porciaVII(){
 }
 
 let print = function(s){console.log("===== " + s + " =====")};
+print( "PORCIA-I GENERAL");
+porciaI_general();
 print( "PORCIA-I COFRE");
 porciaI_cofre();
 print( "PORCIA-I");
 porciaI();
 
-//print( "PORCIA-II");
-//porciaII();
+
+print( "PORCIA-II");
+porciaII();
+
 print( "PORCIA-III COFRE")
 porciaIII_cofre();
 print( "PORCIA-III");
 porciaIII();
 
+print( "PORCIA-IV GENERAL");
+porciaIV_general();
 print( "PORCIA-IV COFRE");
 porciaIV_cofre();
 print( "PORCIA-IV");
 porciaIV();
 
+print( "PORCIA-V GENERAL");
+porciaV_general();
 print( "PORCIA-V COFRE");
 porciaV_cofre();
 print( "PORCIA-V");
