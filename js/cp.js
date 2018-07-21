@@ -400,7 +400,7 @@ class CPBoolean extends CPBase{
     }
 }
 
-function CPAllPosibilities(cps,cpsReturn){
+CPManager.CPAllPosibilities = function(cps,cpsReturn){
     cpsReturn = cpsReturn || cps;
     const bt = new CPContinuableBacktrack(cps);
     const posibilities = [];
@@ -656,6 +656,5 @@ if( typeof module == "undefined" ){
 
 module.exports = {
     CPManager: CPManager,
-    CPAllPosibilities: CPAllPosibilities,
 };
 
