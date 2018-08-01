@@ -7,37 +7,19 @@ if( typeof require != "undefined" ){
     CPContinuableBacktrack = backtrack.CPContinuableBacktrack;
 }
 
+const USE_EVENTS = true;
 
 class PropagateEvent{
     constructor(cp){
         this._cp = cp;
     }
 
+    get cp(){
+        return this._cp;
+    }
+    
     execute(){
         throw new Error("Should be override");
-    }
-}
-
-class NotifyEvent extends PropagateEvent{
-    constructor(cp){
-        super(cp);
-    }
-
-    execute(){
-        cp.notified();
-    }
-}
-
-class NotifyContainersEvent extends PropagateEvent{
-    constructor(cp){
-        super(cp);
-    }
-
-    execute(){
-        for( let i = 0 ; i < this.cp._containers.length ; i++ ){
-            let c = this.cp._containers[i];
-            this.cp.manager.addPropagateEvent( new NotifyEvent(c) );
-        }
     }
 }
 
@@ -48,7 +30,14 @@ class ReduceOwnDomainEvent extends PropagateEvent{
 
     execute(){
         if( this.cp.reduceOwnDomain() ){
-            this.cp.manager.addPropagateEvent( new NotifyContainersEvent(this) );
+            const m = this.cp.manager;
+            this.cp._containers.forEach(
+                c =>
+                    m.addPropagateEvents([
+                        new ReduceObservedDomainEvent(c),
+                        , new ReduceOwnDomainEvent(c)
+                    ])
+            );
         }
     }
 }
@@ -71,19 +60,26 @@ class CPManager {
         this._emptyDomainHandlers = [];
         this.pushEmptyDomainHandler(CPManager.defaultEmptyDomainHandler);
         this._propagateQueue = [];
+        this._propagating = false;
         this.booleans = {};
     }
 
     propagate(){
+        if( this._propagating ){
+            return;
+        }
+        this._propagating = false;
         while(this._propagateQueue.length != 0 ){
             const nextEvent = this._propagateQueue[0];
             this._propagateQueue = this._propagateQueue.slice(1);
             nextEvent.execute();
         }
+        this._propagating = false;
     }
 
-    addPropagateEvent(event){
-        this._propagateQueue.push(event);
+    addPropagateEvents(events){
+        events.forEach( e => this._propagateQueue.push(e) );
+        this.propagate();
     }
 
     checkIfFailed(){
@@ -100,13 +96,13 @@ class CPManager {
     }
 
     static defaultEmptyDomainHandler(cp){
-        console.log( cp.name() + " has empty domain. Contained in " + cp._containers.length + " containers:" )
+        console.log( cp.name() + " has empty domain. Contained in " + cp._containers.length + " containers:" );
         for( let i = 0 ; i < cp._containers.length ; i++ ){
             console.log( "  " + cp._containers[i].name() );
         }
 
         console.log( "All cps:" );
-        cp.manager().describe(console.log);
+        cp.manager.describe(console.log);
         
         let error = new Error(cp.name() + " has empty domain");
         error.cp = cp;
@@ -284,7 +280,7 @@ class CPBase {
         // Abstract method, to be overriden
     }
 
-    manager(){
+    get manager(){
         return this._manager;
     }
     
@@ -302,6 +298,18 @@ class CPBase {
     }
 
     notified(){
+        if( USE_EVENTS ){
+            this.manager.addPropagateEvents([
+                new ReduceOwnDomainEvent(this),
+                new ReduceObservedDomainEvent(this)
+            ]);
+        }
+        else{
+            this.doNotified();
+        }
+    }
+
+    doNotified(){
         let own = this.reduceOwnDomain();
         let obs = this.reduceObservedDomain();
         log( "obs:" + obs +  "  own:" + own + "  --- " + this.name() );
@@ -312,7 +320,7 @@ class CPBase {
 
     notifyIfEmptyDomain(){
         if( this.impossible() ){
-            this.manager().notifyEmptyDomain(this);
+            this.manager.notifyEmptyDomain(this);
         }
     }
 
@@ -429,11 +437,11 @@ class CPBoolean extends CPBase{
     }
 
     canBeTrue(){
-        return this._canBeTrue[this.manager().stackIndex()];
+        return this._canBeTrue[this.manager.stackIndex()];
     }
 
     canBeFalse(){
-        return this._canBeFalse[this.manager().stackIndex()];
+        return this._canBeFalse[this.manager.stackIndex()];
     }
 
     rename(name){
@@ -448,7 +456,7 @@ class CPBoolean extends CPBase{
         log( this.name() + ": remove:" + value );
         if( value && this.canBeTrue() ){
             log( "  " + this.name() + ": remove: removed true");
-            this._canBeTrue[this.manager().stackIndex()] = false;
+            this._canBeTrue[this.manager.stackIndex()] = false;
             this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
             this.notifyContainers();
@@ -457,7 +465,7 @@ class CPBoolean extends CPBase{
         
         if( !value && this.canBeFalse() ){
             log( "  " + this.name() + ":  remove: removed false");
-            this._canBeFalse[this.manager().stackIndex()] = false;
+            this._canBeFalse[this.manager.stackIndex()] = false;
             this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
             this.notifyContainers();

@@ -58,11 +58,12 @@ class CPContinuableBacktrack{
     constructor( cps, toBeDefined ){
         this._cps = cps;
         this._toBeDefined = toBeDefined || cps;
-        this._CP = this._cps[0].manager();
         this._stack = State.nextStatesFor(cps);
     }
 
-
+    get manager(){
+        return this._cps[0].manager;
+    }
     
 
     currentLevel(){
@@ -104,7 +105,7 @@ class CPContinuableBacktrack{
     finalize(){
         while(!this.stackEmpty() ){
             this.popState();
-            this._CP.popScenario();
+            this.manager.popScenario();
         }
     }
     
@@ -120,17 +121,17 @@ class CPContinuableBacktrack{
 
             if( state.executed ){
                 this.popState();
-                this._CP.popScenario();
+                this.manager.popScenario();
             }
             else{
-                this._CP.pushScenario();
+                this.manager.pushScenario();
                 let failed = false;
-                this._CP.pushEmptyDomainHandler(function(cp){
+                this.manager.pushEmptyDomainHandler(function(cp){
                     log( "failed:" + cp )
                     failed=true;
                 });
                 let newStates = state.execute();
-                this._CP.popEmptyDomainHandler();
+                this.manager.popEmptyDomainHandler();
                 log( "Executed");
                 if( !failed && this.allDefined() ){
                     log( "  Están todos definidos");
