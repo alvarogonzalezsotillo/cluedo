@@ -81,12 +81,17 @@ function porcia(cofres,buscarCofreLleno){
 
     const eleccion = cofres.map( c=> CP.Boolean("Elección cofre " + c.nombre ) );
 
+    log("llenoSiempre:");
     const llenoSiempre = cofres.map(
         c => CP.ForAll(inscripciones,c.cofreLleno)
     );
+    log("llenoSiempre:" + llenoSiempre);
 
 
+    
+    log("posibilidadesLlenos:");
     const posibilidadesLlenos = CPAllPosibilities(llenos);
+    log("posibilidadesLlenos:" + posibilidadesLlenos.length);
     if( posibilidadesLlenos.length == 1 ){
         const indice = posibilidadesLlenos[0].indexOf(buscarCofreLleno);
         if( indice < 0 ){
@@ -96,6 +101,7 @@ function porcia(cofres,buscarCofreLleno){
     }
 
     const posibilidadesInscripciones = CPAllPosibilities(inscripciones,llenos);
+    log("posibilidadesInscripciones:" + posibilidadesInscripciones.length);
     if( posibilidadesInscripciones.length < 1 ){
         throw new Error("No hay ninguna posibilidad en las inscripciones");
     }
@@ -103,7 +109,7 @@ function porcia(cofres,buscarCofreLleno){
         const lleno = posibilidadesInscripciones.map( p => p[indice] );
         if( lleno.every( b => b == buscarCofreLleno ) ){
             return cofres[indice];
-            console.log( "2:" + cofres[indice] );
+            log( "2:" + cofres[indice] );
         }
     }
     throw new Error("No hay ninguna posibilidad válida en las inscripciones");

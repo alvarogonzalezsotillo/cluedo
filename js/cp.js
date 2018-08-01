@@ -8,15 +8,83 @@ if( typeof require != "undefined" ){
 }
 
 
+class PropagateEvent{
+    constructor(cp){
+        this._cp = cp;
+    }
+
+    execute(){
+        throw new Error("Should be override");
+    }
+}
+
+class NotifyEvent extends PropagateEvent{
+    constructor(cp){
+        super(cp);
+    }
+
+    execute(){
+        cp.notified();
+    }
+}
+
+class NotifyContainersEvent extends PropagateEvent{
+    constructor(cp){
+        super(cp);
+    }
+
+    execute(){
+        for( let i = 0 ; i < this.cp._containers.length ; i++ ){
+            let c = this.cp._containers[i];
+            this.cp.manager.addPropagateEvent( new NotifyEvent(c) );
+        }
+    }
+}
+
+class ReduceOwnDomainEvent extends PropagateEvent{
+    constructor(cp){
+        super(cp);
+    }
+
+    execute(){
+        if( this.cp.reduceOwnDomain() ){
+            this.cp.manager.addPropagateEvent( new NotifyContainersEvent(this) );
+        }
+    }
+}
+
+class ReduceObservedDomainEvent extends PropagateEvent{
+    constructor(cp){
+        super(cp);
+    }
+
+    execute(){
+        this.cp.reduceObservedDomain();
+    }
+}
+
+
 class CPManager {
     constructor() {
         this._cps = [];
         this._stackIndex = 0;
         this._emptyDomainHandlers = [];
         this.pushEmptyDomainHandler(CPManager.defaultEmptyDomainHandler);
+        this._propagateQueue = [];
         this.booleans = {};
     }
 
+    propagate(){
+        while(this._propagateQueue.length != 0 ){
+            const nextEvent = this._propagateQueue[0];
+            this._propagateQueue = this._propagateQueue.slice(1);
+            nextEvent.execute();
+        }
+    }
+
+    addPropagateEvent(event){
+        this._propagateQueue.push(event);
+    }
 
     checkIfFailed(){
         for( let i = 0 ; i < this.cps().length ; i++ ){
@@ -419,14 +487,6 @@ class CPForAll extends CPBoolean{
         this._cps = cps;
         this._cpThen = cpThen;
         this.reduceOwnDomain();
-    }
-
-    notified(){
-        let own = this.reduceOwnDomain();
-        let obs = this.reduceObservedDomain();
-        if( own ){
-            this.notifyContainers();
-        }
     }
 
 

@@ -84,11 +84,14 @@ class Porcia {
 
 while (true) {
     try {
-        const po = Porcia.creaPorcia(3);
+        console.log(".");
+        const po = Porcia.creaPorcia(5);
+        po.dump();
         const solucion = porcia(po.cofres,true);
         console.log("***************************************");
         po.dump();
         console.log("solución:" + solucion.nombre);
+        break;
     }
     catch (e) {
     }
