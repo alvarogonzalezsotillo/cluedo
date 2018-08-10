@@ -177,43 +177,23 @@ function porciaVI_general(){
 }
 
 
-function porciaVII(){
+function porciaVII_general(){
     var CP = new CPManager();
+    const cofres = Cofre.creaCofres(CP,["Oro","Plata", "Plomo"]);
+    const [cofreOro,cofrePlata,cofrePlomo] = cofres;
 
-    var retratoEnOro = CP.Boolean("enOro");
-    var retratoEnPlata = CP.Boolean("enPlata");
-    var retratoEnPlomo = CP.Boolean("enPlomo");
+    const alMenosDosCofresDeCellini = CP.Boolean( "Por lo menos dos cofres son de Cellini");
 
+    cofreOro.inscripciones = [ cofreOro.cofreLleno ];
+    cofrePlata.inscripciones = [ cofrePlata.cofreLleno ];
+    cofrePlomo.inscripciones = [ alMenosDosCofresDeCellini ];
 
-    var belliniHizoOro = CP.Boolean("BelliniHizoOro");
-    var belliniHizoPlata = CP.Boolean("BelliniHizoPlata");
-    var belliniHizoPlomo = CP.Boolean("BelliniHizoPlomo");
+    const inscripciones = cofreOro.inscripciones.concat( cofrePlata.inscripciones ).concat(cofrePlomo.inscripciones);
+    CP.Bind( alMenosDosCofresDeCellini, CP.SomeTrue(inscripciones,0,1));
 
-    var inscripcionOro = retratoEnOro;
-    var inscripcionPlata = retratoEnPlata;
-    var inscripcionPlomo = CP.SomeTrue( [belliniHizoOro,belliniHizoPlata,belliniHizoPlomo], 0, 1).
-        rename("Por lo menos dos cofres son de Cellini");
+    const solucion = porcia(cofres,true);
+    console.log( "Se debe abrir el cofre:" + solucion.nombre );
 
-    CP.Iff( belliniHizoOro, inscripcionOro ).asTrue();
-    CP.Iff( belliniHizoPlata, inscripcionPlata).asTrue();
-    CP.Iff( belliniHizoPlomo, inscripcionPlomo).asTrue();
-
-    CP.SomeTrue([retratoEnOro,retratoEnPlata,retratoEnPlomo],1).
-        rename("Solo un daga en total").
-        asTrue();
-
-    let bellinis = [belliniHizoOro,belliniHizoPlata,belliniHizoPlomo];
-    
-    let siempreEnOro = CP.ForAll( bellinis, retratoEnOro ).rename("Está en oro");
-    let siempreEnPlata = CP.ForAll( bellinis, retratoEnPlata ).rename( "Está en plata");
-    let siempreEnPlomo = CP.ForAll( bellinis, retratoEnPlomo ).rename("Está en plomo");
-
-    CP.SomeTrue( [siempreEnOro,siempreEnPlata,siempreEnPlomo], 1 );
-
-    console.log( siempreEnOro.toString() );
-    console.log( siempreEnPlata.toString() );
-    console.log( siempreEnPlomo.toString() );
-    
 }
 
 let print = function(s){console.log("===== " + s + " =====")};

@@ -73,7 +73,6 @@ class Cofre{
 
 function porcia(cofres,buscarCofreLleno){
     const CP = cofres[0].manager;
-    const log = console.log;
     const inscripciones = cofres.
           map(c=>c.inscripciones).
           reduce( (accum,value) => accum.concat(value) );
