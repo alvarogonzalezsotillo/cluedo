@@ -225,7 +225,6 @@ function porciaIV(){
 
     var cps = [retratoEnOro,retratoEnPlata,retratoEnPlomo];
     CPBacktrack(cps, function(cps){
-        assert(retratoEnPlomo.isTrue());
         var println = function(s){console.log("** " + s )};
         println( "************************************");
 
@@ -233,6 +232,8 @@ function porciaIV(){
         for( var i = 0 ; i < cps.length ; i++ ){
             println( cps[i].toString() );
         }
+        assert(retratoEnPlomo.isTrue());
+ 
     });
 
 }
@@ -346,7 +347,6 @@ function porciaVII(){
     let siempreEnPlata = CP.ForAll( bellinis, retratoEnPlata ).rename( "Está en plata");
     let siempreEnPlomo = CP.ForAll( bellinis, retratoEnPlomo ).rename("Está en plomo");
 
-    CP.SomeTrue( [siempreEnOro,siempreEnPlata,siempreEnPlomo], 1 );
 
     console.log( siempreEnOro.toString() );
     console.log( siempreEnPlata.toString() );

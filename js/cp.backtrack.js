@@ -37,6 +37,11 @@ class State{
         return State.nextStatesFor(this.restCps);
     }
 
+    toString(){
+        const execd = this.executed ? "(execd)" : "(not execd)";
+        return "Set to " + !this.value + "  " + execd +":" + this.cp.name();
+    }
+
     static nextStatesFor(cps){
         const restCps = cps.slice(0);
         const nextCp = restCps.pop();
@@ -103,28 +108,52 @@ class CPContinuableBacktrack{
 
 
     finalize(){
-        while(!this.stackEmpty() ){
+        while( !this.stackEmpty() ){
             this.popState();
+        }
+
+        while( this.manager.stackIndex() > 0 ){
             this.manager.popScenario();
         }
+    }
+
+    checkStacks(){
+        let executed = 0;
+        this._stack.forEach( s => executed += s.executed ? 1 : 0 );
+        assert( executed == this.manager.stackIndex() );
     }
     
     nextSolution(){
 
         //const log = function(msg){console.log(msg);};
+        log( "----->" );
         while( !this.stackEmpty() ){
 
-            log( "Stack not empty" );
-            let state = this.peekState();
+            log( "next loop");
+            log( "  stack:" );
+            this._stack.forEach( s => log( "    " + s) );
 
-            log( "  state:" + state.cp.name() + "  executed:" + state.executed );
+            log( "  cps:" );
+            this._cps.forEach( c => log( "    " + c ));
+
+
+            
+            log( "  Status Stack:" + this.currentLevel() + " -- scenarios stack:" + this.manager.stackIndex() );
+            this.checkStacks();
+
+            const state = this.peekState();
+
+            log( "  state:" + state );
+
 
             if( state.executed ){
                 this.popState();
                 this.manager.popScenario();
+                log( "  popScenario: scenario stack:" +  this.manager.stackIndex());
             }
             else{
                 this.manager.pushScenario();
+                log( "  pushScenario: " + this.manager.stackIndex() );
                 let failed = false;
                 this.manager.pushEmptyDomainHandler(function(cp){
                     log( "failed:" + cp )
@@ -132,19 +161,22 @@ class CPContinuableBacktrack{
                 });
                 let newStates = state.execute();
                 this.manager.popEmptyDomainHandler();
-                log( "Executed");
+                log( "  Executed:" + state );
                 if( !failed && this.allDefined() ){
                     log( "  Están todos definidos");
+                    this._cps.forEach( c => log( "    " + c ));
+                    log( "  nextSolution: true");
                     return true;
                 }
                 else if(!failed){
-                    log("  newStates:" + newStates + "  level:" + this.currentLevel() );
+                    log("  newStates:" + newStates + "  level:" + this.currentLevel() + " -- " + this.manager.stackIndex() );
                     this.pushStates( newStates );
-                    log( "  level after push:" + this.currentLevel() );
+                    log( "  level after push:" + this.currentLevel() + " -- " + this.manager.stackIndex() );
                 }
             }
         }
-        
+
+        log( "  nextSolution: false");
         return false;
     }
 }

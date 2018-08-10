@@ -73,6 +73,7 @@ class Cofre{
 
 function porcia(cofres,buscarCofreLleno){
     const CP = cofres[0].manager;
+    const log = console.log;
     const inscripciones = cofres.
           map(c=>c.inscripciones).
           reduce( (accum,value) => accum.concat(value) );
@@ -92,6 +93,7 @@ function porcia(cofres,buscarCofreLleno){
     log("posibilidadesLlenos:");
     const posibilidadesLlenos = CPAllPosibilities(llenos);
     log("posibilidadesLlenos:" + posibilidadesLlenos.length);
+    posibilidadesLlenos.forEach( p => log( "  " + p ));
     if( posibilidadesLlenos.length == 1 ){
         const indice = posibilidadesLlenos[0].indexOf(buscarCofreLleno);
         if( indice < 0 ){
@@ -102,6 +104,8 @@ function porcia(cofres,buscarCofreLleno){
 
     const posibilidadesInscripciones = CPAllPosibilities(inscripciones,llenos);
     log("posibilidadesInscripciones:" + posibilidadesInscripciones.length);
+    posibilidadesInscripciones.forEach( p => log( "  " + p ));
+
     if( posibilidadesInscripciones.length < 1 ){
         throw new Error("No hay ninguna posibilidad en las inscripciones");
     }

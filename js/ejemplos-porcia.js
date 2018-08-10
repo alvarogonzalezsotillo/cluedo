@@ -155,36 +155,24 @@ function porciaV_general(){
 
 }
 
-function porciaVI(){
+function porciaVI_general(){
     var CP = new CPManager();
 
-    var retratoEnOro = CP.Boolean("enOro");
-    var retratoEnPlata = CP.Boolean("enPlata");
+    const cofres = Cofre.creaCofres(CP,["Oro","Plata"]);
+    const [cofreOro,cofrePlata] = cofres;
 
+    const unoYSoloUnoEsDeBellini = CP.Boolean("Un cofre y solo uno es de Bellini");
+    
+    cofreOro.inscripciones = [ cofrePlata.cofreLleno ];
+    cofrePlata.inscripciones = [ unoYSoloUnoEsDeBellini ];
 
-    var belliniHizoOro = CP.Boolean("BelliniHizoOro");
-    var belliniHizoPlata = CP.Boolean("BelliniHizoPlata");
+    const todasLasInsripciones = cofreOro.inscripciones.concat(cofrePlata.inscripciones);
+    
+    CP.Bind( unoYSoloUnoEsDeBellini, CP.SomeTrue(todasLasInsripciones,1) );
 
-    var inscripcionPlata = CP.SomeTrue([belliniHizoOro,belliniHizoPlata],1).
-        rename("Uno y solo uno es de Bellini");
+    const solucion = porcia(cofres,true);
+    console.log( "Se debe abrir el cofre:" + solucion.nombre );
 
-    CP.Iff( belliniHizoOro, retratoEnPlata ).asTrue();
-    CP.Iff( belliniHizoPlata, inscripcionPlata).asTrue();
-
-    CP.SomeTrue([retratoEnOro,retratoEnPlata],1).
-        rename("Solo un daga en total").
-        asTrue();
-
-    let cps = [belliniHizoOro,belliniHizoPlata];
-
-
-
-    var abrirSiempreOro = CP.ForAll(cps,retratoEnOro).rename("Abrir siempre oro");
-    var abrirSiemprePlata = CP.ForAll(cps,retratoEnPlata).rename("Abrir siempre plata");
-
-
-    console.log( abrirSiempreOro.toString() );
-    console.log( abrirSiemprePlata.toString() );
     
 }
 

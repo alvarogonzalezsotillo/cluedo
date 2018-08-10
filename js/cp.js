@@ -7,7 +7,7 @@ if( typeof require != "undefined" ){
     CPContinuableBacktrack = backtrack.CPContinuableBacktrack;
 }
 
-const USE_EVENTS = true;
+const USE_EVENTS = false;
 
 class PropagateEvent{
     constructor(cp){
@@ -20,6 +20,20 @@ class PropagateEvent{
     
     execute(){
         throw new Error("Should be override");
+    }
+
+    toString(){
+        return this.constructor.name + ":" + this.cp.id();
+    }
+}
+
+class NotifiedEvent extends PropagateEvent{
+    constructor(cp){
+        super(cp);
+    }
+
+    execute(){
+        this.cp.doNotified();
     }
 }
 
@@ -52,6 +66,48 @@ class ReduceObservedDomainEvent extends PropagateEvent{
     }
 }
 
+class EventQueue{
+    constructor(){
+        this._queue = [];
+    }
+
+    contains(event){
+        return this._queue.find( e => e.toString() == event.toString() );
+    }
+    
+    add(e){
+        if( !this.contains(e) ){
+            log("add:" + e );
+            this._queue.push(e);
+            return true;
+        }
+        return false;
+    }
+
+    size(){
+        return this._queue.length;
+    }
+
+    empty(){
+        return this.size() == 0;
+    }
+    
+    pop(){
+        if( this.empty() ){
+            return undefined;
+        }
+        const next = this._queue[0];
+        this._queue = this._queue.slice(1);
+        return next;
+    }
+
+    dump(log){
+        log = log || console.log;
+        log( "propagate: " + this.size() );
+        this._queue.forEach( e => log( "  " + e.toString() ));
+    }
+}
+
 
 class CPManager {
     constructor() {
@@ -59,27 +115,37 @@ class CPManager {
         this._stackIndex = 0;
         this._emptyDomainHandlers = [];
         this.pushEmptyDomainHandler(CPManager.defaultEmptyDomainHandler);
-        this._propagateQueue = [];
+        this._propagateQueue = new EventQueue();
         this._propagating = false;
         this.booleans = {};
     }
 
     propagate(){
         if( this._propagating ){
+            log( "Aún propagando. Salgo.");
             return;
         }
-        this._propagating = false;
-        while(this._propagateQueue.length != 0 ){
-            const nextEvent = this._propagateQueue[0];
-            this._propagateQueue = this._propagateQueue.slice(1);
-            nextEvent.execute();
+        try{
+            log( "Empieza propagate");
+            this._propagating = true;
+            while( !this._propagateQueue.empty() ){
+                //this._propagateQueue.dump(log);
+                const nextEvent = this._propagateQueue.pop();
+                nextEvent.execute();
+            }
         }
-        this._propagating = false;
+        finally{
+            this._propagating = false;
+        }
+        log( "Se acabó propagate " );
     }
 
     addPropagateEvents(events){
-        events.forEach( e => this._propagateQueue.push(e) );
-        this.propagate();
+        var added = 0;
+        events.forEach( e => this._propagateQueue.add(e) && added++ );
+        if( added ){
+            this.propagate();
+        }
     }
 
     checkIfFailed(){
@@ -130,7 +196,9 @@ class CPManager {
     }
 
     popScenario(){
-        assert(this._stackIndex>0);
+        if( this._stackIndex<=0 ){
+            throw new Error("Stack empty");
+        }
         for( let i = 0 ; i < this._cps.length ; i++ ){
             this._cps[i].popDomain();
         }
@@ -209,6 +277,7 @@ class CPManager {
     }
 
     IfThen(cpIf, cpThen){
+        assert(cpThen);
         // if    then
         // f     f    t
         // f     t    t
@@ -246,12 +315,68 @@ class CPManager {
 }
 
 
+class CPLike{
 
-class CPBase {
-    constructor(manager, id, observed) {
-        this._manager = manager;
-        this._id = id;
+    constructor(id,name){
         this._name = id;
+        this._id = id;
+    }
+    
+    defined(){
+        return (this.canBeTrue() && !this.canBeFalse()) || (!this.canBeTrue() && this.canBeFalse());
+    }
+    
+    name(){
+        return this._name;
+    }
+
+    id(){
+        return this._id;
+    }
+
+    rename(name){
+        this._name=name;
+        return this;
+    }
+
+    toString(){
+        let id = "";
+        if( this.id() != this.name() ){
+            id = "(id:" + this.id() + ")";
+        }
+        
+        return "[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]:" + this.name();
+    }
+
+
+    impossible(){
+        return !this.canBeTrue() && !this.canBeFalse();
+    }
+
+    canBeTrue(){
+        // Abstract method, to be overriden
+        assert(false);
+    }
+
+    canBeFalse(){
+        // Abstract method, to be overriden
+        assert(false);
+    }
+
+    isFalse(){
+        return this.defined() && this.canBeFalse();
+    }
+
+    isTrue(){
+        return this.defined() && this.canBeTrue();
+    }
+
+}
+
+class CPBase extends CPLike{
+    constructor(manager, id, observed) {
+        super(id);
+        this._manager = manager;
         this._containers = [];
         this._observed = [];
         if (observed) {
@@ -262,22 +387,28 @@ class CPBase {
         }
         manager.addCP(this);
     }
+
+    abstractMethod(){
+        throw new Error("Abstract method, to be overriden:" + this.constructor.name );
+    }
+    
+    remove(value){
+        this.abstractMethod();
+    }
+
+    
     asTrue(){
         this.remove(false);
         return this;
     }
     
-    rename(name){
-        this._name=name;
-        return this;
-    }
 
     pushDomain(){
-        // Abstract method, to be overriden
+        this.abstractMethod();
     }
 
     popDomain(){
-        // Abstract method, to be overriden
+        this.abstractMethod();
     }
 
     get manager(){
@@ -300,8 +431,7 @@ class CPBase {
     notified(){
         if( USE_EVENTS ){
             this.manager.addPropagateEvents([
-                new ReduceOwnDomainEvent(this),
-                new ReduceObservedDomainEvent(this)
+                new NotifiedEvent(this)
             ]);
         }
         else{
@@ -349,14 +479,6 @@ class CPBase {
         return this._observed;
     }
     
-    toString(){
-        let id = "";
-        if( this.id() != this.name() ){
-            id = "(id:" + this.id() + ")";
-        }
-        
-        return "[" + (this.canBeTrue()?"t":"_") + (this.canBeFalse()?"f":"_") + "]:" + this.name();
-    }
 
     valueAsString(ifTrue,ifFalse,ifNone){
         if( this.isTrue() ){
@@ -370,47 +492,14 @@ class CPBase {
         }
     }
 
-    defined(){
-        return (this.canBeTrue() && !this.canBeFalse()) || (!this.canBeTrue() && this.canBeFalse());
-    }
-    
-    name(){
-        return this._name;
-    }
-
-    id(){
-        return this._id;
-    }
-
-    impossible(){
-        return !this.canBeTrue() && !this.canBeFalse();
-    }
-
-    canBeTrue(){
-        // Abstract method, to be overriden
-        assert(false);
-    }
-
-    canBeFalse(){
-        // Abstract method, to be overriden
-        assert(false);
-    }
-
-    isFalse(){
-        return this.defined() && this.canBeFalse();
-    }
-
-    isTrue(){
-        return this.defined() && this.canBeTrue();
-    }
 
     reduceOwnDomain(){
-        // Abstract method, to be overriden
+        this.abstractMethod();
         return false;
     }
 
     reduceObservedDomain(){
-        // Abstract method, to be overriden
+        this.abstractMethod();
         return false;
     }
 
@@ -453,9 +542,9 @@ class CPBoolean extends CPBase{
 
 
     remove(value){
-        log( this.name() + ": remove:" + value );
+        //log( this.name() + ": remove:" + value );
         if( value && this.canBeTrue() ){
-            log( "  " + this.name() + ": remove: removed true");
+            //log( "  " + this.name() + ": remove: removed true");
             this._canBeTrue[this.manager.stackIndex()] = false;
             this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
@@ -464,7 +553,7 @@ class CPBoolean extends CPBase{
         }
         
         if( !value && this.canBeFalse() ){
-            log( "  " + this.name() + ":  remove: removed false");
+            //log( "  " + this.name() + ":  remove: removed false");
             this._canBeFalse[this.manager.stackIndex()] = false;
             this.notifyIfEmptyDomain();
             this.reduceObservedDomain();
@@ -472,6 +561,14 @@ class CPBoolean extends CPBase{
             return true;
         }
 
+        return false;
+    }
+
+    reduceOwnDomain(){
+        return false;
+    }
+
+    reduceObservedDomain(){
         return false;
     }
 }
@@ -489,16 +586,34 @@ CPManager.CPAllPosibilities = function(cps,cpsReturn){
 }
 
 
-class CPForAll extends CPBoolean{
+class CPForAll extends CPLike{
     constructor(manager, cps, cpThen ){
-        super( manager, "ForAll(" + CPManager.concatenateNames(cps) + ")Then(" + cpThen.name() + ")", cps.concat(cpThen) );
+        super("forall(" + cps + ")then(" + cpThen.id() + ")" );
+        this._manager = manager;
         this._cps = cps;
         this._cpThen = cpThen;
-        this.reduceOwnDomain();
+        this._canBeTrue = true;
+        this._canBeFalse = true;
+        this.update();
     }
 
+    update(){
+        if( this._reducing ){
+            return false;
+        }
+        this._reducing = true;
+        let ret = undefined;
+        try{
+            ret = this.internalReduceOwnDomain();
+        }
+        finally{
+            this._reducing = false;
+        }
+        return ret;
+            
+    }
 
-    reduceOwnDomain(){
+    internalReduceOwnDomain(){
         if( !this._cps ){
             // STILL IN BASE CONSTRUCTOR
             return false;
@@ -510,23 +625,39 @@ class CPForAll extends CPBoolean{
         let failed = false;
         const failedCB = function(){
             failed = true;
-        }
+        };
+        
         this._manager.pushEmptyDomainHandler(failedCB);
 
         let someTrue = false;
         let someFalse = false;
         let someUndefined = false;
-        while( backtrack.nextSolution() ){
+
+        //log( "cpforall.reduceOwnDomain");
+
+        while( backtrack.nextSolution() && !failed ){
+
+            //log( "  cpforall.reduceOwnDomain: nextSolution: " + this._cpThen );
             if( this._cpThen.isTrue() ){
                 someTrue = true;
+                if( someFalse ){
+                    break;
+                }
             }
             if( this._cpThen.isFalse() ){
                 someFalse = true;
+                if( someTrue ){
+                    break;
+                }
             }
             if( !this._cpThen.defined() ){
                 someUndefined = true;
+                break;
             }
         }
+        //log( "  cpforall.reduceOwnDomain: someTrue:" + someTrue + " someFalse:" + someFalse + " someUndefined:" + someUndefined );
+
+        backtrack.finalize();
         this._manager.popEmptyDomainHandler();
 
         if( !failed && !someFalse && !someUndefined ){
@@ -540,6 +671,24 @@ class CPForAll extends CPBoolean{
         }
 
         return false;
+    }
+
+    remove(value){
+        if( value && this._canBeTrue ){
+            this._canBeTrue = false;
+        }
+        if( !value && this._canBeFalse ){
+            this._canBeFalse = false;
+        }
+
+    }
+
+    canBeTrue(){
+        return this._canBeTrue;
+    }
+
+    canBeFalse(){
+        return this._canBeFalse;
     }
 }
 
@@ -563,7 +712,7 @@ class CPNumberTrue extends CPBoolean{
             falses : [],
             trues : [],
             undefineds : []
-        }
+        };
 
         for( let i = 0 ; i < cps.length ; i++ ){
             if( cps[i].isFalse() ){
@@ -711,6 +860,12 @@ class CPNot extends CPBase{
 
     reduceObservedDomain(){
         return this._cp.reduceObservedDomain();
+    }
+
+    pushDomain(){
+    }
+
+    popDomain(){
     }
 
 }
