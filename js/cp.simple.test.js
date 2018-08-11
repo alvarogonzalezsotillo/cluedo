@@ -460,23 +460,21 @@ function test(){
             assert(f.isTrue());
         },
 
-        renombrarBoolean: function(){
+        bindImposible: function(){
             var CP = new CPManager();
             var a = CP.Boolean("a");
 
-            try{
-                a.rename("b");
-                assert(false);
-            }
-            catch( e ){
-                
-            }
-        },
+
+            var failed = false;
+            CP.pushEmptyDomainHandler(function(){failed=true;});
+            CP.Bind(a,CP.Not(a));
+            a.remove(true);
+            assert(failed);
+        }
         
 
     };
 
-    tests.forAllSimple();
 
     
     for( var t  in  tests ){
