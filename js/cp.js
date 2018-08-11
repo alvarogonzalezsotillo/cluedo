@@ -118,6 +118,7 @@ class CPManager {
         this._propagateQueue = new EventQueue();
         this._propagating = false;
         this.booleans = {};
+        this._serial = 0;
     }
 
     propagate(){
@@ -222,6 +223,8 @@ class CPManager {
     }
     
     Boolean(name){
+        this._serial += 1;
+        name = name || "booleano sin nombre " + this._serial;
         let ret = this.booleans[name];
         if( !ret ){
             ret = new CPBoolean(this,name);
@@ -534,9 +537,9 @@ class CPBoolean extends CPBase{
     }
 
     rename(name){
-        if( this.constructor.name == CPBoolean.name ){
-            throw new Error("No se puede cambiar el nombre de un CPBoolean");
-        }
+        //if( this.constructor.name == CPBoolean.name ){
+        //    throw new Error("No se puede cambiar el nombre de un CPBoolean");
+        //}
         return super.rename(name);
     }
 

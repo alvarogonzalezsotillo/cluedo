@@ -53,14 +53,26 @@ class Porcia {
         }
         else {
             const CP = cofre.manager;
-            return CP.Not(cofre.cofreLleno);
+            return CP.Not(cofre.cofreLleno).rename( "El cofre " + cofre.nombre + " está vacío");
         }
     }
 
+
+
+    static nombreDeCofre(i){
+        const nombres = ["Oro","Plata","Plomo","Bronce","Platino","Tugsteno","Cobre","Acero"];
+        if( i < nombres.length ){
+            return nombres[i];
+        }
+        else{
+            return "cofre " + i;
+        }
+    }
+    
     static cofresVerdaderosAlAzar(cofres) {
         const numCofres = cofres.length;
-        let min = Porcia.indiceAlAzar(numCofres);
-        let max = Porcia.indiceAlAzarDistintoDe(numCofres,min);
+        let min = Porcia.indiceAlAzar(numCofres+1);
+        let max = Porcia.indiceAlAzar(numCofres+1);
         if (min > max) {
             [min, max] = [max, min];
         }
@@ -73,13 +85,13 @@ class Porcia {
 
 
     
-    static creaPorcia(numCofres) {
+    static creaPorciaUnaInscripcion(numCofres) {
 
         const CP = new CPManager();
         CP.pushEmptyDomainHandler( () => null );
         const names = [];
-        for (let i = 1; i <= numCofres; i++) {
-            names.push("cofre " + i);
+        for (let i = 0; i < numCofres; i++) {
+            names.push( Porcia.nombreDeCofre(i) );
         }
         const cofres = Cofre.creaCofres(CP, names);
         cofres.forEach(c => c.inscripciones = [Porcia.inscripcionSimpleAlAzar(cofres)]);
@@ -87,6 +99,51 @@ class Porcia {
         return new Porcia(cofres, restricciones);
     }
 
+    static inscripcionAutoreferenteAlAzar(cofres) {
+        const cofre = Porcia.cofreAlAzar(cofres);
+        const CP = cofre.manager;
+        const inscripcion = CP.Boolean();
+
+        
+        if (Porcia.booleanoAlAzar()) {
+            inscripcion.rename( "El cofre " + cofre.nombre + " dice la verdad" );
+            CP.Bind( cofre.inscripciones[0], inscripcion );
+        }
+        else {
+            inscripcion.rename( "El cofre " + cofre.nombre + " no dice la verdad" );
+            CP.Bind( cofre.inscripciones[0], CP.Not(inscripcion) );
+        }
+
+        return inscripcion;
+    }
+
+    
+    static creaPorciaUnaInscripcionAutoreferente(numCofres) {
+
+        const CP = new CPManager();
+        CP.pushEmptyDomainHandler( () => null );
+        const names = [];
+        for (let i = 0; i < numCofres; i++) {
+            names.push( Porcia.nombreDeCofre(i) );
+        }
+        const cofres = Cofre.creaCofres(CP, names);
+        cofres.forEach( c => c.inscripciones = [CP.Boolean()] );
+        for( let ix = 0 ; ix < numCofres-1 ; ix++ ){
+            const c = cofres[ix];
+            const i = Porcia.inscripcionSimpleAlAzar(cofres);
+            c.inscripciones[0].rename(i.name());
+            CP.Bind( c.inscripciones[0], i );
+        }
+        const ultimoCofre = cofres[numCofres-1];
+        const ultimaInscripcion = Porcia.inscripcionAutoreferenteAlAzar(cofres);
+        ultimoCofre.inscripciones[0].rename( ultimaInscripcion.name() );
+        CP.Bind( ultimoCofre.inscripciones[0], ultimaInscripcion);
+
+        const restricciones = Porcia.cofresVerdaderosAlAzar(cofres);
+        return new Porcia(cofres, restricciones);
+    }
+
+    
     dump(out) {
         const o = out || console.log;
         o("Hay " + this.cofres.length + " cofres");
@@ -102,7 +159,7 @@ class Porcia {
 
 while (true) {
     console.log(".");
-    const po = Porcia.creaPorcia(3);
+    const po = Porcia.creaPorciaUnaInscripcionAutoreferente(3);
     const solucion = porcia(po.cofres,true);
     if( solucion.cofre ){
         console.log("***************************************");
@@ -110,3 +167,4 @@ while (true) {
         console.log("solución:" + solucion.cofre.nombre);
     }
 }
+
