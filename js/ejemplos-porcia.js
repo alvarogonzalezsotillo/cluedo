@@ -12,6 +12,36 @@ if( typeof require != "undefined" ){
     Cofre = p.Cofre;
 }
 
+/*
+En /El mercader de Venecia/, de Shakespeare, Porcia tenia tres cofres
+---uno de oro, otro de plata y otro de plomo---, dentro de uno de los
+cuales estaba el retrato de Porcia. El pretendiente tenía que elegir uno
+de los cofres y si tenía suerte (o inteligencia) elegiría el que tenía
+el retrato, pudiendo así pedir a Porcia por esposa. En la tapa de cada
+cofre había una inscripción para ayudar al pretendiente a elegir
+sabiamente.
+
+Pero supongamos que Porcia quisiera elegir marido, no por su bondad,
+sino por su inteligencia. Tendría las siguientes inscripciones en los
+cofres:
+
+#+BEGIN_QUOTE
+  Oro
+
+  EL RETRATO ESTÁ EN ESTE COFRE
+
+  Plata
+
+  EL RETRATO NO ESTÁ AQUÍ
+
+  Plomo
+
+  EL RETRATO NO ESTÁ EN EL COFRE DE ORO
+#+END_QUOTE
+
+Porcia explicó al pretendiente que de los tres enunciados, a lo sumo uno
+era verdad. ¿Cuál cofre debe de elegir el pretendiente?
+*/
 function porciaI_general(){
     let CP = new CPManager();
     let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
@@ -29,6 +59,37 @@ function porciaI_general(){
     console.log("Se debe elegir el cofre:" + solucion.nombre);
 }
 
+/*
+El pretendiente eligió correctamente, así que se casaron y vivieron
+bastante felices... por lo menos durante algún tiempo. Pero un día
+Porcia pensó: «Aunque mi marido demostró una cierta inteligencia al
+elegir el cofre bueno, en realidad el problema no era tan difícil. Sin
+duda podía haber puesto un problema más difícil y haber conseguido un
+marido realmente inteligente.» Así pues se divorció inmediatamente de su
+marido decidida a casarse con otro más listo.
+
+Esta vez en los tres consabidos cofres aparecían las siguientes
+inscripciones:
+
+#+BEGIN_QUOTE
+  Oro
+
+  EL RETRATO NO ESTÁ EN EL COFRE DE PLATA
+
+  Plata
+
+  EL RETRATO NO ESTÁ EN ESTE COFRE
+
+  Plomo
+
+  EL RETRATO ESTÁ EN ESTE COFRE
+#+END_QUOTE
+
+Porcia explicó al pretendiente que por lo menos uno de los tres
+enunciados era verdadero y que por lo menos otro era falso.
+
+¿En cuál de los cofres está el retrato?
+*/
 function porciaII_general(){
     var CP = new CPManager();
 
@@ -49,6 +110,32 @@ function porciaII_general(){
     
 }
 
+/*
+En ésta las tapas de los cofres tenían dos enunciados, y Porcia explicó
+que ninguna de ellas tenía más que un enunciado falso.
+
+#+BEGIN_QUOTE
+  Oro
+
+  (1) EL RETRATO NO ESTÁ AQUÍ
+
+  (2) EL ARTISTA QUE HIZO EL RETRATO ES VENECIANO
+
+  Plata
+
+  (1) EL RETRATO NO ESTÁ EN EL DE ORO
+
+  (2) EL ARTISTA QUE HIZO EL RETRATO SÍ ES FLORENTINO
+
+  Plomo
+
+  (1) EL RETRATO NO ESTÁ AQUÍ
+
+  (2) EL RETRATO SÍ QUE ESTÁ EN EL COFRE DE PLATA
+#+END_QUOTE
+
+¿En qué cofre está el retrato?
+*/
 function porciaIII_general(){
     let CP = new CPManager();
     let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
@@ -99,6 +186,35 @@ function permutaciones(array){
 }
 
 
+/*
+Si el pretendiente pasaba la primera prueba era conducido a otra
+habitación en la cual había otros tres cofres, que también tenían dos
+inscripciones en la tapa. Porcia explicó que en una de las tapas los dos
+enunciados eran verdaderos; en otra ambos eran falsos, y en la tercera
+uno era verdadero y otro falso:
+
+#+BEGIN_QUOTE
+  Oro
+
+  (1) EL RETRATO NO ESTÁ EN ESTE COFRE
+
+  (2) ESTÁ EN EL DE PLATA
+
+  Plata
+
+  (1) EL RETRATO NO ESTÁ EN EL DE ORO
+
+  (2) ESTÁ EN EL DE PLOMO
+
+  Plomo
+
+  (1) EL RETRATO NO ESTÁ EN ESTE COFRE
+
+  (2) ESTÁ EN EL DE ORO
+#+END_QUOTE
+
+¿En qué cofre estaba el retrato?
+*/
 function porciaIV_general(){
     const CP = new CPManager();
     const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
@@ -128,7 +244,48 @@ function porciaIV_general(){
 
 
 
+/*
+El pretendiente del cuento anterior pasó ambas pruebas y, muy contento,
+pidió a Porcia por esposa. Se casaron, vivieron felices y tuvieron una
+bellísima hija. Porcia III, a la que de aquí en adelante llamaremos
+simplemente Porcia. Ésta creció hasta convertirse en una bella e
+inteligente jovencita, exactamente igual que su mamá y que su abuelita,
+y que también decidió elegir marido por el método del cofre. ¡El
+enamorado tendría que pasar tres pruebas para conseguir su mano! Las
+tales pruebas eran bastante ingeniosas. Volvió a la técnica de su abuela
+de poner una sola inscripción en cada cofre, pero añadió un nuevo truco:
+explicaba al pretendiente que cada uno de los cofres lo había hecho uno
+de dos afamados artistas florentinos ---o Cellini o Bellini. Todos los
+cofres de Cellini tenían inscripción falsa mientras que Bellini siempre
+les ponía una inscripción verdadera.
 
+***** 69A. PRIMERA PRUEBA
+
+En esta original prueba, el pretendiente (si contestaba a ciegas)
+tendría dos posibilidades sobre tres de acertar, en vez de una sobre
+tres. En vez de un retrato, Porcia metía una daga en uno de los cofres y
+dejaba los otros dos vacíos. Si el pretendiente conseguía evitar el
+cofre de la daga, podía pasar a la prueba siguiente. Las inscripciones
+rezaban así:
+
+#+BEGIN_QUOTE
+  Oro
+
+  LA DAGA ESTÁ AQUÍ
+
+  Plata
+
+  ESTE COFRE ESTÁ VACÍO
+
+  Plomo
+
+  TODO LO MÁS UNO DE ESTOS\\
+  COFRES LO HIZO BELLINI
+#+END_QUOTE
+
+¿Qué cofre tenía que elegir?
+
+*/
 function porciaV_general(){
     const CP = new CPManager();
     const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
@@ -155,6 +312,26 @@ function porciaV_general(){
 
 }
 
+/*
+En ésta el pretendiente (si contestara sin pensar) tendría un cincuenta
+por ciento de posibilidades de acertar. Porcia le ponía sólo dos cofres,
+el de oro y el de plata; uno de ellos contenía su retrato (en esta
+prueba no utilizaba daga). Los cofres eran obra o de Cellini o de
+Bellini y en ellos se leía:
+
+#+BEGIN_QUOTE
+  Oro
+
+  EL RETRATO NO ESTÁ AQUÍ
+
+  Plata
+
+  UNO Y NADA MÁS QUE UNO DE ESTOS\\
+  DOS COFRES ES OBRA DE BELLINI
+#+END_QUOTE
+
+¿Cuál tenía que elegir el pretendiente para hallar el retrato?
+*/
 function porciaVI_general(){
     var CP = new CPManager();
 
@@ -166,9 +343,9 @@ function porciaVI_general(){
     cofreOro.inscripciones = [ cofrePlata.cofreLleno ];
     cofrePlata.inscripciones = [ unoYSoloUnoEsDeBellini ];
 
-    const todasLasInsripciones = cofreOro.inscripciones.concat(cofrePlata.inscripciones);
+    const todasLasInscripciones = cofreOro.inscripciones.concat(cofrePlata.inscripciones);
     
-    CP.Bind( unoYSoloUnoEsDeBellini, CP.SomeTrue(todasLasInsripciones,1) );
+    CP.Bind( unoYSoloUnoEsDeBellini, CP.SomeTrue(todasLasInscripciones,1) );
 
     const solucion = porcia(cofres,true);
     console.log( "Se debe abrir el cofre:" + solucion.nombre );
@@ -177,6 +354,33 @@ function porciaVI_general(){
 }
 
 
+/*
+Suponiendo que el pretendiente pasara las dos primeras pruebas, se le
+conducía a otra habitación en la que había de nuevo tres cofres, uno de
+oro, otro de plata y otro de plomo, hechos también o por Bellini o por
+Cellini. En esta prueba las oportunidades de acertar del pretendiente
+(en caso de que contestara a ciegas) eran una de cada tres. Porcia
+colocaba su retrato en uno de los tres y el pretendiente había de (1)
+elegir el cofre que tuviera el retrato y (2) adivinar el autor de cada
+uno de los cofres. Las inscripciones decían:
+
+#+BEGIN_QUOTE
+  Oro
+
+  EL RETRATO ESTÁ AQUÍ
+
+  Plata
+
+  EL RETRATO ESTÁ AQUÍ
+
+  Plomo
+
+  POR LO MENOS DOS DE ESTOS TRES\\
+  COFRES SON OBRA DE CELLINI
+#+END_QUOTE
+
+¿Cuál es la solución?
+*/
 function porciaVII_general(){
     var CP = new CPManager();
     const cofres = Cofre.creaCofres(CP,["Oro","Plata", "Plomo"]);

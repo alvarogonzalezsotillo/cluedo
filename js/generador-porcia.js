@@ -34,6 +34,16 @@ class Porcia {
 
         const indiceAlAzar = (max) => Math.floor(Math.random() * max);
 
+        const indiceAlAzarDistintoDe = function(max,n){
+            while(true){
+                const r = indiceAlAzar(max);
+                if( r != n ){
+                    return r;
+                }
+            }
+            
+        } 
+
         const cofreAlAzar = function () {
             const i = indiceAlAzar(numCofres);
             return cofres[i];
@@ -54,7 +64,7 @@ class Porcia {
 
         const verdadesAlAzar = function () {
             let min = indiceAlAzar(numCofres);
-            let max = indiceAlAzar(numCofres);
+            let max = indiceAlAzarDistintoDe(numCofres,min);
             if (min > max) {
                 [min, max] = [max, min];
             }
@@ -85,14 +95,14 @@ class Porcia {
 while (true) {
     try {
         console.log(".");
-        const po = Porcia.creaPorcia(4);
+        const po = Porcia.creaPorcia(10);
         const solucion = porcia(po.cofres,true);
         console.log("***************************************");
         po.dump();
         console.log("solución:" + solucion.nombre);
     }
     catch (e) {
-        console.log( "e: " + e );
-        console.log( e.stack );
+        //console.log( "e: " + e );
+        //console.log( e.stack );
     }
 }
