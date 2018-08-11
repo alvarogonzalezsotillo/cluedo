@@ -56,7 +56,7 @@ function porciaI_general(){
         asTrue();
 
     const solucion = porcia(cofres,true);
-    console.log("Se debe elegir el cofre:" + solucion.nombre);
+    console.log("Se debe elegir el cofre:" + solucion.cofre.nombre);
 }
 
 /*
@@ -106,7 +106,7 @@ function porciaII_general(){
         asTrue();
 
     const solucion = porcia(cofres,true);
-    console.log("Se debe elegir el cofre:" + solucion.nombre);
+    console.log("Se debe elegir el cofre:" + solucion.cofre.nombre);
     
 }
 
@@ -152,7 +152,7 @@ function porciaIII_general(){
     CP.Or(cofrePlomo.inscripciones).asTrue().rename("Al menos una frase verdadera en plomo");
 
     const solucion = porcia(cofres,true);
-    console.log("Se debe elegir el cofre:" + solucion.nombre);
+    console.log("Se debe elegir el cofre:" + solucion.cofre.nombre);
 }
 
 
@@ -239,7 +239,7 @@ function porciaIV_general(){
     CP.SomeTrue(posibilidades,1).asTrue().rename("Una caja cierta, otra caja falsa, y otra caja a medias");
     
     const solucion = porcia(cofres,true);
-    console.log("Se debe elegir el cofre:" + solucion.nombre);
+    console.log("Se debe elegir el cofre:" + solucion.cofre.nombre);
 }
 
 
@@ -308,7 +308,7 @@ function porciaV_general(){
     );
 
     const solucion = porcia(cofres,false);
-    console.log( "Se debe abrir el cofre:" + solucion.nombre );
+    console.log( "Se debe abrir el cofre:" + solucion.cofre.nombre );
 
 }
 
@@ -348,7 +348,7 @@ function porciaVI_general(){
     CP.Bind( unoYSoloUnoEsDeBellini, CP.SomeTrue(todasLasInscripciones,1) );
 
     const solucion = porcia(cofres,true);
-    console.log( "Se debe abrir el cofre:" + solucion.nombre );
+    console.log( "Se debe abrir el cofre:" + solucion.cofre.nombre );
 
     
 }
@@ -396,7 +396,7 @@ function porciaVII_general(){
     CP.Bind( alMenosDosCofresDeCellini, CP.SomeTrue(inscripciones,0,1));
 
     const solucion = porcia(cofres,true);
-    console.log( "Se debe abrir el cofre:" + solucion.nombre );
+    console.log( "Se debe abrir el cofre:" + solucion.cofre.nombre );
 
 }
 

@@ -22,6 +22,57 @@ class Porcia {
         return this._restricciones;
     }
 
+    static indiceAlAzar(max){
+        return Math.floor(Math.random() * max);
+    }
+
+    static indiceAlAzarDistintoDe(max,n){
+        while(true){
+            const r = Porcia.indiceAlAzar(max);
+            if( r != n ){
+                return r;
+            }
+        }
+        
+    }
+
+    static booleanoAlAzar(){
+        Math.random() > 0.5;
+    }
+
+    static cofreAlAzar(cofres) {
+        const i = Porcia.indiceAlAzar(cofres.length);
+        return cofres[i];
+    }
+
+
+    static inscripcionSimpleAlAzar(cofres) {
+        const cofre = Porcia.cofreAlAzar(cofres);
+        if (Porcia.booleanoAlAzar()) {
+            return cofre.cofreLleno;
+        }
+        else {
+            const CP = cofre.manager;
+            return CP.Not(cofre.cofreLleno);
+        }
+    }
+
+    static cofresVerdaderosAlAzar(cofres) {
+        const numCofres = cofres.length;
+        let min = Porcia.indiceAlAzar(numCofres);
+        let max = Porcia.indiceAlAzarDistintoDe(numCofres,min);
+        if (min > max) {
+            [min, max] = [max, min];
+        }
+
+        const CP = cofres[0].manager;
+        return [CP.SomeTrue(cofres.map(c => c.inscripciones[0]), min, max).
+                rename("Hay entre " + min + " y " + max + " cofres que dicen la verdad").
+                asTrue()];
+    }
+
+
+    
     static creaPorcia(numCofres) {
 
         const CP = new CPManager();
@@ -31,51 +82,8 @@ class Porcia {
             names.push("cofre " + i);
         }
         const cofres = Cofre.creaCofres(CP, names);
-
-        const indiceAlAzar = (max) => Math.floor(Math.random() * max);
-
-        const indiceAlAzarDistintoDe = function(max,n){
-            while(true){
-                const r = indiceAlAzar(max);
-                if( r != n ){
-                    return r;
-                }
-            }
-            
-        } 
-
-        const cofreAlAzar = function () {
-            const i = indiceAlAzar(numCofres);
-            return cofres[i];
-        }
-
-        const booleanoAlAzar = () => Math.random() > 0.5;
-
-        const inscripcionAlAzar = function () {
-            if (booleanoAlAzar()) {
-                return cofreAlAzar().cofreLleno;
-            }
-            else {
-                return CP.Not(cofreAlAzar().cofreLleno);
-            }
-        }
-
-        cofres.forEach(c => c.inscripciones = [inscripcionAlAzar()]);
-
-        const verdadesAlAzar = function () {
-            let min = indiceAlAzar(numCofres);
-            let max = indiceAlAzarDistintoDe(numCofres,min);
-            if (min > max) {
-                [min, max] = [max, min];
-            }
-
-            return [CP.SomeTrue(cofres.map(c => c.inscripciones[0]), min, max).
-                rename("Hay entre " + min + " y " + max + " cofres que dicen la verdad").
-                asTrue()];
-        }
-
-        const restricciones = verdadesAlAzar();
-
+        cofres.forEach(c => c.inscripciones = [Porcia.inscripcionSimpleAlAzar(cofres)]);
+        const restricciones = Porcia.cofresVerdaderosAlAzar(cofres);
         return new Porcia(cofres, restricciones);
     }
 
@@ -93,16 +101,12 @@ class Porcia {
 }
 
 while (true) {
-    try {
-        console.log(".");
-        const po = Porcia.creaPorcia(10);
-        const solucion = porcia(po.cofres,true);
+    console.log(".");
+    const po = Porcia.creaPorcia(3);
+    const solucion = porcia(po.cofres,true);
+    if( solucion.cofre ){
         console.log("***************************************");
-        po.dump();
-        console.log("solución:" + solucion.nombre);
-    }
-    catch (e) {
-        //console.log( "e: " + e );
-        //console.log( e.stack );
+        po.dump(console.log);
+        console.log("solución:" + solucion.cofre.nombre);
     }
 }

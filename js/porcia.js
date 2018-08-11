@@ -91,23 +91,24 @@ function porcia(cofres,buscarCofreLleno){
     if( posibilidadesLlenos.length == 1 ){
         const indice = posibilidadesLlenos[0].indexOf(buscarCofreLleno);
         if( indice < 0 ){
-            throw new Error("No se encuentra el cofre en la única combinación posible");
+            return { error: "No se encuentra el cofre en la única combinación posible", cofre: undefined };
         }
-        return cofres[indice];
+        return {error: undefined, cofre: cofres[indice] };
     }
 
     // POSIBILIDADES DE INSCRIPCIONES CIERTAS
     const posibilidadesInscripciones = CPAllPosibilities(inscripciones,llenos);
     if( posibilidadesInscripciones.length < 1 ){
-        throw new Error("No hay ninguna posibilidad en las inscripciones");
+        return { error: "No hay ninguna posibilidad en las inscripciones", cofre: undefined };
     }
     for( let indice = 0 ; indice < cofres.length ; indice++ ){
         const lleno = posibilidadesInscripciones.map( p => p[indice] );
         if( lleno.every( b => b == buscarCofreLleno ) ){
-            return cofres[indice];
+            return {error: undefined, cofre: cofres[indice] };
         }
     }
-    throw new Error("No hay ninguna posibilidad válida en las inscripciones");
+    return { error: "No hay ninguna posibilidad válida en las inscripciones", cofre: undefined };
+    
 }
 
 
