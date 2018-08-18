@@ -42,7 +42,7 @@ cofres:
 Porcia explicó al pretendiente que de los tres enunciados, a lo sumo uno
 era verdad. ¿Cuál cofre debe de elegir el pretendiente?
 */
-function porciaI_general(){
+function porciaI(){
     let CP = new CPManager();
     let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
     let [cofreOro,cofrePlata,cofrePlomo] = cofres;
@@ -90,7 +90,7 @@ enunciados era verdadero y que por lo menos otro era falso.
 
 ¿En cuál de los cofres está el retrato?
 */
-function porciaII_general(){
+function porciaII(){
     var CP = new CPManager();
 
     let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
@@ -102,7 +102,7 @@ function porciaII_general(){
 
 
     CP.SomeTrue(cofres.map(c=>c.inscripciones[0]),1,2).
-        rename( "Al menos una inscripción verdad y otra mentria" ).
+        rename( "Al menos una inscripción verdad y otra mentira" ).
         asTrue();
 
     const solucion = porcia(cofres,true);
@@ -136,7 +136,7 @@ que ninguna de ellas tenía más que un enunciado falso.
 
 ¿En qué cofre está el retrato?
 */
-function porciaIII_general(){
+function porciaIII(){
     let CP = new CPManager();
     let cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
     let [cofreOro,cofrePlata,cofrePlomo] = cofres;
@@ -215,7 +215,7 @@ uno era verdadero y otro falso:
 
 ¿En qué cofre estaba el retrato?
 */
-function porciaIV_general(){
+function porciaIV(){
     const CP = new CPManager();
     const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
     const [cofreOro,cofrePlata,cofrePlomo] = cofres;
@@ -286,7 +286,7 @@ rezaban así:
 ¿Qué cofre tenía que elegir?
 
 */
-function porciaV_general(){
+function porciaV(){
     const CP = new CPManager();
     const cofres = Cofre.creaCofres(CP,["Oro","Plata","Plomo"]);
     const [cofreOro,cofrePlata,cofrePlomo] = cofres;
@@ -309,7 +309,6 @@ function porciaV_general(){
 
     const solucion = porcia(cofres,false);
     console.log( "Se debe abrir el cofre:" + solucion.cofre.nombre );
-
 }
 
 /*
@@ -332,7 +331,7 @@ Bellini y en ellos se leía:
 
 ¿Cuál tenía que elegir el pretendiente para hallar el retrato?
 */
-function porciaVI_general(){
+function porciaVI(){
     var CP = new CPManager();
 
     const cofres = Cofre.creaCofres(CP,["Oro","Plata"]);
@@ -349,8 +348,6 @@ function porciaVI_general(){
 
     const solucion = porcia(cofres,true);
     console.log( "Se debe abrir el cofre:" + solucion.cofre.nombre );
-
-    
 }
 
 
@@ -381,7 +378,7 @@ uno de los cofres. Las inscripciones decían:
 
 ¿Cuál es la solución?
 */
-function porciaVII_general(){
+function porciaVII(){
     var CP = new CPManager();
     const cofres = Cofre.creaCofres(CP,["Oro","Plata", "Plomo"]);
     const [cofreOro,cofrePlata,cofrePlomo] = cofres;
@@ -392,35 +389,36 @@ function porciaVII_general(){
     cofrePlata.inscripciones = [ cofrePlata.cofreLleno ];
     cofrePlomo.inscripciones = [ alMenosDosCofresDeCellini ];
 
-    const inscripciones = cofreOro.inscripciones.concat( cofrePlata.inscripciones ).concat(cofrePlomo.inscripciones);
+    const inscripciones = cofreOro.inscripciones.
+          concat( cofrePlata.inscripciones ).
+          concat(cofrePlomo.inscripciones);
     CP.Bind( alMenosDosCofresDeCellini, CP.SomeTrue(inscripciones,0,1));
 
     const solucion = porcia(cofres,true);
     console.log( "Se debe abrir el cofre:" + solucion.cofre.nombre );
-
 }
 
 let print = function(s){console.log("===== " + s + " =====")};
 print( "PORCIA-I GENERAL");
-porciaI_general();
+porciaI();
 
 print( "PORCIA-II GENERAL");
-porciaII_general();
+porciaII();
 
 print( "PORCIA-III GENERAL")
-porciaIII_general();
+porciaIII();
 
 print( "PORCIA-IV GENERAL");
-porciaIV_general();
+porciaIV();
 
 print( "PORCIA-V GENERAL");
-porciaV_general();
+porciaV();
 
 print( "PORCIA-VI GENERAL");
-porciaVI_general();
+porciaVI();
 
 print( "PORCIA-VII GENERAL");
-porciaVII_general();
+porciaVII();
 
 
 

@@ -27,22 +27,12 @@ class Cofre{
    
         this._inscripciones = ins.slice(0);
 
-        this._diceLaVerdad = [];
-        this._implicaciones = [];
-        for( let i = 0 ; i < ins.length ; i++ ){
-            this._diceLaVerdad.push( this.manager.Boolean("La inscripción " + i + " del cofre " + this._nombre + " dice la verdad") );
-            this._implicaciones.push( this.manager.Iff( this._diceLaVerdad[i], ins[i] ).asTrue() );
-        }
     }
 
     get inscripciones(){
         return this._inscripciones.slice(0);
     }
     
-
-    get implicaciones(){
-        return this._implicaciones.slice(0);
-    }
 
     get cofreLleno(){
         return this._cofreLleno;
@@ -73,20 +63,10 @@ class Cofre{
 
 function porcia(cofres,buscarCofreLleno){
     const CP = cofres[0].manager;
-    const inscripciones = cofres.
-          map(c=>c.inscripciones).
-          reduce( (accum,value) => accum.concat(value) );
-
-    const llenos = cofres.map( c=> c.cofreLleno);
-
-    const eleccion = cofres.map( c=> CP.Boolean("Elección cofre " + c.nombre ) );
-
-    const llenoSiempre = cofres.map(
-        c => CP.ForAll(inscripciones,c.cofreLleno)
-    );
 
 
     // POSIBILIDADES DE COFRES LLENOS
+    const llenos = cofres.map( c=> c.cofreLleno);
     const posibilidadesLlenos = CPAllPosibilities(llenos);
     if( posibilidadesLlenos.length == 1 ){
         const indice = posibilidadesLlenos[0].indexOf(buscarCofreLleno);
@@ -97,6 +77,9 @@ function porcia(cofres,buscarCofreLleno){
     }
 
     // POSIBILIDADES DE INSCRIPCIONES CIERTAS
+    const inscripciones = cofres.
+          map(c=>c.inscripciones).
+          reduce( (accum,value) => accum.concat(value) );
     const posibilidadesInscripciones = CPAllPosibilities(inscripciones,llenos);
     if( posibilidadesInscripciones.length < 1 ){
         return { error: "No hay ninguna posibilidad en las inscripciones", cofre: undefined };

@@ -1,3 +1,5 @@
 Implementación de un solucionador del juego del Cluedo mediante programación por restricciones.
 
-Más detalles en [[https://alvarogonzalezsotillo.github.io/blog/2017/08/29/el-cluedo-como-problema-de-l%C3%B3gica/]]
+Más detalles en [[https://alvarogonzalezsotillo.github.io/blog/el-cluedo-como-problema-de-logica/]]
+
+Utilizando el mismo sistema de restricciones, solucionador de problemas de cajas
